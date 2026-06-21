@@ -29,8 +29,8 @@ O projeto usa **Gradle** e inclui o wrapper. É necessário ter **Java 17** inst
 ### Windows
 
 ```bat
-gradlew.bat clean build
-gradlew.bat lwjgl3:run
+gradlew clean build
+gradlew lwjgl3:run
 ```
 
 ### Gerar o JAR executável
