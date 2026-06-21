@@ -11,17 +11,21 @@ import com.persecutio.entities.Jogador;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-// carrega e consulta as portas definidas na camada Portas do Tiled
+// Le e organiza as portas do mapa
 public class GerenciadorPortas {
 
-    // distância em pixels de mundo ao redor da hitbox para detectar proximidade
     private static final float FOLGA = 24f;
 
     private final List<Porta> portas = new ArrayList<>();
     private final float escala;
 
-    public GerenciadorPortas(TiledMap mapa, float escala) {
+    private final Rectangle rectAlcance = new Rectangle();
+
+// Carrega as portas definidas no Tiled
+    public GerenciadorPortas(TiledMap mapa, float escala,
+                             Map<String, Map<String, Object>> defaults) {
         this.escala = escala;
         CoordenadasTiled.setEscala(escala);
 
@@ -34,12 +38,10 @@ public class GerenciadorPortas {
             MapProperties props = obj.getProperties();
             Rectangle     r     = ((RectangleMapObject) obj).getRectangle();
 
-            // porta sem destino é ignorada
-            String destino = lerPropriedade(props, "destino");
+            String destino = lerProp(props, "destino");
             if (destino == null || destino.isEmpty()) continue;
 
-            // spawn usa coordenadas da propriedade ou o centro da área da porta
-            String  coordStr = lerPropriedade(props, "coordenadas");
+            String  coordStr = lerProp(props, "coordenadas");
             Vector2 spawn;
             if (coordStr == null || coordStr.isEmpty()) {
                 spawn = new Vector2((r.x + r.width / 2f) * escala, (r.y + r.height / 2f) * escala);
@@ -48,19 +50,21 @@ public class GerenciadorPortas {
                 if (spawn == null) continue;
             }
 
-            String  video        = lerPropriedade(props, "video");
-            boolean usarFade     = parseBoolean(props, "fade",         true);
-            boolean noUmbra      = parseBoolean(props, "umbra",        false);
-            boolean noReal       = parseBoolean(props, "real",         true);
-            boolean trancado     = parseBoolean(props, "trancado",     false);
-            boolean destrancavel = parseBoolean(props, "destrancavel", false);
+            String classe = props.get("type")  != null ? props.get("type").toString()  :
+                            props.get("class") != null ? props.get("class").toString() : "";
 
-            String condicao = lerPropriedade(props, "condicao");
+            String  video        = lerProp(props, "video");
+            boolean usarFade     = lerBool(props, defaults, classe, "fade",         true);
+            boolean noUmbra      = lerBool(props, defaults, classe, "umbra",        false);
+            boolean noReal       = lerBool(props, defaults, classe, "real",         true);
+            boolean trancado     = lerBool(props, defaults, classe, "trancado",     false);
+            boolean destrancavel = lerBool(props, defaults, classe, "destrancavel", false);
+
+            String condicao = lerProp(props, "condicao");
             if (condicao == null) condicao = "";
 
-            // o nome vem do campo name do objeto no Tiled, não de uma propriedade
             String nome = obj.getName();
-            if (nome == null || nome.isEmpty()) nome = lerPropriedade(props, "nome");
+            if (nome == null || nome.isEmpty()) nome = lerProp(props, "nome");
             if (nome == null || nome.isEmpty()) nome = destino;
 
             portas.add(new Porta(
@@ -70,9 +74,9 @@ public class GerenciadorPortas {
         }
     }
 
-    // retorna a primeira porta ativa no alcance de detecção do jogador, ou null
+// Busca uma porta no alcance do jogador
     public Porta acharProxima(Jogador jogador, boolean umbra) {
-        Rectangle alcance = new Rectangle(
+        rectAlcance.set(
             jogador.hitbox.x - FOLGA,
             jogador.hitbox.y - FOLGA,
             jogador.hitbox.width  + FOLGA * 2f,
@@ -80,40 +84,37 @@ public class GerenciadorPortas {
         );
         for (Porta p : portas) {
             if (!p.isAtivo(umbra)) continue;
-            if (alcance.overlaps(p.area)) return p;
+            if (rectAlcance.overlaps(p.area)) return p;
         }
         return null;
     }
 
-    // tenta ler uma propriedade pelo nome exato e por variações comuns
-    private static String lerPropriedade(MapProperties props, String chave) {
+// Le uma propriedade do mapa
+    private static String lerProp(MapProperties props, String chave) {
         if (props.containsKey(chave)) {
             Object val = props.get(chave);
             if (val != null) return val.toString().trim();
         }
-        String[] alternativas = {
-            chave.toLowerCase(), chave.toUpperCase(),
-            "property_" + chave, "Property_" + chave
-        };
-        for (String alt : alternativas) {
-            if (props.containsKey(alt)) {
-                Object val = props.get(alt);
-                if (val != null) return val.toString().trim();
-            }
-        }
         return null;
     }
 
-    // converte uma propriedade string para boolean com valor padrão
-    private static boolean parseBoolean(MapProperties props, String chave, boolean padrao) {
-        String val = lerPropriedade(props, chave);
-        if (val == null) return padrao;
-        return Boolean.parseBoolean(val) || val.equalsIgnoreCase("1") || val.equalsIgnoreCase("yes");
+// Le um valor booleano com fallback
+    private static boolean lerBool(MapProperties props, Map<String, Map<String, Object>> defaults,
+                                   String classe, String chave, boolean fallback) {
+        String val = lerProp(props, chave);
+        if (val != null) return Boolean.parseBoolean(val) || val.equals("1") || val.equalsIgnoreCase("yes");
+
+        Map<String, Object> cd = defaults.get(classe.toLowerCase());
+        if (cd != null && cd.containsKey(chave)) {
+            Object v = cd.get(chave);
+            if (v instanceof Boolean) return (Boolean) v;
+        }
+        return fallback;
     }
 
     public List<Porta> getPortas() { return portas; }
 
-    // dados de uma porta carregada do Tiled
+// Dados de uma porta do mapa
     public static class Porta {
         public final Rectangle area;
         public final String    nome;
@@ -122,7 +123,6 @@ public class GerenciadorPortas {
         public final String    video;
         public final boolean   usarFade;
 
-        // define em qual mundo a porta é visível e interativa
         public final boolean noUmbra;
         public final boolean noReal;
 
@@ -133,20 +133,19 @@ public class GerenciadorPortas {
         Porta(Rectangle area, String nome, String destino, Vector2 spawn,
               String video, boolean usarFade, boolean noUmbra, boolean noReal,
               boolean trancado, boolean destrancavel, String condicao) {
-            this.area        = area;
-            this.nome        = nome;
-            this.destino     = destino;
-            this.spawn       = spawn;
-            this.video       = video;
-            this.usarFade    = usarFade;
-            this.noUmbra     = noUmbra;
-            this.noReal      = noReal;
-            this.trancado    = trancado;
+            this.area         = area;
+            this.nome         = nome;
+            this.destino      = destino;
+            this.spawn        = spawn;
+            this.video        = video;
+            this.usarFade     = usarFade;
+            this.noUmbra      = noUmbra;
+            this.noReal       = noReal;
+            this.trancado     = trancado;
             this.destrancavel = destrancavel;
-            this.condicao    = condicao;
+            this.condicao     = condicao;
         }
 
-        // retorna true se a porta deve aparecer no mundo atual
         public boolean isAtivo(boolean umbra) {
             return umbra ? noUmbra : noReal;
         }

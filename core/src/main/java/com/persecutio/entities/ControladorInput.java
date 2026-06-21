@@ -4,10 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.Vector2;
 
-// lê o teclado e produz direção de movimento e animação
+// Lê o teclado e produz direção de movimento e animação
 public class ControladorInput {
 
-    // índices de direção usados para selecionar a linha do spritesheet
+    // Índices de direção usados para selecionar a linha do spritesheet
     public static final int DIRECAO_BAIXO    = 0;
     public static final int DIRECAO_DIREITA  = 1;
     public static final int DIRECAO_ESQUERDA = 2;

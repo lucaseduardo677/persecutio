@@ -6,32 +6,31 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.persecutio.game.PersecutioGame;
 
-// agrupa referências de renderização e os offsets de câmera calculados para o frame
+// Contexto compartilhado de renderizacao
 public class ContextoRender {
 
-    public final SpriteBatch batch;
-    public final BitmapFont  fonteMenu;
-    public final BitmapFont  fonteDialogos;
-    public final BitmapFont  fonteNomes;
-    public final BitmapFont  fonteIndicadores;
+    public SpriteBatch batch;
+    public BitmapFont  fonteMenu;
+    public BitmapFont  fonteDialogos;
+    public BitmapFont  fonteNomes;
+    public BitmapFont  fonteIndicadores;
 
-    // dimensões do viewport virtual
-    public final float vLargura;
-    public final float vAltura;
+    public float vLargura;
+    public float vAltura;
 
-    // centro da tela em coordenadas virtuais
-    public final float centroX;
-    public final float centroY;
+    public float centroX;
+    public float centroY;
 
-    // offset para converter coordenada de mundo em coordenada de tela
-    public final float cameraX;
-    public final float cameraY;
+    public float cameraX;
+    public float cameraY;
 
-    public final Camera   camera;
-    public final Viewport viewport;
+    public Camera   camera;
+    public Viewport viewport;
 
-    // câmera segue o jogador
-    public ContextoRender(PersecutioGame jogo, float jogadorMundoX, float jogadorMundoY) {
+    public ContextoRender() {}
+
+// Atualiza camera e referencias de tela
+    public void atualizar(PersecutioGame jogo, float jogadorMundoX, float jogadorMundoY) {
         this.batch            = jogo.batch;
         this.fonteMenu        = jogo.fonteMenu;
         this.fonteDialogos    = jogo.fonteDialogos;
@@ -49,36 +48,20 @@ public class ContextoRender {
         this.cameraY = Math.round(centroY - jogadorMundoY);
     }
 
-    // câmera fixa no centro do cômodo quando a propriedade cameraEstatica estiver ativa
-    public ContextoRender(PersecutioGame jogo, float jogadorMundoX, float jogadorMundoY,
+// Ajusta a camera para um comodo estatico
+    public void atualizar(PersecutioGame jogo, float jogadorMundoX, float jogadorMundoY,
                           GerenciadorComodos.Comodo comodo) {
-        this.batch            = jogo.batch;
-        this.fonteMenu        = jogo.fonteMenu;
-        this.fonteDialogos    = jogo.fonteDialogos;
-        this.fonteNomes       = jogo.fonteNomes;
-        this.fonteIndicadores = jogo.fonteIndicadores;
+        atualizar(jogo, jogadorMundoX, jogadorMundoY);
 
-        this.vLargura = jogo.viewport.getWorldWidth();
-        this.vAltura  = jogo.viewport.getWorldHeight();
-        this.camera   = jogo.viewport.getCamera();
-        this.viewport = jogo.viewport;
-
-        this.centroX = Math.round(vLargura / 2f);
-        this.centroY = Math.round(vAltura  / 2f);
-
-        if (comodo != null && comodo.estatica) {
-            // ancora a câmera no centro geométrico do cômodo
+        if (comodo != null && comodo.cameraEstatica) {
             float comodoMeioX = comodo.area.x + comodo.area.width  / 2f;
             float comodoMeioY = comodo.area.y + comodo.area.height / 2f;
             this.cameraX = Math.round(centroX - comodoMeioX);
             this.cameraY = Math.round(centroY - comodoMeioY);
-        } else {
-            this.cameraX = Math.round(centroX - jogadorMundoX);
-            this.cameraY = Math.round(centroY - jogadorMundoY);
         }
     }
 
-    // converte coordenada de mundo para coordenada de tela
+// Converte coordenadas do mundo para tela
     public float mundoParaTelaX(float mundoX) { return cameraX + mundoX; }
     public float mundoParaTelaY(float mundoY) { return cameraY + mundoY; }
 }

@@ -4,14 +4,14 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.math.Rectangle;
 
-// representa um NPC ou sprite colocado no Tiled com hitbox e visibilidade por mundo
+// Representa um NPC ou sprite colocado no Tiled com hitbox e visibilidade por mundo
 public class EntidadeMapa {
 
     public final String        nome;
     public final Rectangle     area;
     public final TextureRegion textura;
 
-    // define em qual mundo a entidade aparece
+    // Define em qual mundo a entidade aparece
     public final boolean noUmbra;
     public final boolean noReal;
 
@@ -25,7 +25,7 @@ public class EntidadeMapa {
         this.area    = area;
         this.textura = textura;
 
-        // lê as propriedades do Tiled ou usa o padrão da camada
+        // Lê as propriedades do Tiled ou usa o padrão da camada
         Object u = props.get("umbra");
         Object r = props.get("real");
         this.noUmbra = (u != null) ? Boolean.parseBoolean(u.toString()) : padraoUmbra;
@@ -41,7 +41,7 @@ public class EntidadeMapa {
         this.condicao = (c != null) ? c.toString() : "";
     }
 
-    // retorna true se a entidade deve existir no mundo atual
+    // Retorna true se a entidade deve existir no mundo atual
     public boolean isAtivo(boolean umbra) {
         return umbra ? noUmbra : noReal;
     }

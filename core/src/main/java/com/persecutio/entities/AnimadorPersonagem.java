@@ -1,9 +1,9 @@
 package com.persecutio.entities;
 
-// controla a animação de frame do personagem enquanto caminha
+// Controla a animação de frame do personagem enquanto caminha
 public class AnimadorPersonagem {
 
-    // duração de cada frame em segundos
+    // Duração de cada frame em segundos
     private static final float DURACAO_FRAME = 0.1f;
     private static final int   TOTAL_FRAMES  = 4;
 
@@ -18,7 +18,7 @@ public class AnimadorPersonagem {
                 frame = (frame + 1) % TOTAL_FRAMES;
             }
         } else {
-            // volta para o frame parado ao parar de mover
+            // Volta para o frame parado ao parar de mover
             frame = 0;
             timer = 0f;
         }

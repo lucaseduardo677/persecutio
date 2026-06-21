@@ -6,24 +6,20 @@ import com.persecutio.entities.Jogador;
 
 import java.util.Map;
 
-// controla o estado da narrativa, coleta de peças e interações com objetos
+// Controla o progresso da historia
 public class GerenciadorProgresso {
 
-    // margem extra ao redor da hitbox para detectar interações
     private static final float FOLGA = 8f;
 
     private final GerenciadorColisao colisao;
     private final GerenciadorPortas  portas;
 
-    // estado do mundo e missão atual
     private boolean mundoUmbra  = false;
     private int     missao      = 1;
     private int     documentos  = 1;
 
-    // contagem de fragmentos coletados para desbloquear a porta umbra
     private int     partes      = 0;
 
-    // flags de coleta e progressão
     private boolean destrancada  = false;
     private boolean sabePalavra  = false;
     private boolean pecaEspelho  = false;
@@ -31,35 +27,35 @@ public class GerenciadorProgresso {
     private boolean pecaNpc      = false;
     private boolean leuDocumento = false;
 
-    // texto exibido na tela após uma interação
     private String  aviso        = "";
 
-    // flags usados pelo render para abrir telas especiais
     private boolean cinematica   = false;
     private boolean abriuEspelho = false;
     private boolean abriuGaveta  = false;
+
+    private final Rectangle rectTemp = new Rectangle();
 
     public GerenciadorProgresso(GerenciadorColisao colisao, GerenciadorPortas portas) {
         this.colisao = colisao;
         this.portas  = portas;
     }
 
-    // alterna entre mundo real e umbra diretamente, usado pelo debug
+// Alterna entre os mundos
     public void alternarUmbra() {
         mundoUmbra = !mundoUmbra;
     }
 
-    // retorna uma hitbox levemente expandida para tolerância de interação
     private Rectangle hitboxFolga(Jogador jogador) {
-        return new Rectangle(
+        rectTemp.set(
             jogador.hitbox.x - FOLGA,
             jogador.hitbox.y - FOLGA,
             jogador.hitbox.width  + FOLGA * 2f,
             jogador.hitbox.height + FOLGA * 2f
         );
+        return rectTemp;
     }
 
-    // ponto de entrada para interação com E, delega para o mundo correto
+// Processa a interacao do jogador
     public void tratarInteracao(Jogador jogador) {
         cinematica   = false;
         abriuEspelho = false;
@@ -74,7 +70,7 @@ public class GerenciadorProgresso {
         }
     }
 
-    // interações disponíveis no mundo real
+// Interacoes do mundo real
     private void interagirReal(Rectangle hitboxInteracao) {
         GerenciadorColisao.ObjetoColisao pilula = colisao.getInterativo("pilula", false);
         if (pilula != null && hitboxInteracao.overlaps(pilula.area)) {
@@ -86,7 +82,6 @@ public class GerenciadorProgresso {
         if (paciente != null && hitboxInteracao.overlaps(paciente.area)) {
             if (!pecaNpc) {
                 if (sabePalavra) {
-                    // jogador já sabe a palavra, concede a peça do NPC
                     pecaNpc = true;
                     partes++;
                     cinematica = true;
@@ -121,7 +116,7 @@ public class GerenciadorProgresso {
         }
     }
 
-    // interações disponíveis no mundo umbra
+// Interacoes do mundo umbra
     private void interagirUmbra(Rectangle hitboxInteracao, Jogador jogador) {
         GerenciadorColisao.ObjetoColisao cama = colisao.getInterativo("cama", true);
         if (cama != null && hitboxInteracao.overlaps(cama.area)) {
@@ -146,14 +141,13 @@ public class GerenciadorProgresso {
             return;
         }
 
-        // abre o puzzle de senha se a gaveta ainda não foi aberta
         GerenciadorColisao.ObjetoColisao gaveta = colisao.getInterativo("gaveta", true);
         if (gaveta != null && hitboxInteracao.overlaps(gaveta.area) && !pecaGaveta) {
             abriuGaveta = true;
         }
     }
 
-    // valida a senha digitada no puzzle e concede a peça se correta
+// Valida a senha da gaveta
     public boolean validarSenha(String senha) {
         if (pecaGaveta) return true;
 
@@ -169,7 +163,7 @@ public class GerenciadorProgresso {
         return false;
     }
 
-    // limpa o aviso quando o jogador se afasta dos objetos interativos
+// Limpa o aviso quando o jogador sai da area
     public void verificarAfastamento(Jogador jogador) {
         if (aviso.isEmpty()) return;
 
@@ -186,7 +180,7 @@ public class GerenciadorProgresso {
         aviso = "";
     }
 
-    // avalia uma condição de desbloqueio no formato "variavel==valor"
+// Avalia a condicao de destranque
     private boolean avaliarCondicao(String condicao) {
         if (condicao == null || condicao.trim().isEmpty()) return true;
         String c = condicao.trim();
@@ -210,21 +204,22 @@ public class GerenciadorProgresso {
         return true;
     }
 
-    // retorna true se o jogador cumpre a condição para destrancar a porta
+// Verifica se a porta pode abrir
     public boolean podeDestrancar(GerenciadorPortas.Porta porta) {
         if (!porta.trancado)     return true;
         if (!porta.destrancavel) return false;
         return avaliarCondicao(porta.condicao);
     }
 
+// Atualiza a mensagem exibida
     public void setAviso(String msg) { this.aviso = msg; }
 
-    // adiciona uma parte, usado pelo debug para testar desbloqueio
+// Soma uma parte na progressao
     public void adicionarParte() {
         if (partes < 3) partes++;
     }
 
-    // força o contador de partes para um valor, usado pelo debug
+// Ajusta o total de partes
     public void forcarPartes(int valor) {
         partes = Math.min(3, Math.max(0, valor));
     }

@@ -68,11 +68,11 @@
             "scaleInDock": 1
         },
         "tiles/mapa_quarto.tmx": {
-            "scale": 16,
-            "selectedLayer": 4,
+            "scale": 5.5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 787.875,
-                "y": 242.03125
+                "x": 118.72727272727272,
+                "y": 286.4545454545455
             }
         },
         "tiles/mapa_quarto.tmx#NPCs": {
@@ -87,7 +87,7 @@
         "tiles/mapa_quarto.tmx"
     ],
     "project": "mapa.tiled-project",
-    "property.type": "string",
+    "property.type": "bool",
     "recentFiles": [
         "tiles/mapa_quarto.tmx",
         "/home/lucas/Downloads/casaderepouso-1.tmx",

@@ -3,7 +3,9 @@ package com.persecutio.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -22,12 +24,10 @@ import com.persecutio.managers.GerenciadorProgresso;
 import com.persecutio.managers.GerenciadorRenderizacao;
 import com.persecutio.managers.GerenciadorUI;
 
-// tela principal do jogo, orquestra todos os managers a cada frame
 public class TelaJogo implements Screen {
 
     private final PersecutioGame jogo;
 
-    // managers públicos para que o GerenciadorDebug possa acessar o estado
     public  GerenciadorColisao      sistemaColisao;
     private GerenciadorDebug        sistemaDebug;
     private GerenciadorAudio        sistemaAudio;
@@ -40,30 +40,29 @@ public class TelaJogo implements Screen {
 
     private Jogador jogador;
 
-    // hitbox exposta para que o debug acesse a posição sem precisar do Jogador
     public Rectangle hitboxJogador;
 
-    // estado de mundo e porta espelhado para o debug
     public boolean mundoUmbra            = false;
     public boolean portaUmbraDestrancada = false;
 
-    // flag que ativa a sobreposição de hitboxes via Ctrl+H
     private boolean mostrarHitboxes = false;
     private boolean andando         = false;
 
-    // cômodo atual usado para controle de câmera estática
     private GerenciadorComodos.Comodo comodoAtual = null;
 
-    // texturas do mapa, personagem e iluminação
     private Texture imagemMapa;
     private Texture spriteSheet;
     private Texture luzMapa;
 
-    // imagens do puzzle de porta umbra, uma por estado de partes coletadas
     private Texture imgPorta0, imgPorta1, imgPorta2, imgPorta3;
-
-    // imagem exibida na tela do espelho
     private Texture imgEspelho;
+
+    private static final float DURACAO_FADE_IN_JOGO = 1.0f;
+    private float timerFadeInJogo = 0f;
+    private boolean fadeInJogoAtivo = true;
+    private Texture texBranca;
+
+    private final ContextoRender ctx = new ContextoRender();
 
     public TelaJogo(PersecutioGame jogo) {
         this.jogo = jogo;
@@ -80,40 +79,54 @@ public class TelaJogo implements Screen {
         imgPorta3   = new Texture(Gdx.files.internal("img/parte4.png"));
         imgEspelho  = new Texture(Gdx.files.internal("img/reflexo-espelho.png"));
 
-        // nearest para preservar o visual pixel art
+        Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pm.setColor(Color.BLACK);
+        pm.fill();
+        texBranca = new Texture(pm);
+        pm.dispose();
+
         for (Texture t : new Texture[]{imagemMapa, spriteSheet, luzMapa,
                                         imgPorta0, imgPorta1, imgPorta2, imgPorta3, imgEspelho})
             t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
-        sistemaAudio = new GerenciadorAudio();
-        sistemaAudio.carregar();
+        sistemaAudio = jogo.audio;
+        sistemaAudio.carregarJogo();
 
-        // configuração de filtro aplicada ao loader para as texturas do Tiled
-        TmxMapLoader.Parameters pm = new TmxMapLoader.Parameters();
-        pm.textureMinFilter = Texture.TextureFilter.Nearest;
-        pm.textureMagFilter = Texture.TextureFilter.Nearest;
+        TmxMapLoader.Parameters pmLoader = new TmxMapLoader.Parameters();
+        pmLoader.textureMinFilter = Texture.TextureFilter.Nearest;
+        pmLoader.textureMagFilter = Texture.TextureFilter.Nearest;
 
-        mapaTiled      = new TmxMapLoader().load("map/tiles/mapa_quarto.tmx", pm);
+        mapaTiled      = new TmxMapLoader().load("map/tiles/mapa_quarto.tmx", pmLoader);
         int escala     = 2;
 
-        sistemaColisao = new GerenciadorColisao(mapaTiled, escala);
+        sistemaColisao = new GerenciadorColisao(mapaTiled, escala, "map/mapa.tiled-project");
         gerComodos     = new GerenciadorComodos(mapaTiled, escala);
-        gerPortas      = new GerenciadorPortas(mapaTiled, escala);
+        gerPortas      = new GerenciadorPortas(mapaTiled, escala, sistemaColisao.getDefaults());
         sistemaDebug   = new GerenciadorDebug();
         progresso      = new GerenciadorProgresso(sistemaColisao, gerPortas);
         interfaceJogo  = new GerenciadorUI();
         interfaceJogo.inicializar(jogo.fonteDialogos, jogo.viewport, sistemaAudio);
         renderizador   = new GerenciadorRenderizacao();
 
-        // posição inicial do jogador no mapa
         float inicialX = 75f;
         float inicialY = (320f * escala) - 12f - 20f;
         jogador        = new Jogador(inicialX, inicialY, spriteSheet);
         hitboxJogador  = jogador.hitbox;
+
+        timerFadeInJogo = 0f;
+        fadeInJogoAtivo = true;
     }
 
     @Override
     public void render(float delta) {
+        if (fadeInJogoAtivo) {
+            timerFadeInJogo += delta;
+            if (timerFadeInJogo >= DURACAO_FADE_IN_JOGO) {
+                timerFadeInJogo = DURACAO_FADE_IN_JOGO;
+                fadeInJogoAtivo = false;
+            }
+        }
+
         interfaceJogo.atualizarTimers(delta);
         tratarInput(delta);
 
@@ -124,21 +137,19 @@ public class TelaJogo implements Screen {
         SpriteBatch batch = jogo.batch;
         batch.setProjectionMatrix(jogo.viewport.getCamera().combined);
 
-        // sincroniza o estado de mundo com o progresso
         boolean umbra       = progresso.isUmbra();
         boolean destrancada = progresso.isDestrancada();
         mundoUmbra            = umbra;
         portaUmbraDestrancada = destrancada;
 
-        // descobre o cômodo atual usando o centro da hitbox
         float hcX   = jogador.hitbox.x + jogador.hitbox.width  / 2f;
         float hcY   = jogador.hitbox.y + jogador.hitbox.height / 2f;
         comodoAtual = gerComodos.achar(hcX, hcY);
 
-        // contexto com câmera estática se o cômodo exigir
-        ContextoRender ctx = (comodoAtual != null && comodoAtual.estatica)
-            ? new ContextoRender(jogo, jogador.mundoX, jogador.mundoY, comodoAtual)
-            : new ContextoRender(jogo, jogador.mundoX, jogador.mundoY);
+        if (comodoAtual != null && comodoAtual.cameraEstatica)
+            ctx.atualizar(jogo, jogador.mundoX, jogador.mundoY, comodoAtual);
+        else
+            ctx.atualizar(jogo, jogador.mundoX, jogador.mundoY);
 
         batch.begin();
 
@@ -147,7 +158,6 @@ public class TelaJogo implements Screen {
 
         if (umbra) {
             renderizador.desenharUmbra(ctx, imagemMapa);
-            renderizador.desenharEspelho(ctx, sistemaColisao, jogador, spriteSheet);
         }
 
         renderizador.desenharComodos(ctx, gerComodos, jogador);
@@ -156,23 +166,35 @@ public class TelaJogo implements Screen {
             Math.round(ctx.mundoParaTelaX(jogador.mundoX)),
             Math.round(ctx.mundoParaTelaY(jogador.mundoY)));
 
+        // Clone do jogador espelhado
+        // Renderiza apenas quando
+        // Jogador no comodo quarto
+        // Objeto reflexo ativo no mundo atual
+        // Jogador visivel na area do reflexo
+        // O espelho interativo continua na interface
+        if (comodoAtual != null && "quarto".equals(comodoAtual.nomeGrupo)) {
+            Rectangle areaReflexo = sistemaColisao.getReflexoArea(umbra);
+            if (areaReflexo != null && jogador.hitbox.overlaps(areaReflexo)) {
+                renderizador.desenharCloneEspelho(ctx, jogador, spriteSheet, areaReflexo);
+            }
+        }
+
         renderizador.desenharLuz(ctx, luzMapa);
         interfaceJogo.desenharTutorial(ctx);
 
-        // telas de sobreposição encerram o batch e retornam antes do resto
         if (interfaceJogo.isNpc()) {
             interfaceJogo.desenharEscuro(ctx);
             interfaceJogo.desenharNpc(ctx, imgPorta3);
             batch.end();
             interfaceJogo.desenharFadeEVideo(ctx);
+            desenharFadeInJogo(ctx);
             return;
         }
         if (interfaceJogo.isEspelho()) {
             interfaceJogo.desenharEspelho(ctx, imgEspelho);
             batch.end();
             interfaceJogo.desenharFadeEVideo(ctx);
-            // desenha o fade do espelho por cima de tudo
-            interfaceJogo.desenharFadeEspelho(ctx);
+            desenharFadeInJogo(ctx);
             return;
         }
         if (interfaceJogo.isPorta()) {
@@ -180,6 +202,7 @@ public class TelaJogo implements Screen {
                 imgPorta0, imgPorta1, imgPorta2, imgPorta3, progresso.getPartes());
             batch.end();
             interfaceJogo.desenharFadeEVideo(ctx);
+            desenharFadeInJogo(ctx);
             return;
         }
         if (interfaceJogo.isSenha()) {
@@ -188,10 +211,10 @@ public class TelaJogo implements Screen {
             interfaceJogo.desenharFadeEVideo(ctx);
             interfaceJogo.atualizarSenha(delta);
             processarSenha();
+            desenharFadeInJogo(ctx);
             return;
         }
 
-        // prompts e avisos visíveis durante o jogo normal
         interfaceJogo.desenharAvisos(ctx, sistemaColisao, jogador, umbra, destrancada, progresso.getAviso());
         interfaceJogo.desenharPromptPorta(ctx, gerPortas, sistemaColisao, jogador, umbra);
         interfaceJogo.desenharLiberada(ctx);
@@ -201,7 +224,6 @@ public class TelaJogo implements Screen {
 
         interfaceJogo.desenharFadeEVideo(ctx);
 
-        // overlay de debug desenhado por último para ficar sobre tudo
         if (mostrarHitboxes) {
             sistemaDebug.desenharHitboxes(this, ctx.cameraX, ctx.cameraY);
             batch.begin();
@@ -209,11 +231,24 @@ public class TelaJogo implements Screen {
             batch.end();
         }
 
-        // desenha o fade do espelho por cima de tudo quando ativo
-        interfaceJogo.desenharFadeEspelho(ctx);
+        desenharFadeInJogo(ctx);
     }
 
-    // valida a senha digitada e repassa o resultado para a UI
+    private void desenharFadeInJogo(ContextoRender ctx) {
+        if (!fadeInJogoAtivo) return;
+        float alfa = 1f - (timerFadeInJogo / DURACAO_FADE_IN_JOGO);
+        if (alfa <= 0.001f) return;
+
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        ctx.batch.begin();
+        ctx.batch.setColor(0f, 0f, 0f, alfa);
+        ctx.batch.draw(texBranca, 0, 0, ctx.vLargura, ctx.vAltura);
+        ctx.batch.setColor(Color.WHITE);
+        ctx.batch.end();
+    }
+
     private void processarSenha() {
         String senha = interfaceJogo.pegarSenha();
         if (senha == null) return;
@@ -221,13 +256,12 @@ public class TelaJogo implements Screen {
         else                               interfaceJogo.senhaErro();
     }
 
-    // processa todo o input de jogo e debug a cada frame
     private void tratarInput(float delta) {
-        // nenhum input de movimento enquanto senha ou fade estão ativos
+        sistemaAudio.tratarInputVolume();
+
         if (interfaceJogo.isSenha()) return;
         if (interfaceJogo.isFade())  return;
 
-        // Ctrl+H alterna o overlay de hitboxes
         boolean ctrl = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)
                     || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
         if (ctrl && Gdx.input.isKeyJustPressed(Keys.H)) {
@@ -235,10 +269,8 @@ public class TelaJogo implements Screen {
             return;
         }
 
-        // atalhos extras de debug como Ctrl+U, Ctrl+P e Ctrl+D
         sistemaDebug.tratarAtalhos(progresso);
 
-        // UI consome o input quando está em estado diferente de jogo
         if (interfaceJogo.puxarInput(jogo.viewport)) return;
 
         if (Gdx.input.isKeyJustPressed(Keys.E)) tratarInteracao();
@@ -247,17 +279,14 @@ public class TelaJogo implements Screen {
         jogador.atualizar(delta, sistemaColisao, mundoUmbra);
         andando = jogador.isAndando();
 
-        // limpa aviso quando o jogador se afasta do interativo
         progresso.verificarAfastamento(jogador);
 
-        // dispara e para os sons de passo na transição de estado
         if  (andando && !estavaAndando) sistemaAudio.tocarPassos();
         else if (!andando && estavaAndando) sistemaAudio.pararPassos();
 
         interfaceJogo.atualizarTutorial(andando, delta);
     }
 
-    // trata o pressionamento de E dependendo do que está na frente do jogador
     private void tratarInteracao() {
         GerenciadorPortas.Porta porta = gerPortas.acharProxima(jogador, mundoUmbra);
         if (porta != null) {
@@ -265,7 +294,6 @@ public class TelaJogo implements Screen {
 
             if (!estaDestrancada) {
                 if (porta.destrancavel && progresso.podeDestrancar(porta)) {
-                    // condição cumprida: destrava e teleporta com animação
                     sistemaColisao.destrancar(porta.nome);
                     sistemaAudio.tocarSomPorta();
                     String videoPath = porta.video;
@@ -273,13 +301,11 @@ public class TelaJogo implements Screen {
                         jogador.teleportar(porta.spawn.x, porta.spawn.y)
                     );
                 } else {
-                    // condição não cumprida: exibe a tela de partes da porta
                     interfaceJogo.mudarEstado(GerenciadorUI.UI_PORTA);
                 }
                 return;
             }
 
-            // porta destrancada: teleporta com fade ou diretamente
             sistemaAudio.tocarSomPorta();
             if (porta.usarFade) {
                 interfaceJogo.iniciarFade(porta.video, () ->
@@ -291,7 +317,6 @@ public class TelaJogo implements Screen {
             return;
         }
 
-        // sem porta por perto, tenta interação com objetos do mapa
         progresso.tratarInteracao(jogador);
 
         if (progresso.isCinematica()) interfaceJogo.iniciarCinematica();
@@ -309,6 +334,7 @@ public class TelaJogo implements Screen {
         imgPorta2.dispose();
         imgPorta3.dispose();
         imgEspelho.dispose();
+        texBranca.dispose();
         sistemaAudio.dispose();
         sistemaDebug.dispose();
         interfaceJogo.dispose();
@@ -323,6 +349,6 @@ public class TelaJogo implements Screen {
     }
 
     @Override public void pause()  {}
- @Override public void resume() {}
+    @Override public void resume() {}
     @Override public void hide()   { dispose(); }
 }

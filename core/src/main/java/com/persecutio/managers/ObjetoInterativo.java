@@ -2,14 +2,14 @@ package com.persecutio.managers;
 
 import com.badlogic.gdx.math.Rectangle;
 
-// representa um objeto interativo simples com posição, tamanho e presença por mundo
+// Objeto interativo simples
 public class ObjetoInterativo {
 
     public String  nome;
     public float   mundoX, mundoY;
     public float   largura, altura;
 
-    // define se o objeto está ativo no mundo real e no mundo umbra
+    // Define se o objeto está ativo no mundo real e no mundo umbra
     public boolean ativoNoMundoReal;
     public boolean ativoNoMundoUmbra;
 
@@ -24,7 +24,7 @@ public class ObjetoInterativo {
         this.ativoNoMundoUmbra = noUmbra;
     }
 
-    // retorna a área de colisão do objeto como Rectangle
+    // Retorna a área de colisão do objeto como Rectangle
     public Rectangle getArea() {
         return new Rectangle(mundoX, mundoY, largura, altura);
     }

@@ -1,34 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="27" height="15" tilewidth="40" tileheight="40" infinite="0" nextlayerid="7" nextobjectid="75">
- <tileset firstgid="1" source="../../sprites/Sprites_NPCs.tsx"/>
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="27" height="15" tilewidth="40" tileheight="40" infinite="0" nextlayerid="12" nextobjectid="231">
+ <tileset firstgid="1" name="NPCs" tilewidth="32" tileheight="32" tilecount="2" columns="0">
+  <grid orientation="orthogonal" width="1" height="1"/>
+  <tile id="0">
+   <image source="../../img/enfermeira.png" width="32" height="32"/>
+  </tile>
+  <tile id="1">
+   <image source="../../img/npc.png" width="26" height="21"/>
+  </tile>
+ </tileset>
  <imagelayer id="2" name="Fundo">
   <image source="../../img/quarto.png" width="1080" height="600"/>
  </imagelayer>
- <objectgroup id="4" name="Colisoes">
-  <object id="5" type="parede" x="-7.83333" y="247.833" width="278.667" height="39.5"/>
+ <objectgroup id="4" name="Colisoes" visible="0">
+  <object id="5" type="parede" x="2.98485" y="263.833" width="246.849" height="24.25"/>
   <object id="6" type="objeto" x="216.667" y="286.333" width="22.3333" height="47.6667"/>
   <object id="7" type="objeto" x="220.333" y="338.333" width="13.6667" height="17.6667"/>
   <object id="9" type="objeto" x="166.333" y="338.333" width="16" height="17"/>
-  <object id="10" type="parede" x="167" y="360.333" width="24" height="23.3333"/>
-  <object id="11" type="parede" x="216" y="360" width="23.3333" height="24.6667"/>
-  <object id="12" type="parede" x="157.667" y="262" width="9.33333" height="122"/>
-  <object id="13" type="parede" x="239.667" y="261.5" width="30.8333" height="220.5"/>
-  <object id="16" type="parede" x="-7.83333" y="260" width="32.5" height="344.667"/>
-  <object id="19" type="objeto" x="44.6667" y="277" width="28.3333" height="22.6667"/>
-  <object id="20" type="objeto" x="73.6667" y="447.333" width="43.3333" height="14.3333"/>
-  <object id="21" type="objeto" x="72" y="469.667" width="46.6667" height="10.6667"/>
+  <object id="10" type="parede" x="159.125" y="360.333" width="31.875" height="23.6458"/>
+  <object id="11" type="parede" x="216" y="360" width="33.4583" height="24.0417"/>
+  <object id="12" type="parede" x="159.042" y="264" width="7.95833" height="120"/>
+  <object id="13" type="parede" x="239.667" y="264" width="9.8333" height="239.943"/>
+  <object id="16" type="parede" x="3" y="263.864" width="21.6667" height="336.803"/>
+  <object id="19" type="objeto" x="44.6667" y="277" width="28.3333" height="21.9394"/>
+  <object id="20" type="objeto" x="73.6667" y="447.333" width="44.0606" height="14.3333"/>
+  <object id="21" type="objeto" x="72" y="470.394" width="46.6667" height="9.93943"/>
   <object id="22" type="objeto" x="26" y="456.333" width="9.33333" height="17"/>
   <object id="26" type="objeto" x="222.667" y="433.667" width="12.3333" height="21"/>
   <object id="27" type="objeto" x="228" y="391" width="12.6667" height="41"/>
-  <object id="28" type="parede" x="22.3333" y="479.333" width="169" height="24.6667"/>
-  <object id="32" type="parede" x="215.333" y="466.333" width="528.667" height="38"/>
-  <object id="34" type="parede" x="-8" y="575.667" width="857.167" height="34"/>
-  <object id="35" type="parede" x="816" y="239.667" width="33.6667" height="371"/>
-  <object id="36" type="parede" x="791.667" y="240.333" width="208" height="23"/>
-  <object id="37" type="parede" x="561" y="240.333" width="206.333" height="24"/>
-  <object id="40" type="parede" x="560" y="40" width="15.75" height="224.792"/>
-  <object id="42" type="parede" x="560" y="40" width="440" height="32.5"/>
-  <object id="43" type="parede" x="983.636" y="39.8182" width="15.7727" height="224"/>
+  <object id="28" type="parede" x="3.3333" y="479.333" width="188" height="24.6667"/>
+  <object id="32" type="parede" x="216.666" y="479.666" width="527.334" height="24.3188"/>
+  <object id="34" type="parede" x="3" y="575.667" width="834.076" height="24.375"/>
+  <object id="35" type="parede" x="816" y="240.058" width="21.0145" height="359.952"/>
+  <object id="36" type="parede" x="791.667" y="240.029" width="197.304" height="24"/>
+  <object id="37" type="parede" x="571" y="240.022" width="196.333" height="23.9674"/>
+  <object id="40" type="parede" x="571.063" y="48.0625" width="4.6875" height="215.917"/>
+  <object id="42" type="parede" x="571.063" y="48" width="417.981" height="24.5"/>
+  <object id="43" type="parede" x="984.027" y="47.9921" width="4.99009" height="216.087"/>
   <object id="46" type="objeto" x="960.25" y="168" width="24.125" height="47.125"/>
   <object id="49" type="objeto" x="966" y="148.875" width="11" height="19.5"/>
   <object id="51" type="objeto" x="863.273" y="69.8182" width="48" height="10.2727"/>
@@ -36,15 +44,133 @@
   <object id="58" type="objeto" x="864.727" y="85.6364" width="45.8182" height="34"/>
   <object id="59" type="objeto" x="572.75" y="89" width="74.75" height="113.75"/>
   <object id="60" type="objeto" x="24" y="360" width="4" height="47.8182"/>
-  <object id="63" type="parede" x="717.5" y="241.5" width="26.5" height="262.5"/>
-  <object id="74" type="npc" x="815.125" y="138.5" width="19.25" height="22.625"/>
+  <object id="63" type="parede" x="734.969" y="240.031" width="9.03125" height="263.969"/>
+  <object id="124" type="objeto" x="174.182" y="284.909" width="10.5455" height="9.81818"/>
+  <object id="141" type="parede" x="3.12194" y="263.928" width="246.849" height="24.25"/>
+  <object id="142" type="parede" x="159.262" y="360.428" width="31.875" height="23.6458"/>
+  <object id="143" type="parede" x="216.137" y="360.095" width="33.4583" height="24.0417"/>
+  <object id="144" type="parede" x="159.179" y="264.095" width="7.95833" height="120"/>
+  <object id="145" type="parede" x="239.804" y="264.095" width="9.8333" height="239.943"/>
+  <object id="146" type="parede" x="3.13709" y="263.959" width="21.6667" height="336.803"/>
+  <object id="147" type="parede" x="3.47039" y="479.428" width="188" height="24.6667"/>
+  <object id="148" type="parede" x="216.803" y="479.761" width="527.334" height="24.3188"/>
+  <object id="149" type="parede" x="3.13709" y="575.762" width="834.076" height="24.375"/>
+  <object id="150" type="parede" x="816.137" y="240.153" width="21.0145" height="359.952"/>
+  <object id="151" type="parede" x="791.804" y="240.124" width="197.304" height="24"/>
+  <object id="152" type="parede" x="571.137" y="240.117" width="196.333" height="23.9674"/>
+  <object id="153" type="parede" x="571.2" y="48.1572" width="4.6875" height="215.917"/>
+  <object id="154" type="parede" x="571.2" y="48.0947" width="417.981" height="24.5"/>
+  <object id="155" type="parede" x="984.164" y="48.0868" width="4.99009" height="216.087"/>
+  <object id="156" type="parede" x="735.106" y="240.126" width="9.03125" height="263.969"/>
  </objectgroup>
  <objectgroup id="5" name="Interativos">
-  <object id="70" name="enfermeira" type="npc" x="626" y="160.917" width="29" height="3.5"/>
-  <object id="71" name="paciente" type="npc" x="804.75" y="156.167" width="29.5833" height="3.8333"/>
+  <object id="70" name="enfermeira" type="npc" x="626" y="160.917" width="29" height="3.5">
+   <properties>
+    <property name="umbra" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="78" name="pilula" x="43.8182" y="277.273" width="29.0909" height="26"/>
+  <object id="229" name="reflexo" x="103.375" y="269" width="34.5" height="16">
+   <properties>
+    <property name="real" type="bool" value="false"/>
+    <property name="umbra" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="230" name="espelho" x="103.25" y="282.375" width="34.75" height="17.375"/>
+ </objectgroup>
+ <objectgroup id="11" name="Portas">
+  <object id="216" name="porta1b" type="porta" x="191.273" y="493.38" width="25.7727" height="9.96025" visible="0">
+   <properties>
+    <property name="coordenadas" value="409,267.8"/>
+    <property name="destino" value="Quarto"/>
+    <property name="trancado" type="bool" value="false"/>
+    <property name="umbra" type="bool" value="false"/>
+    <property name="video" value="video/porta.webm"/>
+   </properties>
+  </object>
+  <object id="218" name="porta1a" type="porta" x="191.364" y="479.949" width="25.6477" height="11.1023" visible="0">
+   <properties>
+    <property name="coordenadas" value="408.1, 204.6"/>
+    <property name="destino" value="Corredor"/>
+    <property name="trancado" type="bool" value="false"/>
+    <property name="umbra" type="bool" value="false"/>
+    <property name="video" value="video/porta.webm"/>
+   </properties>
+  </object>
+  <object id="222" name="porta2b" type="porta" x="768.182" y="241.367" width="23.7273" height="10.2699">
+   <properties>
+    <property name="coordenadas" value="1560.1, 688.8"/>
+    <property name="destino" value="Corredor"/>
+    <property name="trancado" type="bool" value="false"/>
+    <property name="video" value="video/porta.webm"/>
+   </properties>
+  </object>
+  <object id="223" name="porta2a" type="porta" x="768.182" y="251.636" width="23.7273" height="11.9289">
+   <properties>
+    <property name="coordenadas" value="1559.8, 744.5"/>
+    <property name="destino" value="Recepção"/>
+    <property name="trancado" type="bool" value="false"/>
+    <property name="video" value="video/porta.webm"/>
+   </properties>
+  </object>
+  <object id="226" name="portaumbra1a" type="porta" x="191.448" y="480.542" width="25.8125" height="10.5568">
+   <properties>
+    <property name="condicao" value="partes==3"/>
+    <property name="coordenadas" value="408.1, 204.6"/>
+    <property name="destino" value="Corredor"/>
+    <property name="destrancavel" type="bool" value="true"/>
+    <property name="trancado" type="bool" value="true"/>
+    <property name="umbra" type="bool" value="true"/>
+    <property name="video" value="video/porta.webm"/>
+   </properties>
+  </object>
+  <object id="227" name="portaumbra1b" type="porta" x="191.466" y="491.071" width="25.8125" height="12.9318">
+   <properties>
+    <property name="condicao" value="partes==3"/>
+    <property name="coordenadas" value="409,267.8"/>
+    <property name="destino" value="Quarto"/>
+    <property name="destrancavel" type="bool" value="true"/>
+    <property name="trancado" type="bool" value="true"/>
+    <property name="umbra" type="bool" value="true"/>
+    <property name="video" value="video/porta.webm"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="6" name="NPCs">
-  <object id="65" name="enfermeira" gid="1" x="615.083" y="170.083" width="32" height="32"/>
-  <object id="66" name="paciente" gid="2" x="808" y="166.333" width="32" height="32"/>
+  <object id="75" name="enfermeira" type="npc" gid="1" x="614.909" y="172.182" width="32" height="32">
+   <properties>
+    <property name="umbra" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="76" name="paciente" type="npc" gid="2" x="810" y="161.219" width="23.9583" height="20.4714">
+   <properties>
+    <property name="umbra" type="bool" value="false"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="10" name="Comodos" visible="0">
+  <object id="209" name="quarto" type="comodo" x="0.333333" y="260.667" width="252.667" height="219.312">
+   <properties>
+    <property name="cameraEstatica" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="210" name="recepcao" type="comodo" x="568" y="44.5" width="425" height="195.534">
+   <properties>
+    <property name="cameraEstatica" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="211" name="corredor2" type="comodo" x="732.333" y="263.745" width="108" height="342.589"/>
+  <object id="212" name="corredor1" type="comodo" x="-0.333333" y="504" width="816.333" height="101"/>
+  <object id="217" name="corredor3" type="comodo" x="249.333" y="438" width="494" height="66.6667"/>
+  <object id="219" name="recepcao" type="comodo" x="568.833" y="178.537" width="166.042" height="89.5917">
+   <properties>
+    <property name="cameraEstatica" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="220" name="recepcao" type="comodo" x="834.021" y="183.204" width="158.48" height="83.2584">
+   <properties>
+    <property name="cameraEstatica" type="bool" value="true"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>
