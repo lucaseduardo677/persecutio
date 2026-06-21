@@ -1,0 +1,182 @@
+{
+    "automappingRulesFile": "",
+    "commands": [
+    ],
+    "compatibilityVersion": 1100,
+    "extensionsPath": "extensions",
+    "folders": [
+        "."
+    ],
+    "properties": [
+    ],
+    "propertyTypes": [
+        {
+            "color": "#ffa40000",
+            "drawFill": true,
+            "id": 4,
+            "members": [
+            ],
+            "name": "Colisoes_Umbra",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffa46464",
+            "drawFill": true,
+            "id": 6,
+            "members": [
+                {
+                    "name": "cameraEstatica",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "label",
+                    "type": "string",
+                    "value": ""
+                }
+            ],
+            "name": "label",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ff00fff7",
+            "drawFill": true,
+            "id": 2,
+            "members": [
+            ],
+            "name": "objeto",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "project"
+            ]
+        },
+        {
+            "color": "#ff00ff1e",
+            "drawFill": true,
+            "id": 1,
+            "members": [
+            ],
+            "name": "parede",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
+                "project"
+            ]
+        },
+        {
+            "color": "#ff6a493e",
+            "drawFill": true,
+            "id": 7,
+            "members": [
+                {
+                    "name": "condicao",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "coordenadas",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "destino",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "destrancavel",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "fade",
+                    "type": "bool",
+                    "value": true
+                },
+                {
+                    "name": "real",
+                    "type": "bool",
+                    "value": true
+                },
+                {
+                    "name": "trancado",
+                    "type": "bool",
+                    "value": true
+                },
+                {
+                    "name": "umbra",
+                    "type": "bool",
+                    "value": true
+                },
+                {
+                    "name": "video",
+                    "type": "string",
+                    "value": "video/porta.webm"
+                }
+            ],
+            "name": "porta",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ff770fa4",
+            "drawFill": true,
+            "id": 3,
+            "members": [
+                {
+                    "name": "isUmbra",
+                    "type": "bool",
+                    "value": false
+                }
+            ],
+            "name": "umbra",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        }
+    ]
+}

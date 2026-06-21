@@ -1,0 +1,98 @@
+{
+    "activeFile": "tiles/mapa_quarto.tmx",
+    "expandedProjectPaths": [
+        ".",
+        "tiles"
+    ],
+    "fileStates": {
+        "": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "/home/lucas/Dev/jogo-persecutio-libgdx-git/assets/assets/sprites/Sprites_NPCs.tsx": {
+            "scaleInDock": 1
+        },
+        "/home/lucas/Dev/jogo-persecutio-libgdx-git/assets/sprites/Sprites_NPCs.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx": {
+            "scale": 0.32049005681818177,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 106.08753462603886,
+                "y": 251.17783933518012
+            }
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx#Content": {
+            "scaleInDock": 1
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx#InteriorTilesLITE": {
+            "scaleInDock": 1
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx#Scene Overview": {
+            "scaleInDock": 1
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx#TX Plant": {
+            "scaleInDock": 1
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx#TX Props": {
+            "scaleInDock": 1
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx#TX Tileset Grass": {
+            "scaleInDock": 1
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx#fancy_mansion_furnitureset_withshadow": {
+            "scaleInDock": 1
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx#fancy_mansion_room_door_tiles": {
+            "scaleInDock": 1
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx#furniture_and_props": {
+            "scaleInDock": 1
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx#mockup2": {
+            "scaleInDock": 1
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx#mockup6": {
+            "scaleInDock": 1
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx#windows_and_doors": {
+            "scaleInDock": 1
+        },
+        "/home/lucas/Downloads/casaderepouso-1.tmx#windows_and_doors2": {
+            "scaleInDock": 1
+        },
+        "assets/sprites/Sprites_NPCs.tsx": {
+            "scaleInDock": 1
+        },
+        "tiles/mapa_quarto.tmx": {
+            "scale": 16,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 787.875,
+                "y": 242.03125
+            }
+        },
+        "tiles/mapa_quarto.tmx#NPCs": {
+            "scaleInDock": 1
+        },
+        "tiles/sprites/Sprites_NPCs.tsx": {
+            "scaleInDock": 1
+        }
+    },
+    "last.imagePath": "/home/lucas/Dev/jogo-persecutio-libgdx-git/assets/img",
+    "openFiles": [
+        "tiles/mapa_quarto.tmx"
+    ],
+    "project": "mapa.tiled-project",
+    "property.type": "string",
+    "recentFiles": [
+        "tiles/mapa_quarto.tmx",
+        "/home/lucas/Downloads/casaderepouso-1.tmx",
+        "/home/lucas/Dev/jogo-persecutio-libgdx-git/assets/sprites/Sprites_NPCs.tsx"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.type": 1
+}

@@ -1,0 +1,183 @@
+buildscript {
+  repositories {
+    gradlePluginPortal()
+  }
+  dependencies {
+    classpath "io.github.fourlastor:construo:2.1.0"
+    if(enableGraalNative == 'true') {
+      classpath "org.graalvm.buildtools.native:org.graalvm.buildtools.native.gradle.plugin:0.9.28"
+    }
+  }
+}
+plugins {
+  id "application"
+  id "eclipse"
+}
+apply plugin: 'io.github.fourlastor.construo'
+
+import io.github.fourlastor.construo.Target
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+  maven { url 'https://jitpack.io' }
+  maven { url 'https://s01.oss.sonatype.org' }
+}
+
+sourceSets.main.resources.srcDirs += [ rootProject.file('assets').path ]
+application.mainClass = 'com.persecutio.lwjgl3.Lwjgl3Launcher'
+application.applicationName = appName
+eclipse.project.name = appName + '-lwjgl3'
+java.sourceCompatibility = 17
+java.targetCompatibility = 17
+if (JavaVersion.current().isJava9Compatible()) {
+        compileJava.options.release.set(17)
+}
+
+dependencies {
+  implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+  implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+  implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+  implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+  implementation project(':core')
+
+  if(enableGraalNative == 'true') {
+    implementation "io.github.berstanio:gdx-svmhelper-backend-lwjgl3:$graalHelperVersion"
+    implementation "io.github.berstanio:gdx-svmhelper-extension-box2d:$graalHelperVersion"
+  }
+  // Forces LWJGL3 to use at least $lwjgl3Version, currently 3.4.1, to avoid problems on Java 25 and up.
+  constraints{
+    implementation("org.lwjgl:lwjgl:$lwjgl3Version")
+    implementation("org.lwjgl:lwjgl-glfw:$lwjgl3Version")
+    implementation("org.lwjgl:lwjgl-jemalloc:$lwjgl3Version")
+    implementation("org.lwjgl:lwjgl-openal:$lwjgl3Version")
+    implementation("org.lwjgl:lwjgl-opengl:$lwjgl3Version")
+    implementation("org.lwjgl:lwjgl-stb:$lwjgl3Version")
+  }
+}
+
+def os = System.properties['os.name'].toLowerCase(Locale.ROOT)
+
+run {
+  workingDir = rootProject.file('assets').path
+  //setIgnoreExitValue(true)
+  jvmArgs += "--enable-native-access=ALL-UNNAMED"
+  jvmArgs += "-Dorg.lwjgl.util.NoChecks=true"
+  if (os.contains('mac')) jvmArgs += "-XstartOnFirstThread"
+}
+
+jar {
+  archiveFileName.set("${appName}-${projectVersion}.jar")
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+  dependsOn configurations.runtimeClasspath
+  from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+  exclude('META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+  dependencies {
+    exclude('META-INF/INDEX.LIST', 'META-INF/maven/**')
+  }
+  manifest {
+    attributes 'Main-Class': application.mainClass, 'Enable-Native-Access': 'ALL-UNNAMED', 'Multi-Release': 'true'
+  }
+  doLast {
+    file(archiveFile).setExecutable(true, false)
+  }
+}
+
+tasks.register("jarMac") {
+  dependsOn("jar")
+  group("build")
+  jar.archiveFileName.set("${appName}-${projectVersion}-mac.jar")
+  jar.exclude("windows/x86/**", "windows/x64/**", "linux/arm32/**", "linux/arm64/**", "linux/x64/**", "**/*.dll", "**/*.so",
+    'META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+  dependencies {
+    jar.exclude("windows/x86/**", "windows/x64/**", "linux/arm32/**", "linux/arm64/**", "linux/x64/**",
+      'META-INF/INDEX.LIST', 'META-INF/maven/**')
+  }
+}
+
+tasks.register("jarLinux") {
+  dependsOn("jar")
+  group("build")
+  jar.archiveFileName.set("${appName}-${projectVersion}-linux.jar")
+  jar.exclude("windows/x86/**", "windows/x64/**", "macos/arm64/**", "macos/x64/**", "**/*.dll", "**/*.dylib",
+    'META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+  dependencies {
+    jar.exclude("windows/x86/**", "windows/x64/**", "macos/arm64/**", "macos/x64/**",
+      'META-INF/INDEX.LIST', 'META-INF/maven/**')
+  }
+}
+
+tasks.register("jarWin") {
+  dependsOn("jar")
+  group("build")
+  jar.archiveFileName.set("${appName}-${projectVersion}-win.jar")
+  jar.exclude("macos/arm64/**", "macos/x64/**", "linux/arm32/**", "linux/arm64/**", "linux/x64/**", "**/*.dylib", "**/*.so",
+    'META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+  dependencies {
+    jar.exclude("macos/arm64/**", "macos/x64/**", "linux/arm32/**", "linux/arm64/**", "linux/x64/**",
+      'META-INF/INDEX.LIST', 'META-INF/maven/**')
+  }
+}
+
+construo {
+  name.set(appName)
+  humanName.set(appName)
+  jlink {
+    guessModulesFromJar.set(false)
+    modules.addAll("java.base", "java.management", "java.desktop", "jdk.unsupported")
+  }
+
+  targets.configure {
+    register("linuxX64", Target.Linux) {
+      architecture.set(Target.Architecture.X86_64)
+      jdkUrl.set("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_x64_linux_hotspot_21.0.10_7.tar.gz")
+    }
+    register("macM1", Target.MacOs) {
+      architecture.set(Target.Architecture.AARCH64)
+      jdkUrl.set("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_aarch64_mac_hotspot_21.0.10_7.tar.gz")
+      identifier.set("com.persecutio." + appName)
+      macIcon.set(project.file("icons/logo.icns"))
+    }
+    register("macX64", Target.MacOs) {
+      architecture.set(Target.Architecture.X86_64)
+      jdkUrl.set("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_x64_mac_hotspot_21.0.10_7.tar.gz")
+      identifier.set("com.persecutio." + appName)
+      macIcon.set(project.file("icons/logo.icns"))
+    }
+    register("winX64", Target.Windows) {
+      architecture.set(Target.Architecture.X86_64)
+      icon.set(project.file("icons/logo.png"))
+      jdkUrl.set("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_x64_windows_hotspot_21.0.10_7.zip")
+      //useConsole.set(true)
+    }
+  }
+}
+
+tasks.register('dist') {
+  dependsOn 'jar'
+}
+
+distributions {
+  main {
+    contents {
+      into('libs') {
+        project.configurations.runtimeClasspath.files.findAll { file ->
+          file.getName() != project.tasks.jar.outputs.files.singleFile.name
+        }.each { file ->
+          exclude file.name
+        }
+      }
+    }
+  }
+}
+
+startScripts.dependsOn(':lwjgl3:jar')
+startScripts.classpath = project.tasks.jar.outputs.files
+
+tasks.withType(JavaExec.class).configureEach {
+  environment("__GL_THREADED_OPTIMIZATIONS", 0)
+}
+
+if(enableGraalNative == 'true') {
+  apply from: file("nativeimage.gradle")
+}
