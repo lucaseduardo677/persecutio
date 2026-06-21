@@ -31,9 +31,14 @@ public class GerenciadorUI {
     public static final int UI_NPC     = 3;
     public static final int UI_SENHA   = 4;
     public static final int UI_FADE    = 5;
+    public static final int UI_FADE_ESPELHO = 6;  // fade para entrar/sair do espelho
 
     // fases do fade de transição de porta
     private enum FaseFade { INATIVO, ESCURECENDO, ESCURO, VIDEO, AGUARDANDO, CLAREANDO }
+
+    // fases do fade do espelho
+    private enum FaseFadeEspelho { INATIVO, ESCURECENDO_ENTRADA, ESCURO_ENTRADA, CLAREANDO_ENTRADA,
+                                    ESCURECENDO_SAIDA, ESCURO_SAIDA, CLAREANDO_SAIDA }
 
     private int     estadoUi       = UI_JOGO;
     private boolean mostrarLiberada = false;
@@ -53,9 +58,18 @@ public class GerenciadorUI {
     private static final float T_FADE   = 0.6f;
     private static final float T_ESPERA = 0.3f;
 
+    // duração do fade rápido do espelho
+    private static final float T_FADE_ESPELHO = 0.25f;
+
     private FaseFade faseFade  = FaseFade.INATIVO;
     private float    timerFade = 0f;
     private float    alfaFade  = 0f;
+
+    // máquina de estados do fade do espelho
+    private FaseFadeEspelho faseFadeEspelho = FaseFadeEspelho.INATIVO;
+    private float timerFadeEspelho = 0f;
+    private float alfaFadeEspelho = 0f;
+    private boolean espelhoAberto = false;  // true = espelho visível, false = jogo normal
 
     // callback executado quando a tela atinge o ponto mais escuro
     private Runnable aoEscurecer;
@@ -114,6 +128,12 @@ public class GerenciadorUI {
             if (timerVerde <= 0) { timerVerde = -1; mostrarLiberada = false; }
         }
 
+        atualizarFade(delta);
+        atualizarFadeEspelho(delta);
+    }
+
+    // atualiza a máquina de estados do fade de porta
+    private void atualizarFade(float delta) {
         if (faseFade == FaseFade.INATIVO) return;
         timerFade += delta;
 
@@ -175,7 +195,64 @@ public class GerenciadorUI {
         }
     }
 
-    // inicia o fade escurecendo a tela, executando o callback e clarendo depois
+    // atualiza a máquina de estados do fade do espelho
+    private void atualizarFadeEspelho(float delta) {
+        if (faseFadeEspelho == FaseFadeEspelho.INATIVO) return;
+        timerFadeEspelho += delta;
+
+        switch (faseFadeEspelho) {
+            case ESCURECENDO_ENTRADA:
+                alfaFadeEspelho = Math.min(1f, timerFadeEspelho / T_FADE_ESPELHO);
+                if (timerFadeEspelho >= T_FADE_ESPELHO) {
+                    alfaFadeEspelho = 1f;
+                    faseFadeEspelho = FaseFadeEspelho.ESCURO_ENTRADA;
+                    timerFadeEspelho = 0f;
+                    espelhoAberto = true;
+                    estadoUi = UI_ESPELHO;
+                    faseFadeEspelho = FaseFadeEspelho.CLAREANDO_ENTRADA;
+                    timerFadeEspelho = 0f;
+                }
+                break;
+
+            case CLAREANDO_ENTRADA:
+                alfaFadeEspelho = Math.max(0f, 1f - timerFadeEspelho / T_FADE_ESPELHO);
+                if (timerFadeEspelho >= T_FADE_ESPELHO) {
+                    alfaFadeEspelho = 0f;
+                    faseFadeEspelho = FaseFadeEspelho.INATIVO;
+                    timerFadeEspelho = 0f;
+                }
+                break;
+
+            case ESCURECENDO_SAIDA:
+                alfaFadeEspelho = Math.min(1f, timerFadeEspelho / T_FADE_ESPELHO);
+                if (timerFadeEspelho >= T_FADE_ESPELHO) {
+                    alfaFadeEspelho = 1f;
+                    faseFadeEspelho = FaseFadeEspelho.ESCURO_SAIDA;
+                    timerFadeEspelho = 0f;
+                    espelhoAberto = false;
+                    estadoUi = UI_JOGO;
+                    faseFadeEspelho = FaseFadeEspelho.CLAREANDO_SAIDA;
+                    timerFadeEspelho = 0f;
+                }
+                break;
+
+            case CLAREANDO_SAIDA:
+                alfaFadeEspelho = Math.max(0f, 1f - timerFadeEspelho / T_FADE_ESPELHO);
+                if (timerFadeEspelho >= T_FADE_ESPELHO) {
+                    alfaFadeEspelho = 0f;
+                    faseFadeEspelho = FaseFadeEspelho.INATIVO;
+                    timerFadeEspelho = 0f;
+                }
+                break;
+
+            case INATIVO:
+            case ESCURO_ENTRADA:
+            case ESCURO_SAIDA:
+                break;
+        }
+    }
+
+    // inicia o fade escurecendo a tela, executando o callback e clareando depois
     public void iniciarFade(String caminhoVideo, Runnable aoEscurecer) {
         this.aoEscurecer = aoEscurecer;
         estadoUi         = UI_FADE;
@@ -189,15 +266,38 @@ public class GerenciadorUI {
         iniciarFade(null, aoEscurecer);
     }
 
+    // inicia o fade para abrir o espelho
+    public void iniciarFadeEspelhoEntrada() {
+        faseFadeEspelho = FaseFadeEspelho.ESCURECENDO_ENTRADA;
+        timerFadeEspelho = 0f;
+        alfaFadeEspelho = 0f;
+        estadoUi = UI_FADE_ESPELHO;
+    }
+
+    // inicia o fade para fechar o espelho
+    public void iniciarFadeEspelhoSaida() {
+        faseFadeEspelho = FaseFadeEspelho.ESCURECENDO_SAIDA;
+        timerFadeEspelho = 0f;
+        alfaFadeEspelho = 0f;
+        estadoUi = UI_FADE_ESPELHO;
+    }
+
     public boolean isFadeAtivo() { return faseFade != FaseFade.INATIVO; }
+    public boolean isFadeEspelhoAtivo() { return faseFadeEspelho != FaseFadeEspelho.INATIVO; }
 
     // processa input de UI, retorna true para bloquear input do jogo
     public boolean puxarInput(ExtendViewport viewport) {
+        // bloqueia input durante qualquer fade
         if (estadoUi == UI_FADE) return true;
+        if (faseFadeEspelho != FaseFadeEspelho.INATIVO) return true;
 
         if (Gdx.input.isKeyJustPressed(Keys.ESCAPE)) {
             if (estadoUi == UI_PORTA || estadoUi == UI_ESPELHO) {
-                estadoUi = UI_JOGO;
+                if (estadoUi == UI_ESPELHO) {
+                    iniciarFadeEspelhoSaida();
+                } else {
+                    estadoUi = UI_JOGO;
+                }
                 return true;
             }
             pausado = !pausado;
@@ -231,7 +331,11 @@ public class GerenciadorUI {
 
         // E fecha a tela de porta ou espelho sem disparar interação novamente
         if ((estadoUi == UI_PORTA || estadoUi == UI_ESPELHO) && Gdx.input.isKeyJustPressed(Keys.E)) {
-            estadoUi = UI_JOGO;
+            if (estadoUi == UI_ESPELHO) {
+                iniciarFadeEspelhoSaida();
+            } else {
+                estadoUi = UI_JOGO;
+            }
             return true;
         }
 
@@ -240,6 +344,11 @@ public class GerenciadorUI {
     }
 
     public void mudarEstado(int novoEstado) {
+        // se for espelho, inicia o fade de entrada em vez de mudar direto
+        if (novoEstado == UI_ESPELHO) {
+            iniciarFadeEspelhoEntrada();
+            return;
+        }
         estadoUi = novoEstado;
         if (novoEstado == UI_SENHA) abrirSenha();
     }
@@ -269,10 +378,10 @@ public class GerenciadorUI {
     public void    senhaSucesso()  { if (puzzle != null) puzzle.fecharSucesso(); }
     public void    senhaErro()     { if (puzzle != null) puzzle.mostrarErro(); }
 
-    // preenche a tela com retângulo preto semitransparente para sobreposições de UI
-    public void desenharEscuro(ContextoRender ctx, Texture imagemMapa) {
+    // preenche a tela com retângulo preto semitransparente para sobreposições de ui
+    public void desenharEscuro(ContextoRender ctx) {
         ctx.batch.setColor(0f, 0f, 0f, 0.86f);
-        ctx.batch.draw(imagemMapa, 0, 0, ctx.vLargura, ctx.vAltura);
+        ctx.batch.draw(texBranca, 0, 0, ctx.vLargura, ctx.vAltura);
         ctx.batch.setColor(Color.WHITE);
     }
 
@@ -298,21 +407,19 @@ public class GerenciadorUI {
         ctx.batch.draw(imgPorta3, ctx.centroX - popupL/2, ctx.centroY - popupA/2, popupL, popupA);
     }
 
-    // exibe a tela de espelho com o horário e instrução de fechar
-    public void desenharEspelho(ContextoRender ctx, Texture imagemMapa) {
-        desenharEscuro(ctx, imagemMapa);
-        ctx.fonteDialogos.setColor(Color.WHITE);
-        desenharCentralizado(ctx, ctx.fonteDialogos, "[IMAGEM DO RELOGIO NO ESPELHO]", 50);
-        ctx.fonteDialogos.setColor(Color.RED);
-        desenharCentralizado(ctx, ctx.fonteDialogos, "O relogio marca 04:10", 0);
+    // exibe a tela de espelho com a imagem do relógio e instrução de fechar
+    public void desenharEspelho(ContextoRender ctx, Texture imgEspelho) {
+        desenharEscuro(ctx);
+        // imagem do espelho preenche toda a tela
+        ctx.batch.draw(imgEspelho, 0, 0, ctx.vLargura, ctx.vAltura);
         ctx.fonteDialogos.setColor(Color.WHITE);
         desenharCentralizado(ctx, ctx.fonteDialogos, "Pressione [ESC] ou [E] para fechar", -80);
     }
 
     // exibe a imagem de estado da porta umbra conforme o número de partes coletadas
-    public void desenharPorta(ContextoRender ctx, Texture imagemMapa,
+    public void desenharPorta(ContextoRender ctx,
                               Texture p0, Texture p1, Texture p2, Texture p3, int partes) {
-        desenharEscuro(ctx, imagemMapa);
+        desenharEscuro(ctx);
 
         // seleciona a imagem correspondente ao progresso atual
         Texture img = partes == 3 ? p3 : partes == 2 ? p2 : partes == 1 ? p1 : p0;
@@ -348,6 +455,21 @@ public class GerenciadorUI {
             video.desenhar(ctx.batch, 0, 0, ctx.vLargura, ctx.vAltura);
         }
 
+        ctx.batch.setColor(Color.WHITE);
+        ctx.batch.end();
+    }
+
+    // desenha o overlay de fade do espelho (sobre tudo)
+    public void desenharFadeEspelho(ContextoRender ctx) {
+        if (faseFadeEspelho == FaseFadeEspelho.INATIVO) return;
+        if (alfaFadeEspelho <= 0.001f) return;
+
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        ctx.batch.begin();
+        ctx.batch.setColor(0f, 0f, 0f, alfaFadeEspelho);
+        ctx.batch.draw(texBranca, 0, 0, ctx.vLargura, ctx.vAltura);
         ctx.batch.setColor(Color.WHITE);
         ctx.batch.end();
     }
@@ -455,10 +577,10 @@ public class GerenciadorUI {
     }
 
     public boolean isPorta()   { return estadoUi == UI_PORTA; }
-    public boolean isEspelho() { return estadoUi == UI_ESPELHO; }
+    public boolean isEspelho() { return estadoUi == UI_ESPELHO || espelhoAberto; }
     public boolean isNpc()     { return estadoUi == UI_NPC; }
     public boolean isPausado() { return pausado; }
-    public boolean isFade()    { return estadoUi == UI_FADE; }
+    public boolean isFade()    { return estadoUi == UI_FADE || faseFade != FaseFade.INATIVO; }
     public boolean isVideo()   { return faseFade == FaseFade.VIDEO; }
     public GerenciadorVideo getVideo() { return video; }
 

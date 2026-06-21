@@ -62,6 +62,9 @@ public class TelaJogo implements Screen {
     // imagens do puzzle de porta umbra, uma por estado de partes coletadas
     private Texture imgPorta0, imgPorta1, imgPorta2, imgPorta3;
 
+    // imagem exibida na tela do espelho
+    private Texture imgEspelho;
+
     public TelaJogo(PersecutioGame jogo) {
         this.jogo = jogo;
     }
@@ -75,10 +78,11 @@ public class TelaJogo implements Screen {
         imgPorta1   = new Texture(Gdx.files.internal("img/parte2.png"));
         imgPorta2   = new Texture(Gdx.files.internal("img/parte3.png"));
         imgPorta3   = new Texture(Gdx.files.internal("img/parte4.png"));
+        imgEspelho  = new Texture(Gdx.files.internal("img/reflexo-espelho.png"));
 
         // nearest para preservar o visual pixel art
         for (Texture t : new Texture[]{imagemMapa, spriteSheet, luzMapa,
-                                        imgPorta0, imgPorta1, imgPorta2, imgPorta3})
+                                        imgPorta0, imgPorta1, imgPorta2, imgPorta3, imgEspelho})
             t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
         sistemaAudio = new GerenciadorAudio();
@@ -157,27 +161,29 @@ public class TelaJogo implements Screen {
 
         // telas de sobreposição encerram o batch e retornam antes do resto
         if (interfaceJogo.isNpc()) {
-            interfaceJogo.desenharEscuro(ctx, imagemMapa);
+            interfaceJogo.desenharEscuro(ctx);
             interfaceJogo.desenharNpc(ctx, imgPorta3);
             batch.end();
             interfaceJogo.desenharFadeEVideo(ctx);
             return;
         }
         if (interfaceJogo.isEspelho()) {
-            interfaceJogo.desenharEspelho(ctx, imagemMapa);
+            interfaceJogo.desenharEspelho(ctx, imgEspelho);
             batch.end();
             interfaceJogo.desenharFadeEVideo(ctx);
+            // desenha o fade do espelho por cima de tudo
+            interfaceJogo.desenharFadeEspelho(ctx);
             return;
         }
         if (interfaceJogo.isPorta()) {
-            interfaceJogo.desenharPorta(ctx, imagemMapa,
+            interfaceJogo.desenharPorta(ctx,
                 imgPorta0, imgPorta1, imgPorta2, imgPorta3, progresso.getPartes());
             batch.end();
             interfaceJogo.desenharFadeEVideo(ctx);
             return;
         }
         if (interfaceJogo.isSenha()) {
-            interfaceJogo.desenharEscuro(ctx, imagemMapa);
+            interfaceJogo.desenharEscuro(ctx);
             batch.end();
             interfaceJogo.desenharFadeEVideo(ctx);
             interfaceJogo.atualizarSenha(delta);
@@ -202,6 +208,9 @@ public class TelaJogo implements Screen {
             sistemaDebug.desenharInfo(this, ctx);
             batch.end();
         }
+
+        // desenha o fade do espelho por cima de tudo quando ativo
+        interfaceJogo.desenharFadeEspelho(ctx);
     }
 
     // valida a senha digitada e repassa o resultado para a UI
@@ -299,6 +308,7 @@ public class TelaJogo implements Screen {
         imgPorta1.dispose();
         imgPorta2.dispose();
         imgPorta3.dispose();
+        imgEspelho.dispose();
         sistemaAudio.dispose();
         sistemaDebug.dispose();
         interfaceJogo.dispose();
@@ -313,6 +323,6 @@ public class TelaJogo implements Screen {
     }
 
     @Override public void pause()  {}
-    @Override public void resume() {}
+ @Override public void resume() {}
     @Override public void hide()   { dispose(); }
 }
