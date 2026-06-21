@@ -34,6 +34,12 @@ public class TelaMenu implements Screen {
     // opacidade da sobreposição VHS para não esconder o conteúdo abaixo
     private static final float OPACIDADE_VHS = 0.3f;
 
+    // margem esquerda para alinhar logo e botões
+    private static final float MARGEM_ESQUERDA = 40f;
+
+    // largura máxima da logo (menor que antes, que era 640f)
+    private static final float LOGO_LARGURA_MAX = 380f;
+
     // coordenadas do mouse em espaço virtual para hover nas opções
     private final Vector2 coordenadasMouse = new Vector2();
 
@@ -78,25 +84,26 @@ public class TelaMenu implements Screen {
         // fundo esticado para cobrir toda a tela virtual
         batch.draw(imagemFundo, 0, 0, larguraMundo, alturaMundo);
 
-        // logo centralizado horizontalmente no topo
-        float logoLargura = Math.min(640f, larguraMundo);
+        // logo alinhada à esquerda com margem
+        float logoLargura = Math.min(LOGO_LARGURA_MAX, larguraMundo - MARGEM_ESQUERDA * 2f);
         float logoAltura  = logoLargura * (imagemLogo.getHeight() / (float) imagemLogo.getWidth());
-        float logoX       = (larguraMundo - logoLargura) / 2f;
-        float logoY       = alturaMundo - 30 - logoAltura;
+        float logoX       = MARGEM_ESQUERDA;
+        float logoY       = alturaMundo - 40f - logoAltura;
         batch.draw(imagemLogo, logoX, logoY, logoLargura, logoAltura);
 
-        // posição X do menu alinhada com a área esquerda da tela
-        float menuX = (larguraMundo - 640f) / 2f + 100f;
+        // menu alinhado à esquerda com a mesma margem da logo
+        float menuX = MARGEM_ESQUERDA;
+        float menuYBase = logoY - 60f;  // 60px abaixo da logo
 
         for (int i = 0; i < opcoes.length; i++) {
-            String texto = (i == opcaoSelecionada) ? "-> " + opcoes[i] : "   " + opcoes[i];
+            String texto = (i == opcaoSelecionada) ? "> " + opcoes[i] : "  " + opcoes[i];
             // opção selecionada em branco, demais em cinza
             jogo.fonteMenu.setColor(
                 i == opcaoSelecionada ? 1f : 0.5f,
                 i == opcaoSelecionada ? 1f : 0.5f,
                 i == opcaoSelecionada ? 1f : 0.5f,
                 1f);
-            jogo.fonteMenu.draw(batch, texto, menuX, alturaMundo - 320 - i * 50f);
+            jogo.fonteMenu.draw(batch, texto, menuX, menuYBase - i * 45f);
         }
 
         // sobreposição VHS semitransparente sobre todo o conteúdo
@@ -108,7 +115,7 @@ public class TelaMenu implements Screen {
 
         batch.end();
 
-        tratarInput();
+        tratarInput(menuYBase);
     }
 
     @Override
@@ -117,10 +124,10 @@ public class TelaMenu implements Screen {
     }
 
     // processa teclado e mouse para navegar e confirmar opções do menu
-    private void tratarInput() {
+    private void tratarInput(float menuYBase) {
         float larguraMundo = jogo.viewport.getWorldWidth();
         float alturaMundo  = jogo.viewport.getWorldHeight();
-        float menuX        = (larguraMundo - 640f) / 2f + 100f;
+        float menuX        = MARGEM_ESQUERDA;
 
         // navegação por teclado entre as opções
         if (Gdx.input.isKeyJustPressed(Keys.UP)   || Gdx.input.isKeyJustPressed(Keys.W)) {
@@ -140,10 +147,10 @@ public class TelaMenu implements Screen {
         jogo.viewport.unproject(coordenadasMouse);
 
         for (int i = 0; i < opcoes.length; i++) {
-            float textoY = alturaMundo - 320 - i * 50f;
+            float textoY = menuYBase - i * 45f;
 
             // área de clique ao redor do texto de cada opção
-            float minX = menuX - 20f, maxX = menuX + 250f;
+            float minX = menuX - 10f, maxX = menuX + 220f;
             float minY = textoY - 10f, maxY = textoY + 25f;
 
             if (coordenadasMouse.x >= minX && coordenadasMouse.x <= maxX &&
