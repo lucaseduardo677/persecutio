@@ -24,6 +24,7 @@ import com.persecutio.managers.GerenciadorProgresso;
 import com.persecutio.managers.GerenciadorRenderizacao;
 import com.persecutio.managers.GerenciadorUI;
 
+// Tela principal do jogo
 public class TelaJogo implements Screen {
 
     private final PersecutioGame jogo;
@@ -64,11 +65,13 @@ public class TelaJogo implements Screen {
 
     private final ContextoRender ctx = new ContextoRender();
 
+    // Criação da tela principal do jogo
     public TelaJogo(PersecutioGame jogo) {
         this.jogo = jogo;
     }
 
     @Override
+    // Carregamento dos recursos
     public void show() {
         imagemMapa  = new Texture(Gdx.files.internal("img/quarto.png"));
         spriteSheet = new Texture(Gdx.files.internal("img/personagem.png"));
@@ -118,6 +121,7 @@ public class TelaJogo implements Screen {
     }
 
     @Override
+    // Atualização e desenho
     public void render(float delta) {
         if (fadeInJogoAtivo) {
             timerFadeInJogo += delta;
@@ -166,12 +170,12 @@ public class TelaJogo implements Screen {
             Math.round(ctx.mundoParaTelaX(jogador.mundoX)),
             Math.round(ctx.mundoParaTelaY(jogador.mundoY)));
 
-        // Clone do jogador espelhado
-        // Renderiza apenas quando
-        // Jogador no comodo quarto
-        // Objeto reflexo ativo no mundo atual
-        // Jogador visivel na area do reflexo
-        // O espelho interativo continua na interface
+        // Clone jogador espelhado
+        // Renderiza apenas
+        // Jogador comodo quarto
+        // Objeto reflexo ativo mundo atual
+        // Jogador visivel area reflexo
+        // Espelho interativo continua interface
         if (comodoAtual != null && "quarto".equals(comodoAtual.nomeGrupo)) {
             Rectangle areaReflexo = sistemaColisao.getReflexoArea(umbra);
             if (areaReflexo != null && jogador.hitbox.overlaps(areaReflexo)) {
@@ -234,6 +238,7 @@ public class TelaJogo implements Screen {
         desenharFadeInJogo(ctx);
     }
 
+    // Desenho dos elementos
     private void desenharFadeInJogo(ContextoRender ctx) {
         if (!fadeInJogoAtivo) return;
         float alfa = 1f - (timerFadeInJogo / DURACAO_FADE_IN_JOGO);
@@ -249,6 +254,7 @@ public class TelaJogo implements Screen {
         ctx.batch.end();
     }
 
+    // Tratamento da entrada
     private void processarSenha() {
         String senha = interfaceJogo.pegarSenha();
         if (senha == null) return;
@@ -256,6 +262,7 @@ public class TelaJogo implements Screen {
         else                               interfaceJogo.senhaErro();
     }
 
+    // Tratamento da entrada
     private void tratarInput(float delta) {
         sistemaAudio.tratarInputVolume();
 
@@ -287,6 +294,7 @@ public class TelaJogo implements Screen {
         interfaceJogo.atualizarTutorial(andando, delta);
     }
 
+    // Tratamento da entrada
     private void tratarInteracao() {
         GerenciadorPortas.Porta porta = gerPortas.acharProxima(jogador, mundoUmbra);
         if (porta != null) {
@@ -325,6 +333,7 @@ public class TelaJogo implements Screen {
     }
 
     @Override
+    // Liberação dos recursos
     public void dispose() {
         imagemMapa.dispose();
         spriteSheet.dispose();
@@ -343,6 +352,7 @@ public class TelaJogo implements Screen {
     }
 
     @Override
+    // Ajuste de tela
     public void resize(int width, int height) {
         jogo.viewport.update(width, height, true);
         interfaceJogo.redimensionar(width, height);

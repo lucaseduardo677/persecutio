@@ -10,12 +10,14 @@ import com.persecutio.entities.Jogador;
 
 import java.util.List;
 
+// Renderização do jogo
 public class GerenciadorRenderizacao {
 
     private static final int ESCALA = 2;
     private final Texture texPreto;
     private final Rectangle rectTemp = new Rectangle();
 
+    // Criação da renderização do jogo
     public GerenciadorRenderizacao() {
         Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pm.setColor(Color.BLACK);
@@ -24,11 +26,13 @@ public class GerenciadorRenderizacao {
         pm.dispose();
     }
 
+    // Desenho dos elementos
     public void desenharMapa(ContextoRender ctx, Texture imagemMapa) {
         ctx.batch.draw(imagemMapa, ctx.cameraX, ctx.cameraY,
             imagemMapa.getWidth() * ESCALA, imagemMapa.getHeight() * ESCALA);
     }
 
+    // Desenho dos elementos
     public void desenharNpcs(ContextoRender ctx, GerenciadorColisao sistemaColisao, boolean umbra) {
         for (EntidadeMapa npc : sistemaColisao.getNpcs(umbra).values()) {
             ctx.batch.draw(npc.textura,
@@ -38,6 +42,7 @@ public class GerenciadorRenderizacao {
         }
     }
 
+    // Desenho dos elementos
     public void desenharUmbra(ContextoRender ctx, Texture imagemMapa) {
         ctx.batch.setColor(0.59f, 0f, 0f, 0.27f);
         ctx.batch.draw(imagemMapa, ctx.cameraX, ctx.cameraY,
@@ -45,11 +50,13 @@ public class GerenciadorRenderizacao {
         ctx.batch.setColor(Color.WHITE);
     }
 
+    // Desenho dos elementos
     public void desenharLuz(ContextoRender ctx, Texture luzMapa) {
         ctx.batch.draw(luzMapa, ctx.cameraX, ctx.cameraY,
             luzMapa.getWidth() * ESCALA, luzMapa.getHeight() * ESCALA);
     }
 
+    // Desenho dos elementos
     public void desenharComodos(ContextoRender ctx, GerenciadorComodos gerComodos, Jogador jogador) {
         if (gerComodos == null) return;
 
@@ -73,19 +80,19 @@ public class GerenciadorRenderizacao {
         ctx.batch.setColor(Color.WHITE);
     }
 
-    // Desenha o reflexo do jogador
+    // Reflexo jogador
     public void desenharCloneEspelho(ContextoRender ctx, Jogador jogador, Texture spriteSheet,
                                      Rectangle areaReflexo) {
         if (areaReflexo == null || spriteSheet == null || jogador == null) return;
 
-        // Centro do espelho no eixo X
+        // Centro espelho eixo X
         float centroReflexoX = areaReflexo.x + areaReflexo.width / 2f;
 
-        // Calcula a posicao espelhada
+        // Posicao espelhada
         float cloneMundoX = 2f * centroReflexoX - jogador.mundoX;
         float cloneMundoY = jogador.mundoY;
 
-        // Converte para coordenadas de tela
+        // Coordenadas tela
         float telaX = ctx.mundoParaTelaX(cloneMundoX);
         float telaY = ctx.mundoParaTelaY(cloneMundoY);
 
@@ -93,7 +100,7 @@ public class GerenciadorRenderizacao {
         int dir   = jogador.getDirecao();
         int tam   = jogador.getTamanho();
 
-        // Inverte a direcao horizontal
+        // Inverte direcao horizontal
         int dirClone = dir;
         if (dir == Jogador.DIRECAO_DIREITA) {
             dirClone = Jogador.DIRECAO_ESQUERDA;
@@ -101,15 +108,16 @@ public class GerenciadorRenderizacao {
             dirClone = Jogador.DIRECAO_DIREITA;
         }
 
-        // Cria uma regiao temporaria com o frame correto
+        // Regiao temporaria frame correto
         TextureRegion region = new TextureRegion(spriteSheet, frame * tam, dirClone * tam, tam, tam);
 
         // Espelha horizontalmente
         region.flip(true, false);
 
-        // Desenha o clone espelhado do jogador
+        // Clone espelhado jogador
         ctx.batch.draw(region, Math.round(telaX) - 28, Math.round(telaY) - 28, 56, 56);
     }
 
+    // Liberação dos recursos
     public void dispose() { texPreto.dispose(); }
 }

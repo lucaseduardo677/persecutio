@@ -21,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.persecutio.entities.Jogador;
 
+// Interface do jogo
 public class GerenciadorUI {
 
     public static final int UI_JOGO    = 0;
@@ -66,10 +67,12 @@ public class GerenciadorUI {
 
     private final Rectangle rectTemp = new Rectangle();
 
+    // Inicialização dos recursos
     public void inicializar(BitmapFont fonte, ExtendViewport viewport) {
         inicializar(fonte, viewport, null);
     }
 
+    // Inicialização dos recursos
     public void inicializar(BitmapFont fonte, ExtendViewport viewport, GerenciadorAudio audioRef) {
         audio  = audioRef;
         puzzle = new PuzzleSenha();
@@ -84,16 +87,19 @@ public class GerenciadorUI {
         video = new GerenciadorVideo();
     }
 
+    // Definição do valor
     public void setAudio(GerenciadorAudio audioRef) {
         audio = audioRef;
     }
 
+    // Reprodução do som
     private void tocarSomSelecao() {
         if (audio != null) {
             audio.tocarSelecao();
         }
     }
 
+    // Atualização do estado
     public void atualizarTimers(float delta) {
         if (audio != null) audio.atualizar(delta);
 
@@ -172,6 +178,7 @@ public class GerenciadorUI {
         }
     }
 
+    // Início do processo
     public void iniciarFade(String caminhoVideo, Runnable aoEscurecer) {
         this.aoEscurecer = aoEscurecer;
         estadoUi         = UI_FADE;
@@ -181,12 +188,15 @@ public class GerenciadorUI {
         video.preparar(caminhoVideo);
     }
 
+    // Início do processo
     public void iniciarFadeSimples(Runnable aoEscurecer) {
         iniciarFade(null, aoEscurecer);
     }
 
+    // Consulta do estado
     public boolean isFadeAtivo() { return faseFade != FaseFade.INATIVO; }
 
+    // Leitura do input
     public boolean puxarInput(ExtendViewport viewport) {
         if (estadoUi == UI_FADE) return true;
 
@@ -268,49 +278,64 @@ public class GerenciadorUI {
         return false;
     }
 
+    // Troca de estado
     public void mudarEstado(int novoEstado) {
         estadoUi = novoEstado;
         if (novoEstado == UI_SENHA) abrirSenha();
     }
 
+    // Consulta do estado
     public int getEstado() { return estadoUi; }
 
+    // Início do processo
     public void iniciarCinematica() {
         estadoUi = UI_NPC;
         timerNpc = 3f;
     }
 
+    // Atualização do estado
     public void atualizarTutorial(boolean andando, float delta) {
         if (andando && opacidade > 0f)
             opacidade = Math.max(0f, opacidade - 1.5f * delta);
     }
 
+    // Ajuste da interface
     public void redimensionar(int w, int h) { if (puzzle != null) puzzle.redimensionar(w, h); }
 
+    // Abertura da tela
     public void   abrirSenha()    { estadoUi = UI_SENHA; if (puzzle != null) puzzle.abrir(); }
+    // Consulta do estado
     public boolean isSenha()      { return estadoUi == UI_SENHA; }
+    // Atualização do estado
     public void   atualizarSenha(float delta) {
         if (puzzle != null) { puzzle.atualizar(delta); if (!puzzle.isAberto()) estadoUi = UI_JOGO; }
     }
+    // Leitura da senha
     public String  pegarSenha()   { return puzzle != null ? puzzle.pegarSenha() : null; }
+    // Processamento interno
     public void    senhaSucesso()  { if (puzzle != null) puzzle.fecharSucesso(); }
+    // Processamento interno
     public void    senhaErro()     { if (puzzle != null) puzzle.mostrarErro(); }
 
+    // Desenho dos elementos
     public void desenharEscuro(ContextoRender ctx) {
         desenharEscuro(ctx, 0.86f);
     }
 
+    // Desenho dos elementos
     public void desenharEscuro(ContextoRender ctx, float alpha) {
         ctx.batch.setColor(0f, 0f, 0f, alpha);
         ctx.batch.draw(texBranca, 0, 0, ctx.vLargura, ctx.vAltura);
         ctx.batch.setColor(Color.WHITE);
     }
 
+    // Desenho dos elementos
     private void desenharCentralizado(ContextoRender ctx, BitmapFont fonte, String texto, float offsetY) {
         medidor.setText(fonte, texto);
         fonte.draw(ctx.batch, texto, ctx.centroX - medidor.width / 2f, ctx.centroY + offsetY);
     }
 
+    // Desenho dos elementos
     public void desenharTutorial(ContextoRender ctx) {
         if (opacidade <= 0f) return;
         ctx.fonteIndicadores.setColor(0.78f, 0.78f, 0.78f, opacidade);
@@ -319,17 +344,19 @@ public class GerenciadorUI {
         ctx.fonteIndicadores.setColor(Color.WHITE);
     }
 
+    // Desenho dos elementos
     public void desenharNpc(ContextoRender ctx, Texture imgPorta3) {
         float popupL = Math.min(300, ctx.vLargura - 40f);
         float popupA = (popupL / imgPorta3.getWidth()) * imgPorta3.getHeight();
         ctx.batch.draw(imgPorta3, ctx.centroX - popupL/2, ctx.centroY - popupA/2, popupL, popupA);
     }
 
+    // Desenho dos elementos
     public void desenharEspelho(ContextoRender ctx, Texture imgEspelho) {
         // Fundo escuro
         desenharEscuro(ctx, 0.86f);
 
-        // Imagem do espelho em tela cheia
+        // Imagem espelho tela cheia
         ctx.batch.draw(imgEspelho, 0, 0, ctx.vLargura, ctx.vAltura);
 
         // Texto
@@ -355,6 +382,7 @@ public class GerenciadorUI {
         desenharCentralizado(ctx, ctx.fonteDialogos, "Pressione [ESC] ou [E] para fechar", -260);
     }
 
+    // Desenho dos elementos
     public void desenharFadeEVideo(ContextoRender ctx) {
         if (faseFade == FaseFade.INATIVO) return;
 
@@ -375,6 +403,7 @@ public class GerenciadorUI {
         ctx.batch.end();
     }
 
+    // Desenho dos elementos
     public void desenharFadeEspelho(ContextoRender ctx) {
         if (faseFade == FaseFade.INATIVO) return;
         if (alfaFade <= 0.001f) return;
@@ -464,6 +493,7 @@ public class GerenciadorUI {
         desenharCentralizado(ctx, ctx.fonteIndicadores, label, -40);
     }
 
+    // Desenho dos elementos
     public void desenharLiberada(ContextoRender ctx) {
         if (!mostrarLiberada) return;
         ctx.fonteIndicadores.setColor(Color.GREEN);
@@ -471,24 +501,34 @@ public class GerenciadorUI {
         ctx.fonteIndicadores.setColor(Color.WHITE);
     }
 
+    // Desenho dos elementos
     public void desenharPausa(ContextoRender ctx) {
         ctx.fonteMenu.setColor(Color.WHITE);
         desenharCentralizado(ctx, ctx.fonteMenu, opcaoPausa == 0 ? "> VOLTAR" : "  VOLTAR", 60);
         desenharCentralizado(ctx, ctx.fonteMenu, opcaoPausa == 1 ? "> SAIR"   : "  SAIR",    0);
     }
 
+    // Processamento interno
     private boolean sobreArea(Rectangle hi, Rectangle area) {
         return area != null && hi.overlaps(area);
     }
 
+    // Consulta do estado
     public boolean isPorta()   { return estadoUi == UI_PORTA; }
+    // Consulta do estado
     public boolean isEspelho() { return estadoUi == UI_ESPELHO; }
+    // Consulta do estado
     public boolean isNpc()     { return estadoUi == UI_NPC; }
+    // Consulta do estado
     public boolean isPausado() { return pausado; }
+    // Consulta do estado
     public boolean isFade()    { return estadoUi == UI_FADE; }
+    // Consulta do estado
     public boolean isVideo()   { return faseFade == FaseFade.VIDEO; }
+    // Consulta do estado
     public GerenciadorVideo getVideo() { return video; }
 
+    // Liberação dos recursos
     public void dispose() {
         if (puzzle    != null) puzzle.dispose();
         if (texBranca != null) texBranca.dispose();
@@ -508,6 +548,7 @@ public class GerenciadorUI {
 
         private Texture cursorTex, selecaoTex, backTex;
 
+        // Inicialização dos recursos
         public void inicializar(BitmapFont fonte, ExtendViewport vp) {
             stage = new Stage(new ExtendViewport(
                 Math.round(vp.getWorldWidth()), Math.round(vp.getWorldHeight())));
@@ -547,6 +588,7 @@ public class GerenciadorUI {
             stage.addActor(t);
         }
 
+        // Abertura da tela
         public void abrir() {
             aberto        = true;
             senhaSubmetida = null;
@@ -557,8 +599,10 @@ public class GerenciadorUI {
             Gdx.input.setInputProcessor(stage);
         }
 
+        // Consulta do estado
         public boolean isAberto() { return aberto; }
 
+        // Atualização do estado
         public void atualizar(float delta) {
             if (!aberto) return;
             if (fecharProximo) {
@@ -574,12 +618,14 @@ public class GerenciadorUI {
             stage.draw();
         }
 
+        // Exibição do aviso
         public void mostrarErro() {
             labelFeedback.setText("Senha incorreta. Tente de novo:");
             campoSenha.setText("");
             stage.setKeyboardFocus(campoSenha);
         }
 
+        // Abertura da tela
         public void fecharCancelar() {
             senhaSubmetida = null;
             fecharProximo  = true;
@@ -587,22 +633,26 @@ public class GerenciadorUI {
             if (Gdx.input.getInputProcessor() == stage) Gdx.input.setInputProcessor(null);
         }
 
+        // Abertura da tela
         public void fecharSucesso() {
             fecharProximo = true;
             Gdx.input.setOnscreenKeyboardVisible(false);
             if (Gdx.input.getInputProcessor() == stage) Gdx.input.setInputProcessor(null);
         }
 
+        // Leitura da senha
         public String pegarSenha() {
             String r       = senhaSubmetida;
             senhaSubmetida = null;
             return r;
         }
 
+        // Ajuste da interface
         public void redimensionar(int w, int h) {
             if (stage != null) stage.getViewport().update(w, h, true);
         }
 
+        // Liberação dos recursos
         public void dispose() {
             if (stage      != null) stage.dispose();
             if (cursorTex  != null) cursorTex.dispose();

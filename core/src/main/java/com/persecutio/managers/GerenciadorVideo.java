@@ -6,10 +6,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.video.VideoPlayer;
 import com.badlogic.gdx.video.VideoPlayerCreator;
 
-// Gerencia o video de transicao de porta
+// Gerencia video transicao porta
 public class GerenciadorVideo {
 
-    // Ciclo de vida da reprodução
+    // Ciclo vida reprodução
     public enum Estado { IDLE, PREPARANDO, CARREGANDO, TOCANDO, TERMINADO, ERRO }
 
     private VideoPlayer player;
@@ -18,11 +18,11 @@ public class GerenciadorVideo {
     private boolean     terminadoSinalizado = false;
     private boolean     comecouTocar    = false;
 
-    // Tempo aguardando buffer antes de declarar timeout
+    // Tempo aguardando buffer antes declarar timeout
     private float timerCarregando = 0f;
     private static final float TIMEOUT_CARREGAMENTO = 2.0f;
 
-    // Registra o caminho do vídeo para ser iniciado quando o fade escurecer
+    // Registra caminho vídeo iniciado fade escurecer
     public void preparar(String caminho) {
         if (caminho == null || caminho.isEmpty()) {
             estado          = Estado.IDLE;
@@ -35,14 +35,14 @@ public class GerenciadorVideo {
         comecouTocar        = false;
     }
 
-    // Inicia a reproducao do caminho preparado
+    // Reproducao caminho preparado
     public void iniciar() {
         if (estado != Estado.PREPARANDO || caminhoPendente == null) return;
         tocar(caminhoPendente);
         caminhoPendente = null;
     }
 
-    // Avanca o estado do video enquanto estiver ativo
+    // Avanca estado video enquanto estiver ativo
     public boolean atualizar(float delta) {
         switch (estado) {
             case IDLE:
@@ -52,7 +52,7 @@ public class GerenciadorVideo {
             case CARREGANDO:
                 timerCarregando += delta;
                 if (timerCarregando >= TIMEOUT_CARREGAMENTO) {
-                    // Video sem buffer no tempo limite
+                    // Video buffer tempo limite
                     falhar();
                     return false;
                 }
@@ -79,7 +79,7 @@ public class GerenciadorVideo {
                     return false;
                 }
 
-                // Considera termino so depois de tocar
+                // Considera termino so depois tocar
                 if (player.isPlaying()) {
                     comecouTocar = true;
                 }
@@ -98,7 +98,7 @@ public class GerenciadorVideo {
         return false;
     }
 
-    // Desenha o frame atual do vídeo nas coordenadas e dimensões fornecidas
+    // Frame atual vídeo coordenadas dimensões fornecidas
     public void desenhar(SpriteBatch batch, float x, float y, float w, float h) {
         if (estado != Estado.TOCANDO && estado != Estado.CARREGANDO) return;
         if (player == null) return;
@@ -108,23 +108,27 @@ public class GerenciadorVideo {
         } catch (Exception ignored) {}
     }
 
-    // Consome o flag de termino
+    // Flag termino
     public boolean consumirTerminado() {
         boolean r       = terminadoSinalizado;
         terminadoSinalizado = false;
         return r;
     }
 
+    // Consulta do estado
     public boolean isAtivo()    { return estado == Estado.CARREGANDO || estado == Estado.TOCANDO; }
+    // Consulta do estado
     public boolean isPreparado(){ return estado == Estado.PREPARANDO; }
+    // Consulta do estado
     public Estado  getEstado()  { return estado; }
 
+    // Liberação dos recursos
     public void dispose() {
         parar();
         caminhoPendente = null;
     }
 
-    // Abre o arquivo e inicia a reprodução via VideoPlayerCreator
+    // Arquivo reprodução via VideoPlayerCreator
     private void tocar(String caminho) {
         FileHandle arquivo = Gdx.files.internal(caminho);
         if (!arquivo.exists()) {
@@ -138,7 +142,7 @@ public class GerenciadorVideo {
         try {
             player = VideoPlayerCreator.createVideoPlayer();
 
-            // Listener sinaliza término mesmo que o loop principal não perceba
+            // Listener sinaliza término mesmo loop principal
             player.setOnCompletionListener(file -> {
                 if (estado == Estado.TOCANDO || estado == Estado.CARREGANDO) {
                     estado              = Estado.TERMINADO;
@@ -155,7 +159,7 @@ public class GerenciadorVideo {
         }
     }
 
-    // Libera o player e marca o vídeo como encerrado com erro
+    // Libera player marca vídeo encerrado erro
     private void falhar() {
         if (player != null) {
             try { player.dispose(); } catch (Exception ignored) {}
@@ -165,7 +169,7 @@ public class GerenciadorVideo {
         terminadoSinalizado = true;
     }
 
-    // Para a reprodução e libera o player sem mudar para ERRO
+    // Reprodução libera player mudar ERRO
     private void parar() {
         if (player != null) {
             try { player.stop();    } catch (Exception ignored) {}

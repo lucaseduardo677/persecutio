@@ -16,7 +16,7 @@ import com.badlogic.gdx.video.VideoPlayer;
 import com.badlogic.gdx.video.VideoPlayerCreator;
 import com.persecutio.game.PersecutioGame;
 
-// Tela inicial com animacao VHS
+// Tela inicial animacao VHS
 public class TelaMenu implements Screen {
 
     private final PersecutioGame jogo;
@@ -24,41 +24,41 @@ public class TelaMenu implements Screen {
     private Texture imagemFundo;
     private Texture imagemLogo;
 
-    // Spritesheet e animação do efeito VHS sobreposto ao fundo
+    // Spritesheet animação efeito VHS sobreposto fundo
     private Texture                    vhsSheet;
     private Animation<TextureRegion>   animVhs;
     private float                      tempoAnim = 0f;
 
     private final String[] opcoes = {"NOVO JOGO", "SAIR"};
     private int opcaoSelecionada  = 0;
-    // Para detectar mudança e tocar som
+    // Detectar mudança tocar som
     private int opcaoAnterior     = 0;
 
-    // Opacidade da sobreposição VHS para não esconder o conteúdo abaixo
+    // Opacidade sobreposição VHS não esconder conteúdo
     private static final float OPACIDADE_VHS = 0.15f;
 
-    // Margem esquerda para alinhar logo e botões
+    // Margem esquerda alinhar logo botões
     private static final float MARGEM_ESQUERDA = 40f;
 
-    // Largura máxima da logo
+    // Largura máxima logo
     private static final float LOGO_LARGURA_MAX = 380f;
 
-    // Fade in do menu
+    // Fade in menu
     private static final float DURACAO_FADE_IN = 1.5f;
     private float timerFadeIn = 0f;
     private boolean fadeInAtivo = true;
 
-    // Fade out rapido ao confirmar
+    // Fade out rapido confirmar
     private static final float DURACAO_FADE_OUT = 0.5f;
     private float timerFadeOut = 0f;
     private boolean fadeOutAtivo = false;
-    // Novo jogo ou sair
+    // Novo jogo sair
     private boolean confirmouNovoJogo = false;
 
-    // Textura branca 1x1 para o fade
+    // Textura branca 1x1 fade
     private Texture texBranca;
 
-    // Reprodução de vídeo de introdução
+    // Reprodução vídeo introdução
     private VideoPlayer playerVideo;
     private boolean     videoTocando = false;
     private boolean     videoPreparado = false;
@@ -68,26 +68,28 @@ public class TelaMenu implements Screen {
     private static final float DURACAO_FADE_VIDEO = 0.6f;
     private static final String CAMINHO_VIDEO = "video/intro.webm";
 
-    // Coordenadas do mouse em espaço virtual para hover nas opções
+    // Coordenadas mouse espaço virtual hover opções
     private final Vector2 coordenadasMouse = new Vector2();
 
+    // Criação da tela inicial do menu
     public TelaMenu(PersecutioGame jogo) {
         this.jogo = jogo;
     }
 
     @Override
+    // Carregamento dos recursos
     public void show() {
         imagemFundo = new Texture(Gdx.files.internal("img/fundo_menu.jpg"));
         imagemLogo  = new Texture(Gdx.files.internal("img/titulo_logo.png"));
 
-        // Textura branca para fades
+        // Textura branca fades
         Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pm.setColor(Color.BLACK);
         pm.fill();
         texBranca = new Texture(pm);
         pm.dispose();
 
-        // Monta o array de frames a partir do grid 5x6 do spritesheet
+        // Monta array frames partir grid 5x6
         vhsSheet = new Texture(Gdx.files.internal("img/vhs_sheet.png"));
         TextureRegion[][] frames2d = TextureRegion.split(vhsSheet, 120, 96);
         TextureRegion[]   frames   = new TextureRegion[30];
@@ -115,18 +117,19 @@ public class TelaMenu implements Screen {
     }
 
     @Override
+    // Atualização e desenho
     public void render(float delta) {
-        // Atualiza audio
+        // Audio
         jogo.audio.atualizar(delta);
         jogo.audio.tratarInputVolume();
 
-        // Fase de video de introducao
+        // Fase video introducao
         if (videoTocando) {
             renderVideoIntro(delta);
             return;
         }
 
-        // Fase de fade in do menu
+        // Fase fade in menu
         if (fadeInAtivo) {
             timerFadeIn += delta;
             if (timerFadeIn >= DURACAO_FADE_IN) {
@@ -135,13 +138,13 @@ public class TelaMenu implements Screen {
             }
         }
 
-        // Fase de fade out ao confirmar
+        // Fase fade out confirmar
         if (fadeOutAtivo) {
             timerFadeOut += delta;
             if (timerFadeOut >= DURACAO_FADE_OUT) {
                 timerFadeOut = DURACAO_FADE_OUT;
                 fadeOutAtivo = false;
-                // Inicia o video de introducao ao confirmar novo jogo
+                // Video introducao confirmar novo jogo
                 if (confirmouNovoJogo) {
                     iniciarVideoIntro();
                     return;
@@ -152,10 +155,10 @@ public class TelaMenu implements Screen {
             }
         }
 
-        // Alpha do fade in
+        // Alpha fade in
         float alphaFadeIn = fadeInAtivo ? (timerFadeIn / DURACAO_FADE_IN) : 1f;
 
-        // Alpha do fade out
+        // Alpha fade out
         float alphaFadeOut = fadeOutAtivo ? (1f - timerFadeOut / DURACAO_FADE_OUT) : 1f;
 
         // Alpha final combinado
@@ -173,25 +176,25 @@ public class TelaMenu implements Screen {
         batch.setProjectionMatrix(jogo.viewport.getCamera().combined);
         batch.begin();
 
-        // Fundo esticado para cobrir toda a tela virtual
+        // Fundo esticado cobrir toda tela virtual
         batch.setColor(1f, 1f, 1f, alphaFinal);
         batch.draw(imagemFundo, 0, 0, larguraMundo, alturaMundo);
 
-        // Logo alinhada a esquerda com margem
+        // Logo alinhada esquerda margem
         float logoLargura = Math.min(LOGO_LARGURA_MAX, larguraMundo - MARGEM_ESQUERDA * 2f);
         float logoAltura  = logoLargura * (imagemLogo.getHeight() / (float) imagemLogo.getWidth());
         float logoX       = MARGEM_ESQUERDA;
         float logoY       = alturaMundo - 40f - logoAltura;
         batch.draw(imagemLogo, logoX, logoY, logoLargura, logoAltura);
 
-        // Menu alinhado à esquerda com a mesma margem da logo
+        // Menu alinhado esquerda mesma margem logo
         float menuX = MARGEM_ESQUERDA;
-        // 60px abaixo da logo
+        // 60px abaixo logo
         float menuYBase = logoY - 60f;
 
         for (int i = 0; i < opcoes.length; i++) {
             String texto = (i == opcaoSelecionada) ? "> " + opcoes[i] : "  " + opcoes[i];
-            // Opcao selecionada em branco
+            // Opcao selecionada branco
             jogo.fonteMenu.setColor(
                 i == opcaoSelecionada ? 1f : 0.5f,
                 i == opcaoSelecionada ? 1f : 0.5f,
@@ -200,7 +203,7 @@ public class TelaMenu implements Screen {
             jogo.fonteMenu.draw(batch, texto, menuX, menuYBase - i * 45f);
         }
 
-        // Sobreposição VHS semitransparente sobre todo o conteúdo
+        // Sobreposição VHS semitransparente todo conteúdo
         tempoAnim += delta;
         TextureRegion frameVhs = animVhs.getKeyFrame(tempoAnim);
         batch.setColor(1f, 1f, 1f, OPACIDADE_VHS * alphaFinal);
@@ -209,7 +212,7 @@ public class TelaMenu implements Screen {
 
         batch.end();
 
-        // Overlay preto do fade out
+        // Overlay preto fade out
         if (fadeOutAtivo) {
             float alfaFadePreto = timerFadeOut / DURACAO_FADE_OUT;
             batch.begin();
@@ -219,18 +222,18 @@ public class TelaMenu implements Screen {
             batch.end();
         }
 
-        // Processa input fora do fade out
+        // Input fora fade out
         if (!fadeOutAtivo) {
             tratarInput(menuYBase);
         }
     }
 
-    // Reproducao do video de introducao
+    // Reproducao video introducao
     private void iniciarVideoIntro() {
         jogo.audio.pararMusicaMenu();
 
         if (!Gdx.files.internal(CAMINHO_VIDEO).exists()) {
-            // Video nao existe vai direto pro jogo
+            // Video nao existe vai direto pro
             jogo.setScreen(new TelaJogo(jogo));
             return;
         }
@@ -238,7 +241,7 @@ public class TelaMenu implements Screen {
         try {
             playerVideo = VideoPlayerCreator.createVideoPlayer();
             playerVideo.setOnCompletionListener(file -> {
-                // Quando o video terminar inicia o fade pos video
+                // Video terminar fade pos video
                 fadePosVideoAtivo = true;
                 timerFadeVideo = 0f;
             });
@@ -248,11 +251,12 @@ public class TelaMenu implements Screen {
             timerFadeVideo = 0f;
             videoTocando = true;
         } catch (Exception e) {
-            // Falha ao carregar video vai direto pro jogo
+            // Falha carregar video vai direto pro
             jogo.setScreen(new TelaJogo(jogo));
         }
     }
 
+    // Processamento interno
     private void renderVideoIntro(float delta) {
         float larguraMundo = jogo.viewport.getWorldWidth();
         float alturaMundo  = jogo.viewport.getWorldHeight();
@@ -270,7 +274,7 @@ public class TelaMenu implements Screen {
             Gdx.gl.glClearColor(0, 0, 0, 1);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-            // Desenha o frame do vídeo se disponível
+            // Frame vídeo disponível
             if (playerVideo != null) {
                 try {
                     playerVideo.update();
@@ -283,7 +287,7 @@ public class TelaMenu implements Screen {
                 } catch (Exception ignored) {}
             }
 
-            // Overlay preto que some gradualmente
+            // Overlay preto some gradualmente
             batch.begin();
             batch.setColor(0f, 0f, 0f, 1f - alfa);
             batch.draw(texBranca, 0, 0, larguraMundo, alturaMundo);
@@ -298,7 +302,7 @@ public class TelaMenu implements Screen {
             if (timerFadeVideo >= DURACAO_FADE_VIDEO) {
                 timerFadeVideo = DURACAO_FADE_VIDEO;
                 fadePosVideoAtivo = false;
-                // Limpa e vai pro jogo
+                // Vai pro jogo
                 if (playerVideo != null) {
                     try { playerVideo.dispose(); } catch (Exception ignored) {}
                     playerVideo = null;
@@ -311,7 +315,7 @@ public class TelaMenu implements Screen {
             Gdx.gl.glClearColor(0, 0, 0, 1);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-            // Desenha o último frame do vídeo
+            // Último frame vídeo
             if (playerVideo != null) {
                 try {
                     playerVideo.update();
@@ -324,7 +328,7 @@ public class TelaMenu implements Screen {
                 } catch (Exception ignored) {}
             }
 
-            // Overlay preto que aumenta gradualmente
+            // Overlay preto aumenta gradualmente
             batch.begin();
             batch.setColor(0f, 0f, 0f, alfa);
             batch.draw(texBranca, 0, 0, larguraMundo, alturaMundo);
@@ -347,7 +351,7 @@ public class TelaMenu implements Screen {
                     batch.end();
                 }
             } catch (Exception e) {
-                // Erro no video vai pro jogo
+                // Erro video vai pro jogo
                 fadePosVideoAtivo = true;
                 timerFadeVideo = 0f;
             }
@@ -355,16 +359,17 @@ public class TelaMenu implements Screen {
     }
 
     @Override
+    // Ajuste de tela
     public void resize(int width, int height) {
         jogo.viewport.update(width, height, true);
     }
 
-    // Toca o som de seleção quando a opção muda
+    // Som seleção opção
     private void tocarSomSelecao() {
         jogo.audio.tocarSelecao();
     }
 
-    // Toca o som de confirmar
+    // Som confirmar
     private void iniciarConfirmacao(boolean novoJogo) {
         jogo.audio.tocarConfirmar();
         confirmouNovoJogo = novoJogo;
@@ -372,13 +377,13 @@ public class TelaMenu implements Screen {
         timerFadeOut = 0f;
     }
 
-    // Processa teclado e mouse para navegar e confirmar opções do menu
+    // Teclado mouse navegar confirmar opções menu
     private void tratarInput(float menuYBase) {
         float larguraMundo = jogo.viewport.getWorldWidth();
         float alturaMundo  = jogo.viewport.getWorldHeight();
         float menuX        = MARGEM_ESQUERDA;
 
-        // Navegação por teclado entre as opções
+        // Navegação teclado opções
         if (Gdx.input.isKeyJustPressed(Keys.UP)   || Gdx.input.isKeyJustPressed(Keys.W)) {
             opcaoSelecionada--;
             if (opcaoSelecionada < 0) opcaoSelecionada = opcoes.length - 1;
@@ -392,26 +397,26 @@ public class TelaMenu implements Screen {
             return;
         }
 
-        // Toca som se a seleção mudou via teclado
+        // Som seleção mudou via teclado
         if (opcaoSelecionada != opcaoAnterior) {
             tocarSomSelecao();
             opcaoAnterior = opcaoSelecionada;
         }
 
-        // Hover e clique do mouse nas opções
+        // Hover clique mouse opções
         coordenadasMouse.set(Gdx.input.getX(), Gdx.input.getY());
         jogo.viewport.unproject(coordenadasMouse);
 
         for (int i = 0; i < opcoes.length; i++) {
             float textoY = menuYBase - i * 45f;
 
-            // Área de clique ao redor do texto de cada opção
+            // Área clique redor texto cada opção
             float minX = menuX - 10f, maxX = menuX + 220f;
             float minY = textoY - 10f, maxY = textoY + 25f;
 
             if (coordenadasMouse.x >= minX && coordenadasMouse.x <= maxX &&
                 coordenadasMouse.y >= minY && coordenadasMouse.y <= maxY) {
-                // Toca som se o hover mudou a seleção
+                // Som hover mudou seleção
                 if (opcaoSelecionada != i) {
                     opcaoSelecionada = i;
                     tocarSomSelecao();
@@ -426,6 +431,7 @@ public class TelaMenu implements Screen {
     }
 
     @Override
+    // Liberação dos recursos
     public void dispose() {
         imagemFundo.dispose();
         imagemLogo.dispose();

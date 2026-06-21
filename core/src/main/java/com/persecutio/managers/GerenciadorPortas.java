@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-// Le e organiza as portas do mapa
+// Portas mapa
 public class GerenciadorPortas {
 
     private static final float FOLGA = 24f;
@@ -23,7 +23,7 @@ public class GerenciadorPortas {
 
     private final Rectangle rectAlcance = new Rectangle();
 
-// Carrega as portas definidas no Tiled
+// Portas definidas Tiled
     public GerenciadorPortas(TiledMap mapa, float escala,
                              Map<String, Map<String, Object>> defaults) {
         this.escala = escala;
@@ -74,7 +74,7 @@ public class GerenciadorPortas {
         }
     }
 
-// Busca uma porta no alcance do jogador
+// Porta alcance jogador
     public Porta acharProxima(Jogador jogador, boolean umbra) {
         rectAlcance.set(
             jogador.hitbox.x - FOLGA,
@@ -89,7 +89,7 @@ public class GerenciadorPortas {
         return null;
     }
 
-// Le uma propriedade do mapa
+// Propriedade mapa
     private static String lerProp(MapProperties props, String chave) {
         if (props.containsKey(chave)) {
             Object val = props.get(chave);
@@ -98,7 +98,7 @@ public class GerenciadorPortas {
         return null;
     }
 
-// Le um valor booleano com fallback
+// Valor booleano fallback
     private static boolean lerBool(MapProperties props, Map<String, Map<String, Object>> defaults,
                                    String classe, String chave, boolean fallback) {
         String val = lerProp(props, chave);
@@ -112,9 +112,10 @@ public class GerenciadorPortas {
         return fallback;
     }
 
+    // Consulta do estado
     public List<Porta> getPortas() { return portas; }
 
-// Dados de uma porta do mapa
+// Dados porta mapa
     public static class Porta {
         public final Rectangle area;
         public final String    nome;
@@ -146,6 +147,7 @@ public class GerenciadorPortas {
             this.condicao     = condicao;
         }
 
+        // Consulta do estado
         public boolean isAtivo(boolean umbra) {
             return umbra ? noUmbra : noReal;
         }

@@ -12,13 +12,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Gerencia os cômodos definidos no Tiled para controle de câmera e escurecimento
+// Gerencia cômodos definidos Tiled controle câmera
 public class GerenciadorComodos {
 
     private final List<Comodo> comodos = new ArrayList<>();
-    // Agrupa cômodos pelo nome para não escurecer entre si
+    // Agrupa cômodos pelo nome não escurecer
     private final Map<String, List<Comodo>> comodosPorNome = new HashMap<>();
 
+    // Criação da gerenciamento dos cômodos
     public GerenciadorComodos(TiledMap mapa, float escala) {
         CoordenadasTiled.setEscala(escala);
 
@@ -30,13 +31,13 @@ public class GerenciadorComodos {
 
             Rectangle r = ((RectangleMapObject) obj).getRectangle();
 
-            // Câmera estática faz o viewport se fixar no centro do cômodo
+            // Câmera estática faz viewport fixar centro
             boolean cameraEstatica = Boolean.TRUE.equals(obj.getProperties().get("cameraEstatica", Boolean.class));
 
-            // Le o nome do objeto no Tiled
+            // Nome objeto Tiled
             String nome = obj.getName();
             if (nome == null || nome.isEmpty()) nome = "";
-            // Remove numeros do final para agrupar
+            // Numeros final agrupar
             String nomeGrupo = normalizarNome(nome);
 
             Comodo c = new Comodo(CoordenadasTiled.paraMundo(r), cameraEstatica, nome, nomeGrupo);
@@ -45,14 +46,14 @@ public class GerenciadorComodos {
         }
     }
 
-    // Remove sufixo numerico para agrupar
+    // Sufixo numerico agrupar
     private static String normalizarNome(String nome) {
         if (nome == null || nome.isEmpty()) return "";
-        // Remove dígitos do final
+        // Dígitos final
         return nome.replaceAll("\\d+$", "").toLowerCase().trim();
     }
 
-    // Retorna o comodo que contem o ponto
+    // Comodo contem ponto
     public Comodo achar(float px, float py) {
         for (Comodo c : comodos) {
             if (c.area.contains(px, py)) return c;
@@ -60,14 +61,14 @@ public class GerenciadorComodos {
         return null;
     }
 
-    // Retorna os comodos do mesmo grupo
+    // Comodos mesmo grupo
     public List<Comodo> getComodosDoMesmoGrupo(Comodo atual) {
         if (atual == null || atual.nomeGrupo.isEmpty()) return new ArrayList<>();
         List<Comodo> grupo = comodosPorNome.get(atual.nomeGrupo);
         return grupo != null ? new ArrayList<>(grupo) : new ArrayList<>();
     }
 
-    // Calcula o ponto de spawn dentro do destino baseado no lado mais próximo da porta
+    // Ponto spawn dentro destino baseado lado
     public Vector2 spawnEntrada(Comodo destino, Rectangle porta) {
         Rectangle a = destino.area;
 
@@ -79,7 +80,7 @@ public class GerenciadorComodos {
         float menor  = Math.min(Math.min(dBaixo, dCima), Math.min(dEsq, dDir));
         float margem = 28f;
 
-        // Centro do comodo
+        // Centro comodo
         float cx = a.x + a.width  / 2f;
         float cy = a.y + a.height / 2f;
 
@@ -89,15 +90,16 @@ public class GerenciadorComodos {
         return                      new Vector2(a.x + a.width    - margem, cy);
     }
 
+    // Consulta do estado
     public List<Comodo> getComodos() { return comodos; }
 
-    // Dados do comodo carregado do Tiled
+    // Dados comodo carregado Tiled
     public static class Comodo {
         public final Rectangle area;
         public final boolean   cameraEstatica;
-        // Nome original do objeto
+        // Nome original objeto
         public final String    nome;
-        // Nome sem numero
+        // Nome numero
         public final String    nomeGrupo;
 
         Comodo(Rectangle area, boolean cameraEstatica, String nome, String nomeGrupo) {

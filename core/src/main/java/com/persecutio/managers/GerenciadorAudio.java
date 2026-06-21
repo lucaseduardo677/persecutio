@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 
+// Áudio do jogo
 public class GerenciadorAudio {
 
     private static final float VOLUME_MAXIMO       = 1.0f;
@@ -31,6 +32,7 @@ public class GerenciadorAudio {
     private long  idPasso = -1;
     private boolean passosTocando = false;
 
+    // Carregamento dos dados
     public void carregarMenu() {
         if (Gdx.files.internal("audio/musica_menu.wav").exists()) {
             musicaMenu = Gdx.audio.newMusic(Gdx.files.internal("audio/musica_menu.wav"));
@@ -46,6 +48,7 @@ public class GerenciadorAudio {
         }
     }
 
+    // Carregamento dos dados
     public void carregarJogo() {
         if (Gdx.files.internal("audio/ambiente.wav").exists()) {
             ambiente = Gdx.audio.newMusic(Gdx.files.internal("audio/ambiente.wav"));
@@ -61,24 +64,29 @@ public class GerenciadorAudio {
         }
     }
 
+    // Parada da reprodução
     public void pararMusicaMenu() {
         if (musicaMenu != null) {
             musicaMenu.stop();
         }
     }
 
+    // Reprodução do som
     public void tocarSelecao() {
         if (somSelecao != null) somSelecao.play(volumeEfeitos);
     }
 
+    // Reprodução do som
     public void tocarConfirmar() {
         if (somConfirmar != null) somConfirmar.play(volumeEfeitos);
     }
 
+    // Reprodução do som
     public void tocarSomPorta() {
         if (somPorta != null) somPorta.play(volumeEfeitos);
     }
 
+    // Reprodução do som
     public void tocarPassos() {
         if (somPasso != null && !passosTocando) {
             idPasso = somPasso.loop(volumeEfeitos * 0.5f);
@@ -86,6 +94,7 @@ public class GerenciadorAudio {
         }
     }
 
+    // Parada da reprodução
     public void pararPassos() {
         if (somPasso != null && passosTocando) {
             somPasso.stop(idPasso);
@@ -94,6 +103,7 @@ public class GerenciadorAudio {
         }
     }
 
+    // Atualização do estado
     public void atualizar(float delta) {
         if (fazendoFadeOut) {
             volumeFade = Math.max(0f, volumeFade - FADE_SPEED * delta);
@@ -113,30 +123,35 @@ public class GerenciadorAudio {
         }
     }
 
+    // Início do processo
     public void iniciarFadeOut() {
         fazendoFadeOut = true;
         fazendoFadeIn  = false;
         volumeFade = (ambiente != null) ? ambiente.getVolume() : volumeMusica;
     }
 
+    // Início do processo
     public void iniciarFadeIn() {
         fazendoFadeIn  = true;
         fazendoFadeOut = false;
         volumeFade = 0f;
     }
 
+    // Processamento interno
     public void aumentarVolume() {
         volumeMusica  = Math.min(VOLUME_MAXIMO, volumeMusica  + INCREMENTO_VOLUME);
         volumeEfeitos = Math.min(VOLUME_MAXIMO, volumeEfeitos + INCREMENTO_VOLUME);
         aplicarVolume();
     }
 
+    // Processamento interno
     public void diminuirVolume() {
         volumeMusica  = Math.max(0f, volumeMusica  - INCREMENTO_VOLUME);
         volumeEfeitos = Math.max(0f, volumeEfeitos - INCREMENTO_VOLUME);
         aplicarVolume();
     }
 
+    // Aplicação do ajuste
     private void aplicarVolume() {
         if (musicaMenu != null) musicaMenu.setVolume(volumeMusica);
         if (ambiente != null && !fazendoFadeOut && !fazendoFadeIn) {
@@ -147,9 +162,12 @@ public class GerenciadorAudio {
         }
     }
 
+    // Consulta do estado
     public float getVolumeMusica()  { return volumeMusica; }
+    // Consulta do estado
     public float getVolumeEfeitos() { return volumeEfeitos; }
 
+    // Tratamento da entrada
     public void tratarInputVolume() {
         if (Gdx.input.isKeyJustPressed(Keys.PLUS) || Gdx.input.isKeyJustPressed(Keys.EQUALS)) {
             aumentarVolume();
@@ -159,6 +177,7 @@ public class GerenciadorAudio {
         }
     }
 
+    // Liberação dos recursos
     public void dispose() {
         if (ambiente    != null) ambiente.dispose();
         if (musicaMenu  != null) musicaMenu.dispose();

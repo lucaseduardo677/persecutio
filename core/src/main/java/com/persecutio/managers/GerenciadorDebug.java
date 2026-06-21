@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 import com.persecutio.screens.TelaJogo;
 
-// Ferramentas de depuracao do jogo
+// Ferramentas depuracao jogo
 public class GerenciadorDebug {
 
     private final ShapeRenderer shapes;
@@ -24,11 +24,12 @@ public class GerenciadorDebug {
 
     private final Rectangle rectAlcance = new Rectangle();
 
+    // Criação da ferramentas de depuração
     public GerenciadorDebug() {
         shapes = new ShapeRenderer();
     }
 
-// Atalhos de depuracao
+// Atalhos depuracao
     public void tratarAtalhos(GerenciadorProgresso progresso) {
         boolean ctrl = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)
                     || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
@@ -47,7 +48,7 @@ public class GerenciadorDebug {
         }
     }
 
-// Desenha as hitboxes na tela
+// Hitboxes tela
     public void desenharHitboxes(TelaJogo jogo, float cameraX, float cameraY) {
         shapes.begin(ShapeType.Line);
 
@@ -78,7 +79,7 @@ public class GerenciadorDebug {
         shapes.end();
     }
 
-// Mostra as informacoes de depuracao
+// Informacoes depuracao
     public void desenharInfo(TelaJogo jogo, ContextoRender ctx) {
         float x  = 8f;
         float y  = ctx.vAltura - 10f;
@@ -121,7 +122,7 @@ public class GerenciadorDebug {
         ctx.fonteIndicadores.setColor(Color.WHITE);
     }
 
-// Procura a porta mais proxima
+// Procura porta mais proxima
     private GerenciadorPortas.Porta portaNoAlcance(TelaJogo jogo) {
         Rectangle hj = jogo.hitboxJogador;
         rectAlcance.set(
@@ -135,5 +136,6 @@ public class GerenciadorDebug {
         return null;
     }
 
+    // Liberação dos recursos
     public void dispose() { shapes.dispose(); }
 }

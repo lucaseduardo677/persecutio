@@ -7,23 +7,23 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.persecutio.managers.GerenciadorColisao;
 
-// Estado do jogador e movimentacao
+// Estado jogador movimentacao
 public class Jogador {
 
-// Direcoes usadas na animacao
+// Direcoes usadas animacao
     public static final int DIRECAO_BAIXO    = 0;
     public static final int DIRECAO_DIREITA  = 1;
     public static final int DIRECAO_ESQUERDA = 2;
     public static final int DIRECAO_CIMA     = 3;
 
-// Posicao do jogador no mundo
+// Posicao jogador mundo
     public float mundoX;
     public float mundoY;
 
     private final int TAMANHO = 32;
     private final float VELOCIDADE = 180f;
 
-// Componentes de movimento e colisao
+// Componentes movimento colisao
     private final HitboxConfig       hitboxConfig;
     public  final Rectangle          hitbox;
     private final ControladorInput   controladorInput;
@@ -33,7 +33,7 @@ public class Jogador {
 
     private final TextureRegion[][] framesSprites;
 
-// Cria o jogador com a textura do personagem
+// Jogador textura personagem
     public Jogador(float x, float y, Texture spriteSheet) {
         this.mundoX = x;
         this.mundoY = y;
@@ -54,7 +54,7 @@ public class Jogador {
         );
     }
 
-// Atualiza movimento e animacao do jogador
+// Movimento animacao jogador
     public void atualizar(float delta, GerenciadorColisao sistemaColisao, boolean umbra) {
         hitbox.setPosition(mundoX + hitboxConfig.offsetX(), mundoY + hitboxConfig.offsetY());
 
@@ -84,24 +84,30 @@ public class Jogador {
         animador.atualizar(delta, andando);
     }
 
-// Desenha o frame atual do personagem
+// Frame atual personagem
     public void desenhar(SpriteBatch batch, float telaX, float telaY) {
         if (framesSprites == null) return;
         TextureRegion frameAtual = framesSprites[controladorInput.getDirecaoAnimacao()][animador.getFrame()];
         batch.draw(frameAtual, telaX - 28, telaY - 28, 56, 56);
     }
 
-// Move o jogador para outra posicao
+// Jogador outra posicao
     public void teleportar(float novoX, float novoY) {
         mundoX = novoX;
         mundoY = novoY;
         hitbox.setPosition(mundoX + hitboxConfig.offsetX(), mundoY + hitboxConfig.offsetY());
     }
 
+    // Processamento interno
     public float   hitboxOffsetX()  { return hitboxConfig.offsetX(); }
+    // Processamento interno
     public float   hitboxOffsetY()  { return hitboxConfig.offsetY(); }
+    // Consulta do estado
     public boolean isAndando()      { return andando; }
+    // Consulta do estado
     public int     getDirecao()     { return controladorInput.getDirecaoAnimacao(); }
+    // Consulta do estado
     public int     getFrame()       { return animador.getFrame(); }
+    // Consulta do estado
     public int     getTamanho()     { return TAMANHO; }
 }

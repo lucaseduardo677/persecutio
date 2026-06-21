@@ -6,7 +6,7 @@ import com.persecutio.entities.Jogador;
 
 import java.util.Map;
 
-// Controla o progresso da historia
+// Progresso historia
 public class GerenciadorProgresso {
 
     private static final float FOLGA = 8f;
@@ -35,16 +35,18 @@ public class GerenciadorProgresso {
 
     private final Rectangle rectTemp = new Rectangle();
 
+    // Criação da progresso da história
     public GerenciadorProgresso(GerenciadorColisao colisao, GerenciadorPortas portas) {
         this.colisao = colisao;
         this.portas  = portas;
     }
 
-// Alterna entre os mundos
+// Mundos
     public void alternarUmbra() {
         mundoUmbra = !mundoUmbra;
     }
 
+    // Processamento interno
     private Rectangle hitboxFolga(Jogador jogador) {
         rectTemp.set(
             jogador.hitbox.x - FOLGA,
@@ -55,7 +57,7 @@ public class GerenciadorProgresso {
         return rectTemp;
     }
 
-// Processa a interacao do jogador
+// Interacao jogador
     public void tratarInteracao(Jogador jogador) {
         cinematica   = false;
         abriuEspelho = false;
@@ -70,7 +72,7 @@ public class GerenciadorProgresso {
         }
     }
 
-// Interacoes do mundo real
+// Interacoes mundo real
     private void interagirReal(Rectangle hitboxInteracao) {
         GerenciadorColisao.ObjetoColisao pilula = colisao.getInterativo("pilula", false);
         if (pilula != null && hitboxInteracao.overlaps(pilula.area)) {
@@ -116,7 +118,7 @@ public class GerenciadorProgresso {
         }
     }
 
-// Interacoes do mundo umbra
+// Interacoes mundo umbra
     private void interagirUmbra(Rectangle hitboxInteracao, Jogador jogador) {
         GerenciadorColisao.ObjetoColisao cama = colisao.getInterativo("cama", true);
         if (cama != null && hitboxInteracao.overlaps(cama.area)) {
@@ -147,7 +149,7 @@ public class GerenciadorProgresso {
         }
     }
 
-// Valida a senha da gaveta
+// Senha gaveta
     public boolean validarSenha(String senha) {
         if (pecaGaveta) return true;
 
@@ -163,7 +165,7 @@ public class GerenciadorProgresso {
         return false;
     }
 
-// Limpa o aviso quando o jogador sai da area
+// Aviso jogador sai area
     public void verificarAfastamento(Jogador jogador) {
         if (aviso.isEmpty()) return;
 
@@ -180,7 +182,7 @@ public class GerenciadorProgresso {
         aviso = "";
     }
 
-// Avalia a condicao de destranque
+// Avalia condicao destranque
     private boolean avaliarCondicao(String condicao) {
         if (condicao == null || condicao.trim().isEmpty()) return true;
         String c = condicao.trim();
@@ -204,37 +206,49 @@ public class GerenciadorProgresso {
         return true;
     }
 
-// Verifica se a porta pode abrir
+// Porta pode abrir
     public boolean podeDestrancar(GerenciadorPortas.Porta porta) {
         if (!porta.trancado)     return true;
         if (!porta.destrancavel) return false;
         return avaliarCondicao(porta.condicao);
     }
 
-// Atualiza a mensagem exibida
+// Mensagem exibida
     public void setAviso(String msg) { this.aviso = msg; }
 
-// Soma uma parte na progressao
+// Parte progressao
     public void adicionarParte() {
         if (partes < 3) partes++;
     }
 
-// Ajusta o total de partes
+// Total partes
     public void forcarPartes(int valor) {
         partes = Math.min(3, Math.max(0, valor));
     }
 
+    // Consulta do estado
     public boolean isUmbra()       { return mundoUmbra; }
+    // Consulta do estado
     public int     getPartes()     { return partes; }
+    // Consulta do estado
     public int     getMissao()     { return missao; }
+    // Consulta do estado
     public boolean isDestrancada() { return destrancada; }
+    // Consulta do estado
     public boolean isPecaEspelho() { return pecaEspelho; }
+    // Consulta do estado
     public boolean isPecaGaveta()  { return pecaGaveta; }
+    // Consulta do estado
     public boolean isPecaNpc()     { return pecaNpc; }
+    // Consulta do estado
     public boolean isSabePalavra() { return sabePalavra; }
 
+    // Consulta do estado
     public String  getAviso()      { return aviso; }
+    // Consulta do estado
     public boolean isCinematica()  { return cinematica; }
+    // Consulta do estado
     public boolean isEspelho()     { return abriuEspelho; }
+    // Consulta do estado
     public boolean isGaveta()      { return abriuGaveta; }
 }

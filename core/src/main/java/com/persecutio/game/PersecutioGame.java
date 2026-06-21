@@ -13,10 +13,10 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.persecutio.managers.GerenciadorAudio;
 import com.persecutio.screens.TelaMenu;
 
-// Ponto de entrada do jogo
+// Ponto entrada jogo
 public class PersecutioGame extends Game {
 
-    // Resolução virtual base do viewport
+    // Resolução virtual base viewport
     public static final int V_LARGURA = 640;
     public static final int V_ALTURA  = 480;
 
@@ -25,13 +25,14 @@ public class PersecutioGame extends Game {
     public ExtendViewport viewport;
     public GerenciadorAudio audio;
 
-    // Fontes compartilhadas entre telas
+    // Fontes compartilhadas telas
     public BitmapFont fonteMenu;
     public BitmapFont fonteDialogos;
     public BitmapFont fonteNomes;
     public BitmapFont fonteIndicadores;
 
     @Override
+    // Processamento interno
     public void create() {
         batch    = new SpriteBatch();
         assets   = new AssetManager();
@@ -43,7 +44,7 @@ public class PersecutioGame extends Game {
         setScreen(new TelaMenu(this));
     }
 
-    // Recria as fontes escaladas para a altura física atual da janela
+    // Recria fontes escaladas altura física atual
     public void atualizarFontes(int alturaFisica) {
         if (fonteMenu        != null) fonteMenu.dispose();
         if (fonteDialogos    != null) fonteDialogos.dispose();
@@ -58,7 +59,7 @@ public class PersecutioGame extends Game {
         fonteIndicadores = carregarFonte("fonts/fonte_indicadores.ttf", 12, proporcaoY, Color.WHITE, true);
     }
 
-    // Carrega a fonte true type com borda opcional
+    // Fonte type borda opcional
     private BitmapFont carregarFonte(String caminho, int tamanhoVirtual,
                                      float proporcaoY, Color cor, boolean comBorda) {
         int tamanhoFisico = Math.max(1, Math.round(tamanhoVirtual * proporcaoY));
@@ -80,24 +81,25 @@ public class PersecutioGame extends Game {
                 BitmapFont fonte = gerador.generateFont(parametro);
                 gerador.dispose();
 
-                // Escala inversa para compensar a geração em tamanho físico
+                // Escala inversa compensar geração tamanho físico
                 fonte.getData().setScale(1f / proporcaoY);
                 return fonte;
             } catch (Exception e) {
-                // Fallback para a fonte padrão do LibGDX se o arquivo falhar
+                // Fallback fonte padrão LibGDX arquivo falhar
                 BitmapFont padrao = new BitmapFont();
                 padrao.getData().setScale(tamanhoVirtual / 15f);
                 return padrao;
             }
         }
 
-        // Fonte padrão quando o arquivo não existe
+        // Fonte padrão arquivo não existe
         BitmapFont padrao = new BitmapFont();
         padrao.getData().setScale(tamanhoVirtual / 15f);
         return padrao;
     }
 
     @Override
+    // Ajuste de tela
     public void resize(int width, int height) {
         viewport.update(width, height, true);
         atualizarFontes(height);
@@ -105,6 +107,7 @@ public class PersecutioGame extends Game {
     }
 
     @Override
+    // Liberação dos recursos
     public void dispose() {
         batch.dispose();
         assets.dispose();

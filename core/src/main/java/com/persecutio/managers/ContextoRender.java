@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.persecutio.game.PersecutioGame;
 
-// Contexto compartilhado de renderizacao
+// Contexto compartilhado renderizacao
 public class ContextoRender {
 
     public SpriteBatch batch;
@@ -27,9 +27,10 @@ public class ContextoRender {
     public Camera   camera;
     public Viewport viewport;
 
+    // Criação da contexto de renderização
     public ContextoRender() {}
 
-// Atualiza camera e referencias de tela
+// Camera referencias tela
     public void atualizar(PersecutioGame jogo, float jogadorMundoX, float jogadorMundoY) {
         this.batch            = jogo.batch;
         this.fonteMenu        = jogo.fonteMenu;
@@ -48,7 +49,7 @@ public class ContextoRender {
         this.cameraY = Math.round(centroY - jogadorMundoY);
     }
 
-// Ajusta a camera para um comodo estatico
+// Camera comodo estatico
     public void atualizar(PersecutioGame jogo, float jogadorMundoX, float jogadorMundoY,
                           GerenciadorComodos.Comodo comodo) {
         atualizar(jogo, jogadorMundoX, jogadorMundoY);
@@ -61,7 +62,8 @@ public class ContextoRender {
         }
     }
 
-// Converte coordenadas do mundo para tela
+// Coordenadas mundo tela
     public float mundoParaTelaX(float mundoX) { return cameraX + mundoX; }
+    // Processamento interno
     public float mundoParaTelaY(float mundoY) { return cameraY + mundoY; }
 }

@@ -9,7 +9,7 @@ public class ObjetoInterativo {
     public float   mundoX, mundoY;
     public float   largura, altura;
 
-    // Define se o objeto está ativo no mundo real e no mundo umbra
+    // Objeto ativo mundo real mundo umbra
     public boolean ativoNoMundoReal;
     public boolean ativoNoMundoUmbra;
 
@@ -24,7 +24,7 @@ public class ObjetoInterativo {
         this.ativoNoMundoUmbra = noUmbra;
     }
 
-    // Retorna a área de colisão do objeto como Rectangle
+    // Área colisão objeto Rectangle
     public Rectangle getArea() {
         return new Rectangle(mundoX, mundoY, largura, altura);
     }
