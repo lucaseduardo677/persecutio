@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 import com.persecutio.screens.TelaJogo;
 
 // Ferramentas depuracao jogo
@@ -29,7 +30,7 @@ public class GerenciadorDebug {
         shapes = new ShapeRenderer();
     }
 
-// Atalhos depuracao
+    // Atalhos depuracao
     public void tratarAtalhos(GerenciadorProgresso progresso) {
         boolean ctrl = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)
                     || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
@@ -48,7 +49,7 @@ public class GerenciadorDebug {
         }
     }
 
-// Hitboxes tela
+    // Hitboxes tela de forma direta e sem inversao
     public void desenharHitboxes(TelaJogo jogo, float cameraX, float cameraY) {
         shapes.begin(ShapeType.Line);
 
@@ -79,7 +80,7 @@ public class GerenciadorDebug {
         shapes.end();
     }
 
-// Informacoes depuracao
+    // Informacoes depuracao
     public void desenharInfo(TelaJogo jogo, ContextoRender ctx) {
         float x  = 8f;
         float y  = ctx.vAltura - 10f;
@@ -91,8 +92,7 @@ public class GerenciadorDebug {
         ctx.fonteIndicadores.setColor(Color.WHITE);
         ctx.fonteIndicadores.draw(ctx.batch, "FPS: " + Gdx.graphics.getFramesPerSecond(), x, y); y -= dy;
 
-        Rectangle hj = jogo.hitboxJogador;
-        ctx.fonteIndicadores.draw(ctx.batch, "Pos: " + (int)hj.x + ", " + (int)hj.y, x, y); y -= dy;
+        ctx.fonteIndicadores.draw(ctx.batch, "Pos: " + (int)jogo.jogador.mundoX + ", " + (int)jogo.jogador.mundoY, x, y); y -= dy;
 
         ctx.fonteIndicadores.setColor(jogo.mundoUmbra ? Color.MAGENTA : Color.CYAN);
         ctx.fonteIndicadores.draw(ctx.batch, "Mundo: " + (jogo.mundoUmbra ? "UMBRA" : "REAL"), x, y); y -= dy;
@@ -122,7 +122,7 @@ public class GerenciadorDebug {
         ctx.fonteIndicadores.setColor(Color.WHITE);
     }
 
-// Procura porta mais proxima
+    // Procura porta mais proxima
     private GerenciadorPortas.Porta portaNoAlcance(TelaJogo jogo) {
         Rectangle hj = jogo.hitboxJogador;
         rectAlcance.set(

@@ -6,8 +6,8 @@ import com.badlogic.gdx.math.Vector2;
 // Coordenadas Tiled coordenadas mundo aplicando escala
 public final class CoordenadasTiled {
 
-    // Escala padrão pelo projeto
-    private static float escala = 2f;
+    private static float escala = 1.375f;
+    private static float alturaMapa = 1408f;
 
     // Criação da conversão de coordenadas
     private CoordenadasTiled() {}
@@ -22,19 +22,36 @@ public final class CoordenadasTiled {
         return escala;
     }
 
+    // Define altura do mapa
+    public static void setAlturaMapa(float novaAltura) {
+        alturaMapa = novaAltura;
+    }
+
+    // Consulta do estado
+    public static float getAlturaMapa() {
+        return alturaMapa;
+    }
+
     // Valor escalar Tiled mundo
     public static float paraMundo(float tiled) {
         return tiled * escala;
     }
 
-    // Processamento interno
+    // Formula de conversao com offset aplicada exclusivamente para o jogador
     public static Vector2 paraMundo(float tiledX, float tiledY) {
-        return new Vector2(tiledX * escala, tiledY * escala);
+        float x = tiledX * 1.375f - 1.0f;
+        float y = (alturaMapa - tiledY) * 1.375f - 53.75f;
+        return new Vector2(x, y);
     }
 
-    // Retângulo Tiled mundo
+    // Retângulo Tiled mundo padrao (sem offsets) para colisoes do cenario
     public static Rectangle paraMundo(Rectangle r) {
-        return new Rectangle(r.x * escala, r.y * escala, r.width * escala, r.height * escala);
+        return new Rectangle(
+            r.x * escala,
+            r.y * escala,
+            r.width * escala,
+            r.height * escala
+        );
     }
 
     // Coordenadas mundo
@@ -45,7 +62,7 @@ public final class CoordenadasTiled {
             if (partes.length != 2) return null;
             float x = Float.parseFloat(partes[0].trim());
             float y = Float.parseFloat(partes[1].trim());
-            return new Vector2(x, y);
+            return paraMundo(x, y);
         } catch (NumberFormatException e) {
             return null;
         }
@@ -53,14 +70,14 @@ public final class CoordenadasTiled {
 
     // Coordenadas Tiled escala
     public static Vector2 parseCoordenadasTiled(String str) {
-        Vector2 mundo = parseCoordenadasMundo(str);
-        if (mundo == null) return null;
-        return new Vector2(mundo.x * escala, mundo.y * escala);
+        return parseCoordenadasMundo(str);
     }
 
-    // Coordenada mundo volta Tiled
+    // Formula inversa com offset aplicada exclusivamente para o jogador
     public static Vector2 paraTiled(float mundoX, float mundoY) {
-        return new Vector2(mundoX / escala, mundoY / escala);
+        float x = (mundoX + 1.0f) / 1.375f;
+        float y = alturaMapa - (mundoY + 53.75f) / 1.375f;
+        return new Vector2(x, y);
     }
 
     // Processamento interno

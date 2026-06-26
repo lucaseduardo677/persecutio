@@ -23,7 +23,7 @@ public class GerenciadorPortas {
 
     private final Rectangle rectAlcance = new Rectangle();
 
-// Portas definidas Tiled
+    // Portas definidas Tiled
     public GerenciadorPortas(TiledMap mapa, float escala,
                              Map<String, Map<String, Object>> defaults) {
         this.escala = escala;
@@ -50,15 +50,15 @@ public class GerenciadorPortas {
                 if (spawn == null) continue;
             }
 
-            String classe = props.get("type")  != null ? props.get("type").toString()  :
+            String classOrig = props.get("type")  != null ? props.get("type").toString()  :
                             props.get("class") != null ? props.get("class").toString() : "";
 
             String  video        = lerProp(props, "video");
-            boolean usarFade     = lerBool(props, defaults, classe, "fade",         true);
-            boolean noUmbra      = lerBool(props, defaults, classe, "umbra",        false);
-            boolean noReal       = lerBool(props, defaults, classe, "real",         true);
-            boolean trancado     = lerBool(props, defaults, classe, "trancado",     false);
-            boolean destrancavel = lerBool(props, defaults, classe, "destrancavel", false);
+            boolean usarFade     = lerBool(props, defaults, classOrig, "fade",         true);
+            boolean noUmbra      = lerBool(props, defaults, classOrig, "umbra",        false);
+            boolean noReal       = lerBool(props, defaults, classOrig, "real",         true);
+            boolean trancado     = lerBool(props, defaults, classOrig, "trancado",     false);
+            boolean destrancavel = lerBool(props, defaults, classOrig, "destrancavel", false);
 
             String condicao = lerProp(props, "condicao");
             if (condicao == null) condicao = "";
@@ -74,7 +74,7 @@ public class GerenciadorPortas {
         }
     }
 
-// Porta alcance jogador
+    // Porta alcance jogador
     public Porta acharProxima(Jogador jogador, boolean umbra) {
         rectAlcance.set(
             jogador.hitbox.x - FOLGA,
@@ -89,7 +89,7 @@ public class GerenciadorPortas {
         return null;
     }
 
-// Propriedade mapa
+    // Propriedade mapa
     private static String lerProp(MapProperties props, String chave) {
         if (props.containsKey(chave)) {
             Object val = props.get(chave);
@@ -98,13 +98,13 @@ public class GerenciadorPortas {
         return null;
     }
 
-// Valor booleano fallback
+    // Valor booleano fallback
     private static boolean lerBool(MapProperties props, Map<String, Map<String, Object>> defaults,
-                                   String classe, String chave, boolean fallback) {
+                                   String classOrig, String chave, boolean fallback) {
         String val = lerProp(props, chave);
         if (val != null) return Boolean.parseBoolean(val) || val.equals("1") || val.equalsIgnoreCase("yes");
 
-        Map<String, Object> cd = defaults.get(classe.toLowerCase());
+        Map<String, Object> cd = defaults.get(classOrig.toLowerCase());
         if (cd != null && cd.containsKey(chave)) {
             Object v = cd.get(chave);
             if (v instanceof Boolean) return (Boolean) v;
@@ -115,7 +115,7 @@ public class GerenciadorPortas {
     // Consulta do estado
     public List<Porta> getPortas() { return portas; }
 
-// Dados porta mapa
+    // Dados porta mapa
     public static class Porta {
         public final Rectangle area;
         public final String    nome;

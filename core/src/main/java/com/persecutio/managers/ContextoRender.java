@@ -30,7 +30,7 @@ public class ContextoRender {
     // Criação da contexto de renderização
     public ContextoRender() {}
 
-// Camera referencias tela
+    // Camera referencias tela
     public void atualizar(PersecutioGame jogo, float jogadorMundoX, float jogadorMundoY) {
         this.batch            = jogo.batch;
         this.fonteMenu        = jogo.fonteMenu;
@@ -49,7 +49,7 @@ public class ContextoRender {
         this.cameraY = Math.round(centroY - jogadorMundoY);
     }
 
-// Camera comodo estatico
+    // Camera comodo estatico
     public void atualizar(PersecutioGame jogo, float jogadorMundoX, float jogadorMundoY,
                           GerenciadorComodos.Comodo comodo) {
         atualizar(jogo, jogadorMundoX, jogadorMundoY);
@@ -62,7 +62,7 @@ public class ContextoRender {
         }
     }
 
-// Coordenadas mundo tela
+    // Coordenadas mundo tela
     public float mundoParaTelaX(float mundoX) { return cameraX + mundoX; }
     // Processamento interno
     public float mundoParaTelaY(float mundoY) { return cameraY + mundoY; }

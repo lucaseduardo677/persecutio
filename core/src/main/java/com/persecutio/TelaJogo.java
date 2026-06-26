@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 
 import com.persecutio.game.PersecutioGame;
@@ -24,22 +25,23 @@ import com.persecutio.managers.GerenciadorProgresso;
 import com.persecutio.managers.GerenciadorRenderizacao;
 import com.persecutio.managers.GerenciadorUI;
 
-// Tela principal do jogo
+// tela principal do jogo
 public class TelaJogo implements Screen {
 
     private final PersecutioGame jogo;
 
-    public  GerenciadorColisao      sistemaColisao;
-    private GerenciadorDebug        sistemaDebug;
-    private GerenciadorAudio        sistemaAudio;
-    public  GerenciadorProgresso    progresso;
-    private GerenciadorUI           interfaceJogo;
-    private GerenciadorRenderizacao renderizador;
-    private GerenciadorComodos      gerComodos;
-    public  GerenciadorPortas       gerPortas;
-    private TiledMap                mapaTiled;
+    public  GerenciadorColisao         sistemaColisao;
+    private GerenciadorDebug           sistemaDebug;
+    private GerenciadorAudio           sistemaAudio;
+    public  GerenciadorProgresso       progresso;
+    private GerenciadorUI              interfaceJogo;
+    private GerenciadorRenderizacao    renderizador;
+    private GerenciadorComodos         gerComodos;
+    public  GerenciadorPortas          gerPortas;
+    private TiledMap                   mapaTiled;
+    private OrthogonalTiledMapRenderer rendererTiled;
 
-    private Jogador jogador;
+    public  Jogador jogador;
 
     public Rectangle hitboxJogador;
 
@@ -51,36 +53,61 @@ public class TelaJogo implements Screen {
 
     private GerenciadorComodos.Comodo comodoAtual = null;
 
-    private Texture imagemMapa;
     private Texture spriteSheet;
-    private Texture luzMapa;
 
     private Texture imgPorta0, imgPorta1, imgPorta2, imgPorta3;
     private Texture imgEspelho;
 
-    private static final float DURACAO_FADE_IN_JOGO = 1.0f;
-    private float timerFadeInJogo = 0f;
-    private boolean fadeInJogoAtivo = true;
+    private static final float DURACAO_FADE = 1.0f;
+    private float timerFade  = 0f;
+    private boolean fadeAtivo = true;
     private Texture texBranca;
 
     private final ContextoRender ctx = new ContextoRender();
 
-    // Criação da tela principal do jogo
+    // criacao da tela principal do jogo
     public TelaJogo(PersecutioGame jogo) {
         this.jogo = jogo;
     }
 
+    // carrega textura com fallback para branca se nao encontrar
+    private Texture carregarTextura(String caminho) {
+        if (Gdx.files.internal(caminho).exists()) {
+            try { return new Texture(Gdx.files.internal(caminho)); }
+            catch (Exception ignored) {}
+        }
+        if (caminho.endsWith(".png")) {
+            for (String ext : new String[]{ ".jpeg", ".jpg" }) {
+                String alt = caminho.substring(0, caminho.length() - 4) + ext;
+                if (Gdx.files.internal(alt).exists()) {
+                    try { return new Texture(Gdx.files.internal(alt)); }
+                    catch (Exception ignored) {}
+                }
+            }
+        } else if (caminho.endsWith(".jpeg") || caminho.endsWith(".jpg")) {
+            String alt = caminho.substring(0, caminho.lastIndexOf('.')) + ".png";
+            if (Gdx.files.internal(alt).exists()) {
+                try { return new Texture(Gdx.files.internal(alt)); }
+                catch (Exception ignored) {}
+            }
+        }
+        Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pm.setColor(Color.WHITE);
+        pm.fill();
+        Texture fallback = new Texture(pm);
+        pm.dispose();
+        return fallback;
+    }
+
     @Override
-    // Carregamento dos recursos
+    // carregamento de recursos ao entrar na tela
     public void show() {
-        imagemMapa  = new Texture(Gdx.files.internal("img/quarto.png"));
-        spriteSheet = new Texture(Gdx.files.internal("img/personagem.png"));
-        luzMapa     = new Texture(Gdx.files.internal("img/luz-sombra-temp.png"));
-        imgPorta0   = new Texture(Gdx.files.internal("img/parte1.png"));
-        imgPorta1   = new Texture(Gdx.files.internal("img/parte2.png"));
-        imgPorta2   = new Texture(Gdx.files.internal("img/parte3.png"));
-        imgPorta3   = new Texture(Gdx.files.internal("img/parte4.png"));
-        imgEspelho  = new Texture(Gdx.files.internal("img/reflexo-espelho.png"));
+        spriteSheet = carregarTextura("img/personagem.png");
+        imgPorta0   = carregarTextura("img/parte1.png");
+        imgPorta1   = carregarTextura("img/parte2.png");
+        imgPorta2   = carregarTextura("img/parte3.png");
+        imgPorta3   = carregarTextura("img/parte4.png");
+        imgEspelho  = carregarTextura("img/reflexo-espelho.png");
 
         Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pm.setColor(Color.BLACK);
@@ -88,8 +115,7 @@ public class TelaJogo implements Screen {
         texBranca = new Texture(pm);
         pm.dispose();
 
-        for (Texture t : new Texture[]{imagemMapa, spriteSheet, luzMapa,
-                                        imgPorta0, imgPorta1, imgPorta2, imgPorta3, imgEspelho})
+        for (Texture t : new Texture[]{ spriteSheet, imgPorta0, imgPorta1, imgPorta2, imgPorta3, imgEspelho })
             t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
         sistemaAudio = jogo.audio;
@@ -99,8 +125,8 @@ public class TelaJogo implements Screen {
         pmLoader.textureMinFilter = Texture.TextureFilter.Nearest;
         pmLoader.textureMagFilter = Texture.TextureFilter.Nearest;
 
-        mapaTiled      = new TmxMapLoader().load("map/tiles/mapa_quarto.tmx", pmLoader);
-        int escala     = 2;
+        mapaTiled      = new TmxMapLoader().load("map/casaderepouso.tmx", pmLoader);
+        float escala   = 1.375f;
 
         sistemaColisao = new GerenciadorColisao(mapaTiled, escala, "map/mapa.tiled-project");
         gerComodos     = new GerenciadorComodos(mapaTiled, escala);
@@ -109,25 +135,26 @@ public class TelaJogo implements Screen {
         progresso      = new GerenciadorProgresso(sistemaColisao, gerPortas);
         interfaceJogo  = new GerenciadorUI();
         interfaceJogo.inicializar(jogo.fonteDialogos, jogo.viewport, sistemaAudio);
-        renderizador   = new GerenciadorRenderizacao();
+        renderizador   = new GerenciadorRenderizacao(escala);
+        rendererTiled  = new OrthogonalTiledMapRenderer(mapaTiled, escala, jogo.batch);
 
-        float inicialX = 75f;
-        float inicialY = (320f * escala) - 12f - 20f;
+        float inicialX = 75f * escala;
+        float inicialY = (768f + 180f) * escala;
         jogador        = new Jogador(inicialX, inicialY, spriteSheet);
         hitboxJogador  = jogador.hitbox;
 
-        timerFadeInJogo = 0f;
-        fadeInJogoAtivo = true;
+        timerFade  = 0f;
+        fadeAtivo  = true;
     }
 
     @Override
-    // Atualização e desenho
+    // atualizacao e desenho do frame
     public void render(float delta) {
-        if (fadeInJogoAtivo) {
-            timerFadeInJogo += delta;
-            if (timerFadeInJogo >= DURACAO_FADE_IN_JOGO) {
-                timerFadeInJogo = DURACAO_FADE_IN_JOGO;
-                fadeInJogoAtivo = false;
+        if (fadeAtivo) {
+            timerFade += delta;
+            if (timerFade >= DURACAO_FADE) {
+                timerFade = DURACAO_FADE;
+                fadeAtivo = false;
             }
         }
 
@@ -155,27 +182,19 @@ public class TelaJogo implements Screen {
         else
             ctx.atualizar(jogo, jogador.mundoX, jogador.mundoY);
 
+        // renderiza o mapa com cull de comodos via scissor test
+        // (renderizarMapa gerencia o transformMatrix internamente)
+        renderizador.renderizarMapa(ctx, rendererTiled, gerComodos, comodoAtual, umbra);
+
         batch.begin();
 
-        renderizador.desenharMapa(ctx, imagemMapa);
         renderizador.desenharNpcs(ctx, sistemaColisao, umbra);
-
-        if (umbra) {
-            renderizador.desenharUmbra(ctx, imagemMapa);
-        }
-
-        renderizador.desenharComodos(ctx, gerComodos, jogador);
 
         jogador.desenhar(batch,
             Math.round(ctx.mundoParaTelaX(jogador.mundoX)),
             Math.round(ctx.mundoParaTelaY(jogador.mundoY)));
 
-        // Clone jogador espelhado
-        // Renderiza apenas
-        // Jogador comodo quarto
-        // Objeto reflexo ativo mundo atual
-        // Jogador visivel area reflexo
-        // Espelho interativo continua interface
+        // reflexo no espelho apenas quando o jogador esta no quarto e na area do espelho
         if (comodoAtual != null && "quarto".equals(comodoAtual.nomeGrupo)) {
             Rectangle areaReflexo = sistemaColisao.getReflexoArea(umbra);
             if (areaReflexo != null && jogador.hitbox.overlaps(areaReflexo)) {
@@ -183,7 +202,6 @@ public class TelaJogo implements Screen {
             }
         }
 
-        renderizador.desenharLuz(ctx, luzMapa);
         interfaceJogo.desenharTutorial(ctx);
 
         if (interfaceJogo.isNpc()) {
@@ -191,22 +209,21 @@ public class TelaJogo implements Screen {
             interfaceJogo.desenharNpc(ctx, imgPorta3);
             batch.end();
             interfaceJogo.desenharFadeEVideo(ctx);
-            desenharFadeInJogo(ctx);
+            desenharFade(ctx);
             return;
         }
         if (interfaceJogo.isEspelho()) {
             interfaceJogo.desenharEspelho(ctx, imgEspelho);
             batch.end();
             interfaceJogo.desenharFadeEVideo(ctx);
-            desenharFadeInJogo(ctx);
+            desenharFade(ctx);
             return;
         }
         if (interfaceJogo.isPorta()) {
-            interfaceJogo.desenharPorta(ctx,
-                imgPorta0, imgPorta1, imgPorta2, imgPorta3, progresso.getPartes());
+            interfaceJogo.desenharPorta(ctx, imgPorta0, imgPorta1, imgPorta2, imgPorta3, progresso.getPartes());
             batch.end();
             interfaceJogo.desenharFadeEVideo(ctx);
-            desenharFadeInJogo(ctx);
+            desenharFade(ctx);
             return;
         }
         if (interfaceJogo.isSenha()) {
@@ -215,7 +232,7 @@ public class TelaJogo implements Screen {
             interfaceJogo.desenharFadeEVideo(ctx);
             interfaceJogo.atualizarSenha(delta);
             processarSenha();
-            desenharFadeInJogo(ctx);
+            desenharFade(ctx);
             return;
         }
 
@@ -235,13 +252,13 @@ public class TelaJogo implements Screen {
             batch.end();
         }
 
-        desenharFadeInJogo(ctx);
+        desenharFade(ctx);
     }
 
-    // Desenho dos elementos
-    private void desenharFadeInJogo(ContextoRender ctx) {
-        if (!fadeInJogoAtivo) return;
-        float alfa = 1f - (timerFadeInJogo / DURACAO_FADE_IN_JOGO);
+    // desenha fade preto de entrada na tela
+    private void desenharFade(ContextoRender ctx) {
+        if (!fadeAtivo) return;
+        float alfa = 1f - (timerFade / DURACAO_FADE);
         if (alfa <= 0.001f) return;
 
         Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -254,7 +271,7 @@ public class TelaJogo implements Screen {
         ctx.batch.end();
     }
 
-    // Tratamento da entrada
+    // processa tentativa de senha da gaveta
     private void processarSenha() {
         String senha = interfaceJogo.pegarSenha();
         if (senha == null) return;
@@ -262,7 +279,7 @@ public class TelaJogo implements Screen {
         else                               interfaceJogo.senhaErro();
     }
 
-    // Tratamento da entrada
+    // trata entrada do jogador e acoes de jogo
     private void tratarInput(float delta) {
         sistemaAudio.tratarInputVolume();
 
@@ -294,7 +311,7 @@ public class TelaJogo implements Screen {
         interfaceJogo.atualizarTutorial(andando, delta);
     }
 
-    // Tratamento da entrada
+    // trata interacao do jogador com portas e objetos
     private void tratarInteracao() {
         GerenciadorPortas.Porta porta = gerPortas.acharProxima(jogador, mundoUmbra);
         if (porta != null) {
@@ -304,8 +321,7 @@ public class TelaJogo implements Screen {
                 if (porta.destrancavel && progresso.podeDestrancar(porta)) {
                     sistemaColisao.destrancar(porta.nome);
                     sistemaAudio.tocarSomPorta();
-                    String videoPath = porta.video;
-                    interfaceJogo.iniciarFade(videoPath, () ->
+                    interfaceJogo.iniciarFade(porta.video, () ->
                         jogador.teleportar(porta.spawn.x, porta.spawn.y)
                     );
                 } else {
@@ -333,11 +349,9 @@ public class TelaJogo implements Screen {
     }
 
     @Override
-    // Liberação dos recursos
+    // liberacao de recursos ao sair da tela
     public void dispose() {
-        imagemMapa.dispose();
         spriteSheet.dispose();
-        luzMapa.dispose();
         imgPorta0.dispose();
         imgPorta1.dispose();
         imgPorta2.dispose();
@@ -349,10 +363,11 @@ public class TelaJogo implements Screen {
         interfaceJogo.dispose();
         renderizador.dispose();
         mapaTiled.dispose();
+        if (rendererTiled != null) rendererTiled.dispose();
     }
 
     @Override
-    // Ajuste de tela
+    // ajuste ao redimensionar a janela
     public void resize(int width, int height) {
         jogo.viewport.update(width, height, true);
         interfaceJogo.redimensionar(width, height);

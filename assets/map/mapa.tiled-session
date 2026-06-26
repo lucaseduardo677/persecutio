@@ -1,5 +1,5 @@
 {
-    "activeFile": "tiles/mapa_quarto.tmx",
+    "activeFile": "casaderepouso.tmx",
     "expandedProjectPaths": [
         ".",
         "tiles"
@@ -67,12 +67,59 @@
         "assets/sprites/Sprites_NPCs.tsx": {
             "scaleInDock": 1
         },
+        "casaderepouso.tmx": {
+            "scale": 3,
+            "selectedLayer": 11,
+            "viewCenter": {
+                "x": 319.8333333333333,
+                "y": 624.1666666666666
+            }
+        },
+        "casaderepouso.tmx#Content": {
+            "scaleInDock": 0.125
+        },
+        "casaderepouso.tmx#InteriorTilesLITE": {
+            "scaleInDock": 1
+        },
+        "casaderepouso.tmx#Scene Overview": {
+            "scaleInDock": 1
+        },
+        "casaderepouso.tmx#TX Plant": {
+            "scaleInDock": 1
+        },
+        "casaderepouso.tmx#TX Props": {
+            "scaleInDock": 1
+        },
+        "casaderepouso.tmx#TX Tileset Grass": {
+            "scaleInDock": 1
+        },
+        "casaderepouso.tmx#fancy_mansion_furnitureset_withshadow": {
+            "scaleInDock": 1
+        },
+        "casaderepouso.tmx#fancy_mansion_room_door_tiles": {
+            "scaleInDock": 1
+        },
+        "casaderepouso.tmx#furniture_and_props": {
+            "scaleInDock": 1
+        },
+        "casaderepouso.tmx#mockup2": {
+            "scaleInDock": 1
+        },
+        "casaderepouso.tmx#mockup6": {
+            "scaleInDock": 1
+        },
+        "casaderepouso.tmx#windows_and_doors": {
+            "scaleInDock": 1
+        },
+        "casaderepouso.tmx#windows_and_doors2": {
+            "scaleInDock": 1
+        },
         "tiles/mapa_quarto.tmx": {
-            "scale": 5.5,
+            "scale": 1.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 118.72727272727272,
-                "y": 286.4545454545455
+                "x": 195,
+                "y": 389.66666666666663
             }
         },
         "tiles/mapa_quarto.tmx#NPCs": {
@@ -84,11 +131,12 @@
     },
     "last.imagePath": "/home/lucas/Dev/jogo-persecutio-libgdx-git/assets/img",
     "openFiles": [
-        "tiles/mapa_quarto.tmx"
+        "casaderepouso.tmx"
     ],
     "project": "mapa.tiled-project",
     "property.type": "bool",
     "recentFiles": [
+        "casaderepouso.tmx",
         "tiles/mapa_quarto.tmx",
         "/home/lucas/Downloads/casaderepouso-1.tmx",
         "/home/lucas/Dev/jogo-persecutio-libgdx-git/assets/sprites/Sprites_NPCs.tsx"
