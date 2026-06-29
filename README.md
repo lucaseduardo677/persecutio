@@ -3,10 +3,11 @@
 Branch do jogo implementado com **libGDX**. A estrutura está dividida entre o módulo `core`, responsável pela lógica compartilhada do jogo, e o módulo `lwjgl3`, responsável pela execução no desktop.
 ## A fazer
 - [x] Portar as funcionalidades da branch `main`.
+- [x] Implementar iluminação usando o `Box2DLights`.
 - [x] Desacoplar a lógica e o progresso do jogo da classe `TelaJogo`.
 - [ ] Migrar o carregamento de texturas e áudios para o `AssetManager` a fim de evitar memory leaks.
 - [ ] Agrupar as imagens soltas da pasta `img/` em um `Texture Atlas` pra não enviar muitos sprites pra GPU.
-- [ ] Implementar `TiledMapRenderer` pra ter um culling automático dos tiles do mapa.
+- [x] Implementar culling automático dos tiles do mapa.
 - [ ] Implementar sistema de pontuação com categorias separadas (documentos e sessões).
 - [ ] Implementar sistema de finais (bom, médio, ruim) com tela de encerramento.
 - [ ] Implementar sistema de diálogo com o Dr. Gonzalez com perguntas, opções de resposta e três sessões progressivas.
