@@ -34,33 +34,33 @@ public class GerenciadorAudio {
 
     // Carregamento dos dados
     public void carregarMenu() {
-        if (Gdx.files.internal("audio/musica_menu.wav").exists()) {
-            musicaMenu = Gdx.audio.newMusic(Gdx.files.internal("audio/musica_menu.wav"));
+        if (Gdx.files.internal("audio/musica_menu.ogg").exists()) {
+            musicaMenu = Gdx.audio.newMusic(Gdx.files.internal("audio/musica_menu.ogg"));
             musicaMenu.setLooping(true);
             musicaMenu.setVolume(volumeMusica);
             musicaMenu.play();
         }
-        if (Gdx.files.internal("audio/selecao.wav").exists()) {
-            somSelecao = Gdx.audio.newSound(Gdx.files.internal("audio/selecao.wav"));
+        if (Gdx.files.internal("audio/selecao.ogg").exists()) {
+            somSelecao = Gdx.audio.newSound(Gdx.files.internal("audio/selecao.ogg"));
         }
-        if (Gdx.files.internal("audio/confirmar.wav").exists()) {
-            somConfirmar = Gdx.audio.newSound(Gdx.files.internal("audio/confirmar.wav"));
+        if (Gdx.files.internal("audio/confirmar.ogg").exists()) {
+            somConfirmar = Gdx.audio.newSound(Gdx.files.internal("audio/confirmar.ogg"));
         }
     }
 
     // Carregamento dos dados
     public void carregarJogo() {
-        if (Gdx.files.internal("audio/ambiente.wav").exists()) {
-            ambiente = Gdx.audio.newMusic(Gdx.files.internal("audio/ambiente.wav"));
+        if (Gdx.files.internal("audio/ambiente.ogg").exists()) {
+            ambiente = Gdx.audio.newMusic(Gdx.files.internal("audio/ambiente.ogg"));
             ambiente.setLooping(true);
             ambiente.setVolume(volumeMusica);
             ambiente.play();
         }
-        if (Gdx.files.internal("audio/porta.wav").exists()) {
-            somPorta = Gdx.audio.newSound(Gdx.files.internal("audio/porta.wav"));
+        if (Gdx.files.internal("audio/porta.ogg").exists()) {
+            somPorta = Gdx.audio.newSound(Gdx.files.internal("audio/porta.ogg"));
         }
-        if (Gdx.files.internal("audio/passos.wav").exists()) {
-            somPasso = Gdx.audio.newSound(Gdx.files.internal("audio/passos.wav"));
+        if (Gdx.files.internal("audio/passos.ogg").exists()) {
+            somPasso = Gdx.audio.newSound(Gdx.files.internal("audio/passos.ogg"));
         }
     }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="80" height="44" tilewidth="32" tileheight="32" infinite="0" nextlayerid="11" nextobjectid="121">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="80" height="44" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="201">
  <tileset firstgid="1" name="InteriorTilesLITE" tilewidth="32" tileheight="32" tilecount="224" columns="16">
   <image source="tilemaps/InteriorTilesLITE.png" width="512" height="448"/>
  </tileset>
@@ -479,9 +479,9 @@
  </layer>
  <objectgroup id="11" name="Colisoes" visible="0">
   <object id="141" type="parede" x="0.288607" y="319.928" width="991.804" height="32.25"/>
-  <object id="1" type="parede" x="608.06" y="607.936" width="287.822" height="32.0682"/>
+  <object id="1" type="parede" x="608.06" y="607.936" width="341.822" height="32.0682"/>
   <object id="2" type="parede" x="-0.174667" y="608.083" width="256.141" height="31.875"/>
-  <object id="3" type="parede" x="287.987" y="607.96" width="287.924" height="32.1307"/>
+  <object id="3" type="parede" x="287.987" y="607.96" width="345.257" height="32.1307"/>
   <object id="6" type="parede" x="-0.0705" y="319.938" width="32.016" height="736.087"/>
   <object id="7" type="parede" x="-0.0705" y="1023.91" width="992.054" height="32.1477"/>
   <object id="8" type="parede" x="960.035" y="736.057" width="31.9702" height="320.017"/>
@@ -509,8 +509,8 @@
   <object id="35" type="parede" x="288.039" y="895.799" width="63.9101" height="31.9855"/>
   <object id="36" type="parede" x="639.903" y="735.962" width="32.0692" height="320.104"/>
   <object id="37" type="parede" x="320.028" y="735.923" width="31.9442" height="320.144"/>
-  <object id="50" type="parede" x="608.033" y="735.843" width="287.822" height="32.0682"/>
-  <object id="51" type="parede" x="-0.201238" y="735.99" width="256.141" height="31.875"/>
+  <object id="50" type="parede" x="572.033" y="735.843" width="359.822" height="32.0682"/>
+  <object id="51" type="parede" x="-0.201238" y="735.99" width="291.141" height="31.875"/>
   <object id="52" type="parede" x="287.96" y="735.867" width="287.924" height="32.1307"/>
   <object id="53" type="parede" x="927.999" y="735.873" width="63.9859" height="32.037"/>
   <object id="54" type="parede" x="864.136" y="1023.99" width="31.7884" height="319.934"/>
@@ -518,45 +518,45 @@
   <object id="57" type="parede" x="1184.01" y="1055.9" width="31.8793" height="287.608"/>
   <object id="58" type="parede" x="864.106" y="1311.53" width="351.788" height="32.934"/>
   <object id="59" type="parede" x="864.106" y="1055.95" width="159.883" height="32.059"/>
-  <object id="60" type="parede" x="1056.31" y="1055.97" width="159.883" height="32.059"/>
+  <object id="60" type="parede" x="1005.64" y="1055.97" width="210.55" height="32.059"/>
   <object id="61" type="parede" x="1215.84" y="1376.1" width="767.796" height="32.017"/>
   <object id="62" type="parede" x="1952.01" y="1023.99" width="31.9873" height="384.017"/>
   <object id="63" type="parede" x="1215.88" y="895.867" width="32.2429" height="95.7784"/>
   <object id="64" type="parede" x="1088.03" y="927.923" width="160.069" height="32.0909"/>
   <object id="65" type="parede" x="1087.92" y="672.017" width="32.0804" height="287.983"/>
-  <object id="66" type="parede" x="1087.92" y="671.955" width="704.051" height="32.1302"/>
+  <object id="66" type="parede" x="1087.92" y="671.955" width="743.051" height="32.1302"/>
   <object id="67" type="parede" x="1087.91" y="864.039" width="1120.09" height="31.9302"/>
   <object id="68" type="parede" x="1824.02" y="671.992" width="159.985" height="32.0003"/>
   <object id="69" type="parede" x="1088.04" y="351.996" width="895.982" height="32.0044"/>
   <object id="70" type="parede" x="1087.94" y="543.998" width="704.096" height="32.0044"/>
-  <object id="71" type="parede" x="1823.96" y="543.956" width="384.038" height="32.0044"/>
+  <object id="71" type="parede" x="1787.96" y="543.956" width="420.038" height="32.0044"/>
   <object id="72" type="parede" x="1952" y="703.999" width="256.002" height="32.0044"/>
-  <object id="73" type="parede" x="1952" y="352" width="32.0004" height="639.996"/>
+  <object id="73" type="parede" x="1952" y="352" width="32.0004" height="738.663"/>
   <object id="74" type="parede" x="1215.9" y="895.987" width="768.074" height="32.0572"/>
   <object id="75" type="parede" x="2195.99" y="800.085" width="12.0035" height="159.838"/>
-  <object id="76" type="parede" x="2195.99" y="639.998" width="12.0035" height="127.953"/>
-  <object id="77" type="parede" x="2196.02" y="480.024" width="12.0035" height="128.003"/>
-  <object id="78" type="parede" x="2196" y="384.021" width="12.0035" height="63.9586"/>
+  <object id="76" type="parede" x="2195.99" y="639.998" width="12.0035" height="178.62"/>
+  <object id="77" type="parede" x="2196.02" y="480.024" width="12.0035" height="178.67"/>
+  <object id="78" type="parede" x="2196" y="384.021" width="12.0035" height="101.292"/>
   <object id="79" type="parede" x="1952.01" y="928" width="256.034" height="31.9966"/>
   <object id="80" type="parede" x="2303.98" y="543.971" width="256.048" height="32.0044"/>
   <object id="81" type="parede" x="2303.98" y="704.014" width="256.002" height="32.0044"/>
-  <object id="82" type="parede" x="2303.98" y="800.1" width="12.0035" height="287.932"/>
-  <object id="83" type="parede" x="2303.98" y="640.013" width="12.0035" height="127.953"/>
+  <object id="82" type="parede" x="2303.98" y="758.767" width="12.0035" height="329.265"/>
+  <object id="83" type="parede" x="2303.98" y="598.68" width="12.0035" height="169.286"/>
   <object id="84" type="parede" x="2303.95" y="480.039" width="12.0035" height="128.003"/>
-  <object id="85" type="parede" x="2303.97" y="384.036" width="12.0035" height="63.9586"/>
+  <object id="85" type="parede" x="2303.97" y="384.036" width="12.0035" height="105.292"/>
   <object id="86" type="parede" x="2303.99" y="864.026" width="256.034" height="31.9966"/>
   <object id="87" type="parede" x="1951.97" y="1055.97" width="384.027" height="32.0134"/>
   <object id="88" type="parede" x="2047.98" y="159.996" width="32.0248" height="256.007"/>
   <object id="89" type="parede" x="2431.99" y="160.003" width="32.0053" height="256.015"/>
   <object id="90" type="parede" x="2528" y="384" width="32.0053" height="512.015"/>
   <object id="91" type="parede" x="2271.98" y="383.998" width="287.957" height="32.0044"/>
-  <object id="92" type="parede" x="1951.99" y="384.013" width="288" height="31.9943"/>
+  <object id="92" type="parede" x="1951.99" y="384.013" width="324" height="31.9943"/>
   <object id="93" type="parede" x="2047.96" y="160.025" width="416.075" height="31.9812"/>
   <object id="95" type="parede" x="1087.99" y="287.993" width="31.952" height="288.013"/>
-  <object id="96" type="parede" x="1056.01" y="287.498" width="319.982" height="32.5044"/>
+  <object id="96" type="parede" x="1020.68" y="287.498" width="355.315" height="32.5044"/>
   <object id="104" type="parede" x="1056.01" y="-0.0022" width="319.982" height="32.5044"/>
   <object id="97" type="parede" x="707.966" y="287.998" width="316.025" height="31.9731"/>
-  <object id="106" type="parede" x="707.966" y="0.02905" width="316.025" height="31.9731"/>
+  <object id="106" type="parede" x="707.966" y="0.02905" width="352.025" height="31.9731"/>
   <object id="99" type="parede" x="703.965" y="-0.0065" width="32.0692" height="320.013"/>
   <object id="105" type="parede" x="1343.97" y="-0.0065" width="32.0692" height="320.013"/>
  </objectgroup>
@@ -575,36 +575,36 @@
   </object>
   <object id="230" name="espelho" x="103.25" y="282.375" width="34.75" height="17.375"/>
  </objectgroup>
- <objectgroup id="13" name="Portas">
-  <object id="216" name="porta1b" type="porta" x="255.217" y="626.867" width="33.5639" height="12.9713">
+ <objectgroup id="13" name="Portas" visible="0">
+  <object id="216" name="porta1b" type="porta" x="255.217" y="630.992" width="33.5639" height="8.8463">
    <properties>
-    <property name="coordenadas" value="272,590"/>
+    <property name="coordenadas" value="375,1127"/>
     <property name="destino" value="Quarto"/>
     <property name="trancado" type="bool" value="false"/>
     <property name="umbra" type="bool" value="false"/>
     <property name="video" value="video/porta.webm"/>
    </properties>
   </object>
-  <object id="218" name="porta1a" type="porta" x="255.648" y="608.313" width="33.4011" height="14.4586">
+  <object id="218" name="porta1a" type="porta" x="255.648" y="608.313" width="33.4011" height="10.7086">
    <properties>
-    <property name="coordenadas" value="272,629"/>
+    <property name="coordenadas" value="375,1072"/>
     <property name="destino" value="Corredor"/>
     <property name="trancado" type="bool" value="false"/>
     <property name="umbra" type="bool" value="false"/>
     <property name="video" value="video/porta.webm"/>
    </properties>
   </object>
-  <object id="222" name="porta2b" type="porta" x="1023.52" y="288.549" width="32.8615" height="2.40529">
+  <object id="222" name="porta2b" type="porta" x="1023.52" y="288.549" width="32.8615" height="8.58711">
    <properties>
-    <property name="coordenadas" value="1039, 326"/>
+    <property name="coordenadas" value="1429, 1509"/>
     <property name="destino" value="Corredor"/>
     <property name="trancado" type="bool" value="false"/>
     <property name="video" value="video/porta.webm"/>
    </properties>
   </object>
-  <object id="223" name="porta2a" type="porta" x="1023.52" y="316.862" width="32.8615" height="2.43022">
+  <object id="223" name="porta2a" type="porta" x="1023.52" y="310.317" width="32.8615" height="8.97567">
    <properties>
-    <property name="coordenadas" value="1039, 278"/>
+    <property name="coordenadas" value="1429, 1572"/>
     <property name="destino" value="Recepção"/>
     <property name="trancado" type="bool" value="false"/>
     <property name="video" value="video/porta.webm"/>
@@ -632,6 +632,20 @@
     <property name="video" value="video/porta.webm"/>
    </properties>
   </object>
+  <object id="128" name="banheiro1a" type="porta" x="255.307" y="448.727" width="33.2386" height="9.09091">
+   <properties>
+    <property name="coordenadas" value="375,1292"/>
+    <property name="destino" value="Quarto"/>
+    <property name="video" value="video/porta.webm"/>
+   </properties>
+  </object>
+  <object id="129" name="banheiro1b" type="porta" x="255.307" y="470.727" width="33.2386" height="9.09091">
+   <properties>
+    <property name="coordenadas" value="375,1347"/>
+    <property name="destino" value="banheiro"/>
+    <property name="video" value="video/porta.webm"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="14" name="NPCs" visible="0">
   <object id="75" name="enfermeira" type="npc" x="614.909" y="172.182" width="32" height="32">
@@ -645,13 +659,13 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="15" name="Comodos">
-  <object id="209" name="quarto" type="comodo" x="-0.666667" y="318.667" width="351.667" height="321.312">
+ <objectgroup id="15" name="Comodos" visible="0">
+  <object id="209" name="quarto" type="comodo" x="-0.666667" y="318.667" width="224.334" height="321.312">
    <properties>
     <property name="cameraEstatica" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="108" name="quarto" type="comodo" x="-0.666667" y="318.667" width="351.667" height="321.312">
+  <object id="131" name="quarto" type="comodo" x="-0.666667" y="448" width="353" height="191.979">
    <properties>
     <property name="cameraEstatica" type="bool" value="true"/>
    </properties>
@@ -685,5 +699,257 @@
   <object id="111" name="corredor" type="comodo" x="959.958" y="287.999" width="160.078" height="800.002"/>
   <object id="112" name="corredor" type="comodo" x="959.994" y="542.679" width="1024.01" height="159.975"/>
   <object id="113" name="corredor" type="comodo" x="959.979" y="927.997" width="288.018" height="159.991"/>
+  <object id="132" name="banheiro" type="comodo" x="211.5" y="320.01" width="141.667" height="159.979">
+   <properties>
+    <property name="cameraEstatica" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="188" name="corredor2" type="comodo" x="1984.96" y="929.134" width="349.343" height="159.945"/>
+  <object id="189" name="corredor2" type="comodo" x="2197.33" y="404.028" width="9.343" height="465.945"/>
+  <object id="191" name="corredor2" type="comodo" x="2304.33" y="401.527" width="9.343" height="469.945"/>
+  <object id="192" name="corredor2" type="comodo" x="2204.33" y="384.277" width="104.343" height="483.195"/>
+  <object id="193" name="corredor2" type="comodo" x="2178.33" y="864.028" width="155.843" height="224.945"/>
+  <object id="194" name="jardim" type="comodo" x="1217" y="952.667" width="767" height="91.3333"/>
+  <object id="195" name="jardim" type="comodo" x="1217.33" y="895.333" width="765.333" height="97.3333"/>
+  <object id="196" name="jardim" type="comodo" x="1216.08" y="1023.33" width="768.083" height="385.333"/>
+  <object id="200" name="recepção" type="comodo" x="705.294" y="-2.57676" width="671.411" height="322.578"/>
+ </objectgroup>
+ <objectgroup id="11" name="Luzes">
+  <object id="123" name="luz" type="luz" x="42.6667" y="544.667" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="124" name="luz" type="luz" x="45" y="363.334" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="125" name="luz" type="luz" x="149" y="365" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="126" name="luz" type="luz" x="145.667" y="543.667" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="127" name="luz" type="luz" x="245.334" y="491.667" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="133" name="luz" type="luz" x="47.3333" y="665" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="136" name="luz" type="luz" x="156.333" y="665" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="138" name="luz" type="luz" x="262.667" y="666" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="139" name="luz" type="luz" x="362" y="663.667" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="140" name="luz" type="luz" x="453" y="665" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="142" name="luz" type="luz" x="539.333" y="667" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="143" name="luz" type="luz" x="625.333" y="668.333" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="146" name="luz" type="luz" x="721.333" y="669.667" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="147" name="luz" type="luz" x="815.333" y="669" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="148" name="luz" type="luz" x="928.667" y="668.333" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="149" name="luz" type="luz" x="1015.33" y="599.667" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="150" name="luz" type="luz" x="1015.33" y="676.333" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="151" name="luz" type="luz" x="1016" y="837" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="153" name="luz" type="luz" x="1015.33" y="917.667" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="154" name="luz" type="luz" x="1116" y="984.333" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="155" name="luz" type="luz" x="1133.33" y="603" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="158" name="luz" type="luz" x="1240" y="604.333" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="160" name="luz" type="luz" x="1356" y="601" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="161" name="luz" type="luz" x="1470" y="601.667" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="162" name="luz" type="luz" x="1583.33" y="603.667" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="163" name="luz" type="luz" x="1682.67" y="603" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="164" name="luz" type="luz" x="1782" y="603.667" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="166" name="luz" type="luz" x="1872.67" y="601" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="170" name="luz" type="luz" x="244.167" y="372" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="171" name="luz" type="luz" x="44.6667" y="452" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="172" name="luz" type="luz" x="148.667" y="450" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="173" name="luz" type="luz" x="1015.34" y="513" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="174" name="luz" type="luz" x="1013.33" y="424.334" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="175" name="luz" type="luz" x="1014" y="335.666" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="176" name="luz" type="luz" x="1015.33" y="757" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="177" name="luz" type="luz" x="1015.33" y="994.333" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="178" name="luz" type="luz" x="245.333" y="541.667" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="179" name="luz" type="luz" x="1570.67" y="1123" width="54.6667" height="50">
+   <properties>
+    <property name="cor" type="color" value="#fffff5e1"/>
+    <property name="distancia" type="float" value="4000"/>
+   </properties>
+  </object>
+  <object id="180" name="luz" type="luz" x="1997.33" y="984.333" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="181" name="luz" type="luz" x="2098.67" y="986.333" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="182" name="luz" type="luz" x="2204" y="986.333" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="183" name="luz" type="luz" x="2230" y="882.333" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="184" name="luz" type="luz" x="2226.67" y="755" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="185" name="luz" type="luz" x="2228" y="636.333" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="186" name="luz" type="luz" x="2227.33" y="524.333" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="187" name="luz" type="luz" x="2228.67" y="428.333" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="250"/>
+   </properties>
+  </object>
+  <object id="199" name="luz" type="luz" x="1012" y="137" width="54.6667" height="50">
+   <properties>
+    <property name="distancia" type="float" value="1400"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

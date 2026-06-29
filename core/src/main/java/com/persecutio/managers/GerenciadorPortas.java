@@ -46,7 +46,7 @@ public class GerenciadorPortas {
             if (coordStr == null || coordStr.isEmpty()) {
                 spawn = new Vector2((r.x + r.width / 2f) * escala, (r.y + r.height / 2f) * escala);
             } else {
-                spawn = CoordenadasTiled.parseCoordenadasMundo(coordStr);
+                spawn = CoordenadasTiled.parseCoordenadasMundoDireto(coordStr);
                 if (spawn == null) continue;
             }
 

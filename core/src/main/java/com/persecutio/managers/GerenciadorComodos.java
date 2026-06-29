@@ -9,22 +9,25 @@ import com.badlogic.gdx.math.Vector2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
-// gerencia comodos definidos no tiled e controla cull de tiles
+// Gerencia comodos definidos no tiled e controla cull de tiles
 public class GerenciadorComodos {
 
     private final List<Comodo> comodos = new ArrayList<>();
-    // agrupa comodos pelo nome base sem sufixo numerico
+    // Agrupa comodos pelo nome base sem sufixo numerico
     private final Map<String, List<Comodo>> comodosPorNome = new HashMap<>();
-    // agrupa comodos pelo nome EXATO (incluindo numeros)
+    // Agrupa comodos pelo nome EXATO incluindo numeros
     private final Map<String, List<Comodo>> comodosPorNomeExato = new HashMap<>();
 
-    // lista reutilizavel para evitar alocacao por frame
+    // Lista reutilizavel para evitar alocacao por frame
     private final List<Comodo> cacheCull = new ArrayList<>();
 
-    // criacao do gerenciador de comodos
+    // Criacao do gerenciador de comodos
     public GerenciadorComodos(TiledMap mapa, float escala) {
         CoordenadasTiled.setEscala(escala);
 
@@ -36,12 +39,12 @@ public class GerenciadorComodos {
 
             Rectangle r = ((RectangleMapObject) obj).getRectangle();
 
-            // camera estatica faz viewport fixar no centro do comodo
+            // Camera estatica faz viewport fixar no centro do comodo
             boolean cameraEstatica = Boolean.TRUE.equals(obj.getProperties().get("cameraEstatica", Boolean.class));
 
             String nome = obj.getName();
             if (nome == null || nome.isEmpty()) nome = "";
-            // sufixo numerico removido para agrupar variantes do mesmo comodo
+            // Sufixo numerico removido para agrupar variantes do mesmo comodo
             String nomeGrupo = normalizarNome(nome);
 
             Comodo c = new Comodo(CoordenadasTiled.paraMundo(r), cameraEstatica, nome, nomeGrupo);
@@ -49,15 +52,67 @@ public class GerenciadorComodos {
             comodosPorNome.computeIfAbsent(nomeGrupo, k -> new ArrayList<>()).add(c);
             comodosPorNomeExato.computeIfAbsent(nome.toLowerCase().trim(), k -> new ArrayList<>()).add(c);
         }
+
+        // Combina comodos com EXATAMENTE O MESMO NOME que se sobrepõem e
+        // Tem pelo menos um com camera estatica em um unico comodo virtual
+        for (Map.Entry<String, List<Comodo>> entry : comodosPorNomeExato.entrySet()) {
+            List<Comodo> grupo = entry.getValue();
+            if (grupo.size() <= 1) continue;
+
+            List<Comodo> naoVisitados = new ArrayList<>(grupo);
+
+            while (!naoVisitados.isEmpty()) {
+                Comodo seed = naoVisitados.remove(0);
+                List<Comodo> componente = new ArrayList<>();
+                componente.add(seed);
+
+                Queue<Comodo> fila = new LinkedList<>();
+                fila.add(seed);
+
+                while (!fila.isEmpty()) {
+                    Comodo atual = fila.poll();
+                    Iterator<Comodo> it = naoVisitados.iterator();
+                    while (it.hasNext()) {
+                        Comodo outro = it.next();
+                        if (atual.area.overlaps(outro.area)) {
+                            fila.add(outro);
+                            componente.add(outro);
+                            it.remove();
+                        }
+                    }
+                }
+
+                boolean algumEstatico = false;
+                for (Comodo c : componente) {
+                    if (c.cameraEstatica) { algumEstatico = true; break; }
+                }
+
+                if (algumEstatico) {
+                    float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
+                    float maxX = Float.MIN_VALUE, maxY = Float.MIN_VALUE;
+                    for (Comodo c : componente) {
+                        minX = Math.min(minX, c.area.x);
+                        minY = Math.min(minY, c.area.y);
+                        maxX = Math.max(maxX, c.area.x + c.area.width);
+                        maxY = Math.max(maxY, c.area.y + c.area.height);
+                    }
+                    Rectangle combinado = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+                    for (Comodo c : componente) {
+                        c.areaCamera = combinado;
+                        c.cameraEstatica = true;
+                    }
+                }
+            }
+        }
     }
 
-    // remove sufixo numerico do nome para agrupar comodos
+    // Remove sufixo numerico do nome para agrupar comodos
     private static String normalizarNome(String nome) {
         if (nome == null || nome.isEmpty()) return "";
         return nome.replaceAll("\\d+$", "").toLowerCase().trim();
     }
 
-    // retorna o comodo que contem o ponto dado
+    // Retorna o comodo que contem o ponto dado
     public Comodo achar(float px, float py) {
         for (Comodo c : comodos) {
             if (c.area.contains(px, py)) return c;
@@ -65,16 +120,16 @@ public class GerenciadorComodos {
         return null;
     }
 
-    // retorna comodos do mesmo grupo base que o atual
+    // Retorna comodos do mesmo grupo base que o atual
     public List<Comodo> getComodosDoMesmoGrupo(Comodo atual) {
         if (atual == null || atual.nomeGrupo.isEmpty()) return new ArrayList<>();
         List<Comodo> grupo = comodosPorNome.get(atual.nomeGrupo);
         return grupo != null ? new ArrayList<>(grupo) : new ArrayList<>();
     }
 
-    // retorna os comodos que devem receber cull de tiles neste frame
-    // regra: mesmo nome EXATO que o atual -> renderiza todos com aquele nome
-    //        nomes diferentes -> renderiza apenas o comodo onde o player esta
+    // Retorna os comodos que devem receber cull de tiles neste frame
+    // Regra mesmo nome EXATO que o atual renderiza todos com aquele nome
+    // Nomes diferentes renderiza apenas o comodo onde o player esta
     public List<Comodo> getCullAtivo(Comodo comodoJogador) {
         cacheCull.clear();
 
@@ -84,21 +139,21 @@ public class GerenciadorComodos {
         if (nome != null && !nome.trim().isEmpty()) {
             List<Comodo> mesmoNome = comodosPorNomeExato.get(nome.toLowerCase().trim());
             if (mesmoNome != null && mesmoNome.size() > 1) {
-                // mesmo nome exato em multiplos comodos: cull nao ocorre entre eles
+                // Mesmo nome exato em multiplos comodos cull nao ocorre entre eles
                 cacheCull.addAll(mesmoNome);
                 return cacheCull;
             }
         }
 
-        // nome unico, vazio, ou diferente dos demais: renderiza apenas o atual
+        // Nome unico vazio ou diferente dos demais renderiza apenas o atual
         cacheCull.add(comodoJogador);
         return cacheCull;
     }
 
-    // verifica se um tile com posicao e tamanho dados passa no filtro de 50%
-    // o tile precisa ter pelo menos 50% de sua area dentro do retangulo de cull
+    // Verifica se um tile com posicao e tamanho dados passa no filtro de 50
+    // O tile precisa ter pelo menos 50 de sua area dentro do retangulo de cull
     public static boolean passaFiltro(Rectangle tileRect, Rectangle cullRect) {
-        // intersecao dos dois retangulos
+        // Intersecao dos dois retangulos
         float ix = Math.max(tileRect.x, cullRect.x);
         float iy = Math.max(tileRect.y, cullRect.y);
         float iw = Math.min(tileRect.x + tileRect.width,  cullRect.x + cullRect.width)  - ix;
@@ -110,11 +165,11 @@ public class GerenciadorComodos {
         if (areaTile <= 0) return false;
 
         float areaIntersecao = iw * ih;
-        // pelo menos 50% do tile deve estar dentro do comodo
+        // Pelo menos 50 do tile deve estar dentro do comodo
         return (areaIntersecao / areaTile) >= 0.5f;
     }
 
-    // calcula ponto de spawn dentro do destino baseado na borda mais proxima da porta
+    // Calcula ponto de spawn dentro do destino baseado na borda mais proxima da porta
     public Vector2 spawnEntrada(Comodo destino, Rectangle porta) {
         Rectangle a = destino.area;
 
@@ -135,23 +190,26 @@ public class GerenciadorComodos {
         return                      new Vector2(a.x + a.width   - margem, cy);
     }
 
-    // consulta da lista completa de comodos
+    // Consulta da lista completa de comodos
     public List<Comodo> getComodos() { return comodos; }
 
-    // dados de um comodo carregado do tiled
+    // Dados de um comodo carregado do tiled
     public static class Comodo {
         public final Rectangle area;
-        public final boolean   cameraEstatica;
-        // nome original do objeto no tiled
+        public boolean   cameraEstatica;
+        // Nome original do objeto no tiled
         public final String    nome;
-        // nome sem sufixo numerico para agrupamento
+        // Nome sem sufixo numerico para agrupamento
         public final String    nomeGrupo;
+        // Area combinada para camera estatica de comodos sobrepostos do mesmo nome EXATO
+        public Rectangle areaCamera;
 
         Comodo(Rectangle area, boolean cameraEstatica, String nome, String nomeGrupo) {
             this.area          = area;
             this.cameraEstatica = cameraEstatica;
             this.nome          = nome;
             this.nomeGrupo     = nomeGrupo;
+            this.areaCamera    = new Rectangle(area);
         }
     }
 }

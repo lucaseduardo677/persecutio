@@ -55,8 +55,8 @@ public class ContextoRender {
         atualizar(jogo, jogadorMundoX, jogadorMundoY);
 
         if (comodo != null && comodo.cameraEstatica) {
-            float comodoMeioX = comodo.area.x + comodo.area.width  / 2f;
-            float comodoMeioY = comodo.area.y + comodo.area.height / 2f;
+            float comodoMeioX = comodo.areaCamera.x + comodo.areaCamera.width  / 2f;
+            float comodoMeioY = comodo.areaCamera.y + comodo.areaCamera.height / 2f;
             this.cameraX = Math.round(centroX - comodoMeioX);
             this.cameraY = Math.round(centroY - comodoMeioY);
         }

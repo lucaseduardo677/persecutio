@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-// Colisão do mapa
+// Colisao do mapa
 public class GerenciadorColisao {
 
     // Leitura do valor
@@ -124,8 +124,15 @@ public class GerenciadorColisao {
     private final Map<String, Map<String, Object>> defaults;
 
     private final Rectangle rectTemp = new Rectangle();
+    private boolean colisoesDesativadas = false;
 
-    // Criação da colisão do mapa
+    public void alternarColisoes() {
+        colisoesDesativadas = !colisoesDesativadas;
+    }
+
+    public boolean isColisoesDesativadas() { return colisoesDesativadas; }
+
+    // Criacao da colisao do mapa
     public GerenciadorColisao(TiledMap mapa, float escala, String caminhoProjeto) {
         CoordenadasTiled.setEscala(escala);
         defaults     = lerDefaults(caminhoProjeto);
@@ -226,6 +233,8 @@ public class GerenciadorColisao {
 
     public boolean verificarPosicao(float proximoX, float proximoY,
                                     float largura, float altura, boolean umbra) {
+        if (colisoesDesativadas) return true;
+
         rectTemp.set(proximoX, proximoY, largura, altura);
 
         for (ObjetoColisao parede : paredes) {
@@ -327,6 +336,36 @@ public class GerenciadorColisao {
             if (e.getValue().isAtivo(umbra)) cacheNpcs.put(e.getKey(), e.getValue());
         }
         return cacheNpcs;
+    }
+
+    // Retorna TODAS as paredes Colisoes Portas para criar corpos Box2D das luzes
+    public List<Rectangle> getTodasParedesBox2D() {
+        List<Rectangle> todas = new ArrayList<>();
+        for (ObjetoColisao p : paredes) {
+            todas.add(p.area);
+        }
+        for (ObjetoColisao p : hitboxPortas) {
+            todas.add(p.area);
+        }
+        return todas;
+    }
+
+    // Retorna so as paredes de colisao sem portas para sombra Box2D
+    public List<Rectangle> getParedesBox2D() {
+        List<Rectangle> lista = new ArrayList<>();
+        for (ObjetoColisao p : paredes) {
+            lista.add(p.area);
+        }
+        return lista;
+    }
+
+    // Retorna so as hitboxes de porta para sombra Box2D
+    public List<Rectangle> getPortasBox2D() {
+        List<Rectangle> lista = new ArrayList<>();
+        for (ObjetoColisao p : hitboxPortas) {
+            lista.add(p.area);
+        }
+        return lista;
     }
 
     // Processamento interno

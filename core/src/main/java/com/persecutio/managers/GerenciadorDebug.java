@@ -31,10 +31,12 @@ public class GerenciadorDebug {
     }
 
     // Atalhos depuracao
-    public void tratarAtalhos(GerenciadorProgresso progresso) {
+    public void tratarAtalhos(TelaJogo jogo) {
         boolean ctrl = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)
                     || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
         if (!ctrl) return;
+
+        GerenciadorProgresso progresso = jogo.progresso;
 
         if (Gdx.input.isKeyJustPressed(Keys.U)) progresso.alternarUmbra();
 
@@ -46,6 +48,10 @@ public class GerenciadorDebug {
         if (Gdx.input.isKeyJustPressed(Keys.D)) {
             progresso.forcarPartes(3);
             progresso.setAviso("[DEBUG] Forcado 3/3 partes");
+        }
+
+        if (Gdx.input.isKeyJustPressed(Keys.I)) {
+            jogo.sistemaColisao.alternarColisoes();
         }
     }
 
@@ -117,7 +123,7 @@ public class GerenciadorDebug {
         }
 
         ctx.fonteIndicadores.setColor(new Color(0.55f, 0.55f, 0.55f, 1f));
-        ctx.fonteIndicadores.draw(ctx.batch, "Ctrl+U umbra   Ctrl+P +parte   Ctrl+D 3partes", x, y);
+        ctx.fonteIndicadores.draw(ctx.batch, "Ctrl+U umbra  Ctrl+P +parte  Ctrl+D 3partes  Ctrl+I noclip", x, y);
 
         ctx.fonteIndicadores.setColor(Color.WHITE);
     }

@@ -1,8 +1,8 @@
 {
     "activeFile": "casaderepouso.tmx",
     "expandedProjectPaths": [
-        ".",
-        "tiles"
+        "tiles",
+        "."
     ],
     "fileStates": {
         "": {
@@ -68,11 +68,11 @@
             "scaleInDock": 1
         },
         "casaderepouso.tmx": {
-            "scale": 3,
-            "selectedLayer": 11,
+            "scale": 1,
+            "selectedLayer": 14,
             "viewCenter": {
-                "x": 319.8333333333333,
-                "y": 624.1666666666666
+                "x": 1081.5,
+                "y": 111.5
             }
         },
         "casaderepouso.tmx#Content": {
@@ -134,7 +134,7 @@
         "casaderepouso.tmx"
     ],
     "project": "mapa.tiled-project",
-    "property.type": "bool",
+    "property.type": "string",
     "recentFiles": [
         "casaderepouso.tmx",
         "tiles/mapa_quarto.tmx",

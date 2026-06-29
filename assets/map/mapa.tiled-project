@@ -25,13 +25,96 @@
             "type": "class",
             "useAs": [
                 "property",
-                "map",
-                "layer",
                 "object",
-                "tile",
-                "tileset",
-                "wangcolor",
-                "wangset",
+                "project"
+            ]
+        },
+        {
+            "color": "#ffffea00",
+            "drawFill": true,
+            "id": 9,
+            "members": [
+                {
+                    "name": "abertura",
+                    "type": "float",
+                    "value": 45
+                },
+                {
+                    "name": "alpha",
+                    "type": "float",
+                    "value": 0.9
+                },
+                {
+                    "name": "ativo",
+                    "type": "bool",
+                    "value": true
+                },
+                {
+                    "name": "atravessa",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "cor",
+                    "type": "color",
+                    "value": "#ffffffff"
+                },
+                {
+                    "name": "cor_str",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "direcao",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "distancia",
+                    "type": "float",
+                    "value": 200
+                },
+                {
+                    "name": "estatica",
+                    "type": "bool",
+                    "value": true
+                },
+                {
+                    "name": "real",
+                    "type": "bool",
+                    "value": true
+                },
+                {
+                    "name": "segueJogador",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "suave",
+                    "type": "bool",
+                    "value": true
+                },
+                {
+                    "name": "suavidade",
+                    "type": "float",
+                    "value": 20
+                },
+                {
+                    "name": "tipoLuz",
+                    "type": "string",
+                    "value": "point"
+                },
+                {
+                    "name": "umbra",
+                    "type": "bool",
+                    "value": true
+                }
+            ],
+            "name": "luz",
+            "type": "class",
+            "useAs": [
+                "property",
+                "object",
                 "project"
             ]
         },
@@ -110,6 +193,11 @@
             "id": 1,
             "members": [
                 {
+                    "name": "lado",
+                    "type": "string",
+                    "value": ""
+                },
+                {
                     "name": "real",
                     "type": "bool",
                     "value": true
@@ -166,7 +254,7 @@
                 {
                     "name": "trancado",
                     "type": "bool",
-                    "value": true
+                    "value": false
                 },
                 {
                     "name": "umbra",
@@ -183,13 +271,7 @@
             "type": "class",
             "useAs": [
                 "property",
-                "map",
-                "layer",
                 "object",
-                "tile",
-                "tileset",
-                "wangcolor",
-                "wangset",
                 "project"
             ]
         }

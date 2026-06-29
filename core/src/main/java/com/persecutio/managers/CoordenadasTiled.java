@@ -44,7 +44,7 @@ public final class CoordenadasTiled {
         return new Vector2(x, y);
     }
 
-    // Retângulo Tiled mundo padrao (sem offsets) para colisoes do cenario
+    // Retângulo Tiled mundo padrao sem offsets para colisoes do cenario
     public static Rectangle paraMundo(Rectangle r) {
         return new Rectangle(
             r.x * escala,
@@ -63,6 +63,20 @@ public final class CoordenadasTiled {
             float x = Float.parseFloat(partes[0].trim());
             float y = Float.parseFloat(partes[1].trim());
             return paraMundo(x, y);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    // Coordenadas declaradas ja em mundo sem conversao Tiled usado para teleportes
+    public static Vector2 parseCoordenadasMundoDireto(String str) {
+        if (str == null || str.trim().isEmpty()) return null;
+        try {
+            String[] partes = str.trim().replace(" ", "").split(",");
+            if (partes.length != 2) return null;
+            float x = Float.parseFloat(partes[0].trim());
+            float y = Float.parseFloat(partes[1].trim());
+            return new Vector2(x, y);
         } catch (NumberFormatException e) {
             return null;
         }
