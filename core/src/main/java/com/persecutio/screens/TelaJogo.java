@@ -9,12 +9,16 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 
 import com.persecutio.game.PersecutioGame;
+import com.persecutio.entities.HitboxConfig;
 import com.persecutio.entities.Jogador;
 import com.persecutio.managers.ContextoRender;
 import com.persecutio.managers.GerenciadorAudio;
@@ -27,7 +31,6 @@ import com.persecutio.managers.GerenciadorProgresso;
 import com.persecutio.managers.GerenciadorRenderizacao;
 import com.persecutio.managers.GerenciadorUI;
 
-// Tela principal do jogo
 public class TelaJogo implements Screen {
 
     private final PersecutioGame jogo;
@@ -68,12 +71,10 @@ public class TelaJogo implements Screen {
 
     private final ContextoRender ctx = new ContextoRender();
 
-    // Criacao da tela principal do jogo
     public TelaJogo(PersecutioGame jogo) {
         this.jogo = jogo;
     }
 
-    // Carrega textura com fallback para branca se nao encontrar
     private Texture carregarTextura(String caminho) {
         if (Gdx.files.internal(caminho).exists()) {
             try { return new Texture(Gdx.files.internal(caminho)); }
@@ -103,7 +104,6 @@ public class TelaJogo implements Screen {
     }
 
     @Override
-    // Carregamento de recursos ao entrar na tela
     public void show() {
         spriteSheet = carregarTextura("img/personagem.png");
         imgPorta0   = carregarTextura("img/parte1.png");
@@ -141,14 +141,44 @@ public class TelaJogo implements Screen {
         renderizador   = new GerenciadorRenderizacao(escala);
         rendererTiled  = new OrthogonalTiledMapRenderer(mapaTiled, escala, jogo.batch);
 
-        // Inicializa sistema de luzes com paredes do TiledMap e luzes do Tiled
         gerLuzes = new GerenciadorLuzes();
         gerLuzes.setGerenciadorComodos(gerComodos);
         gerLuzes.carregarLuzesDoTiled(mapaTiled);
         gerLuzes.criarParedes(sistemaColisao.getParedesBox2D(), sistemaColisao.getPortasBox2D());
 
+        // Fallback hardcoded
         float inicialX = 75f * escala;
         float inicialY = (768f + 180f) * escala;
+
+        // Procura spawnpoint na camada "Destinos"
+        Rectangle spawnRect = null;
+        MapLayer camadaDestinos = mapaTiled.getLayers().get("Destinos");
+        if (camadaDestinos != null) {
+            for (MapObject obj : camadaDestinos.getObjects()) {
+                if ("spawnpoint".equalsIgnoreCase(obj.getName())) {
+                    if (obj instanceof RectangleMapObject) {
+                        Rectangle r = ((RectangleMapObject) obj).getRectangle();
+                        spawnRect = new Rectangle(
+                            r.x * escala,
+                            r.y * escala,
+                            r.width * escala,
+                            r.height * escala
+                        );
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (spawnRect != null) {
+            // Centraliza a hitbox do jogador dentro do retângulo do spawnpoint
+            HitboxConfig cfg = HitboxConfig.padrao();
+            float cx = spawnRect.x + spawnRect.width / 2f;
+            float cy = spawnRect.y + spawnRect.height / 2f;
+            inicialX = cx - cfg.offsetX() - cfg.larguraHitbox() / 2f;
+            inicialY = cy - cfg.offsetY() - cfg.alturaHitbox() / 2f;
+        }
+
         jogador        = new Jogador(inicialX, inicialY, spriteSheet);
         hitboxJogador  = jogador.hitbox;
 
@@ -159,7 +189,6 @@ public class TelaJogo implements Screen {
     }
 
     @Override
-    // Atualizacao e desenho do frame
     public void render(float delta) {
         if (fadeAtivo) {
             timerFade += delta;
@@ -184,7 +213,6 @@ public class TelaJogo implements Screen {
         mundoUmbra            = umbra;
         portaUmbraDestrancada = destrancada;
 
-        // Atualiza iluminacao conforme o mundo atual
         gerLuzes.setAmbienteUmbra(mundoUmbra);
 
         float hcX   = jogador.hitbox.x + jogador.hitbox.width  / 2f;
@@ -196,7 +224,6 @@ public class TelaJogo implements Screen {
         else
             ctx.atualizar(jogo, jogador.mundoX, jogador.mundoY);
 
-        // Renderiza o mapa com cull de comodos via scissor test
         renderizador.renderizarMapa(ctx, rendererTiled, gerComodos, comodoAtual, umbra);
 
         batch.begin();
@@ -207,7 +234,6 @@ public class TelaJogo implements Screen {
             Math.round(ctx.mundoParaTelaX(jogador.mundoX)),
             Math.round(ctx.mundoParaTelaY(jogador.mundoY)));
 
-        // Reflexo no espelho apenas quando o jogador esta no quarto e na area do espelho
         if (comodoAtual != null && "quarto".equals(comodoAtual.nomeGrupo)) {
             Rectangle areaReflexo = sistemaColisao.getReflexoArea(umbra);
             if (areaReflexo != null && jogador.hitbox.overlaps(areaReflexo)) {
@@ -217,7 +243,6 @@ public class TelaJogo implements Screen {
 
         batch.end();
 
-        // Renderiza sistema de luzes box2dlights entre o mundo entidades e a UI
         gerLuzes.atualizarPosicaoJogador(jogador.mundoX, jogador.mundoY);
         gerLuzes.render(ctx, gerComodos, comodoAtual);
 
@@ -276,7 +301,6 @@ public class TelaJogo implements Screen {
         desenharFade(ctx);
     }
 
-    // Desenha fade preto de entrada na tela
     private void desenharFade(ContextoRender ctx) {
         if (!fadeAtivo) return;
         float alfa = 1f - (timerFade / DURACAO_FADE);
@@ -292,7 +316,6 @@ public class TelaJogo implements Screen {
         ctx.batch.end();
     }
 
-    // Processa tentativa de senha da gaveta
     private void processarSenha() {
         String senha = interfaceJogo.pegarSenha();
         if (senha == null) return;
@@ -300,7 +323,6 @@ public class TelaJogo implements Screen {
         else                               interfaceJogo.senhaErro();
     }
 
-    // Trata entrada do jogador e acoes de jogo
     private void tratarInput(float delta) {
         sistemaAudio.tratarInputVolume();
 
@@ -332,7 +354,19 @@ public class TelaJogo implements Screen {
         interfaceJogo.atualizarTutorial(andando, delta);
     }
 
-    // Trata interacao do jogador com portas e objetos
+    // Teleporta o jogador centralizando a hitbox dentro do retângulo destino
+    private void teleportarJogadorParaDestino(Jogador jogador, GerenciadorPortas.Porta porta) {
+        if (porta.areaDestino != null) {
+            float cx = porta.areaDestino.x + porta.areaDestino.width / 2f;
+            float cy = porta.areaDestino.y + porta.areaDestino.height / 2f;
+            float novoX = cx - jogador.hitboxOffsetX() - jogador.hitbox.width / 2f;
+            float novoY = cy - jogador.hitboxOffsetY() - jogador.hitbox.height / 2f;
+            jogador.teleportar(novoX, novoY);
+        } else {
+            jogador.teleportar(porta.spawn.x, porta.spawn.y);
+        }
+    }
+
     private void tratarInteracao() {
         GerenciadorPortas.Porta porta = gerPortas.acharProxima(jogador, mundoUmbra);
         if (porta != null) {
@@ -343,7 +377,7 @@ public class TelaJogo implements Screen {
                     sistemaColisao.destrancar(porta.nome);
                     sistemaAudio.tocarSomPorta();
                     interfaceJogo.iniciarFade(porta.video, () ->
-                        jogador.teleportar(porta.spawn.x, porta.spawn.y)
+                        teleportarJogadorParaDestino(jogador, porta)
                     );
                 } else {
                     interfaceJogo.mudarEstado(GerenciadorUI.UI_PORTA);
@@ -354,10 +388,10 @@ public class TelaJogo implements Screen {
             sistemaAudio.tocarSomPorta();
             if (porta.usarFade) {
                 interfaceJogo.iniciarFade(porta.video, () ->
-                    jogador.teleportar(porta.spawn.x, porta.spawn.y)
+                    teleportarJogadorParaDestino(jogador, porta)
                 );
             } else {
-                jogador.teleportar(porta.spawn.x, porta.spawn.y);
+                teleportarJogadorParaDestino(jogador, porta);
             }
             return;
         }
@@ -370,7 +404,6 @@ public class TelaJogo implements Screen {
     }
 
     @Override
-    // Liberacao de recursos ao sair da tela
     public void dispose() {
         spriteSheet.dispose();
         imgPorta0.dispose();
@@ -389,7 +422,6 @@ public class TelaJogo implements Screen {
     }
 
     @Override
-    // Ajuste ao redimensionar a janela
     public void resize(int width, int height) {
         jogo.viewport.update(width, height, true);
         interfaceJogo.redimensionar(width, height);

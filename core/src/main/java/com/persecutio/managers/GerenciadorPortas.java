@@ -10,10 +10,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.persecutio.entities.Jogador;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Portas mapa
 public class GerenciadorPortas {
 
     private static final float FOLGA = 24f;
@@ -23,11 +23,30 @@ public class GerenciadorPortas {
 
     private final Rectangle rectAlcance = new Rectangle();
 
-    // Portas definidas Tiled
     public GerenciadorPortas(TiledMap mapa, float escala,
                              Map<String, Map<String, Object>> defaults) {
         this.escala = escala;
         CoordenadasTiled.setEscala(escala);
+
+        // Carrega objetos da camada "Destinos" (retângulo completo, não só centro)
+        Map<String, Rectangle> destinos = new HashMap<>();
+        MapLayer camadaDestinos = mapa.getLayers().get("Destinos");
+        if (camadaDestinos != null) {
+            for (MapObject obj : camadaDestinos.getObjects()) {
+                if (!(obj instanceof RectangleMapObject)) continue;
+                Rectangle r = ((RectangleMapObject) obj).getRectangle();
+                String nome = obj.getName();
+                if (nome != null && !nome.trim().isEmpty()) {
+                    Rectangle rm = new Rectangle(
+                        r.x * escala,
+                        r.y * escala,
+                        r.width * escala,
+                        r.height * escala
+                    );
+                    destinos.put(nome.trim().toLowerCase(), rm);
+                }
+            }
+        }
 
         MapLayer camada = mapa.getLayers().get("Portas");
         if (camada == null) return;
@@ -38,16 +57,32 @@ public class GerenciadorPortas {
             MapProperties props = obj.getProperties();
             Rectangle     r     = ((RectangleMapObject) obj).getRectangle();
 
-            String destino = lerProp(props, "destino");
-            if (destino == null || destino.isEmpty()) continue;
+            // "destino" = nome do objeto spawn na camada "Destinos"
+            String spawnNome = lerProp(props, "destino");
+            if (spawnNome == null || spawnNome.isEmpty()) continue;
 
-            String  coordStr = lerProp(props, "coordenadas");
+            // "area" = nome legível do próximo cômodo
+            String label = lerProp(props, "area");
+            if (label == null || label.isEmpty()) label = spawnNome;
+
+            // Resolve spawn: procura na camada "Destinos", senão tenta x,y direto
+            Rectangle areaDestino = null;
             Vector2 spawn;
-            if (coordStr == null || coordStr.isEmpty()) {
-                spawn = new Vector2((r.x + r.width / 2f) * escala, (r.y + r.height / 2f) * escala);
+            Rectangle destinoRect = destinos.get(spawnNome.trim().toLowerCase());
+            if (destinoRect != null) {
+                areaDestino = destinoRect;
+                spawn = new Vector2(
+                    areaDestino.x + areaDestino.width / 2f,
+                    areaDestino.y + areaDestino.height / 2f
+                );
             } else {
-                spawn = CoordenadasTiled.parseCoordenadasMundoDireto(coordStr);
-                if (spawn == null) continue;
+                spawn = CoordenadasTiled.parseCoordenadasMundoDireto(spawnNome);
+                if (spawn == null) {
+                    spawn = new Vector2(
+                        (r.x + r.width / 2f) * escala,
+                        (r.y + r.height / 2f) * escala
+                    );
+                }
             }
 
             String classOrig = props.get("type")  != null ? props.get("type").toString()  :
@@ -65,16 +100,15 @@ public class GerenciadorPortas {
 
             String nome = obj.getName();
             if (nome == null || nome.isEmpty()) nome = lerProp(props, "nome");
-            if (nome == null || nome.isEmpty()) nome = destino;
+            if (nome == null || nome.isEmpty()) nome = label;
 
             portas.add(new Porta(
-                CoordenadasTiled.paraMundo(r), nome, destino, spawn,
+                CoordenadasTiled.paraMundo(r), nome, label, spawn, areaDestino,
                 video, usarFade, noUmbra, noReal, trancado, destrancavel, condicao
             ));
         }
     }
 
-    // Porta alcance jogador
     public Porta acharProxima(Jogador jogador, boolean umbra) {
         rectAlcance.set(
             jogador.hitbox.x - FOLGA,
@@ -89,7 +123,6 @@ public class GerenciadorPortas {
         return null;
     }
 
-    // Propriedade mapa
     private static String lerProp(MapProperties props, String chave) {
         if (props.containsKey(chave)) {
             Object val = props.get(chave);
@@ -98,7 +131,6 @@ public class GerenciadorPortas {
         return null;
     }
 
-    // Valor booleano fallback
     private static boolean lerBool(MapProperties props, Map<String, Map<String, Object>> defaults,
                                    String classOrig, String chave, boolean fallback) {
         String val = lerProp(props, chave);
@@ -112,15 +144,14 @@ public class GerenciadorPortas {
         return fallback;
     }
 
-    // Consulta do estado
     public List<Porta> getPortas() { return portas; }
 
-    // Dados porta mapa
     public static class Porta {
         public final Rectangle area;
         public final String    nome;
-        public final String    destino;
+        public final String    label;
         public final Vector2   spawn;
+        public final Rectangle areaDestino; // retângulo do objeto na camada "Destinos"
         public final String    video;
         public final boolean   usarFade;
 
@@ -131,13 +162,14 @@ public class GerenciadorPortas {
         public final boolean destrancavel;
         public final String  condicao;
 
-        Porta(Rectangle area, String nome, String destino, Vector2 spawn,
+        Porta(Rectangle area, String nome, String label, Vector2 spawn, Rectangle areaDestino,
               String video, boolean usarFade, boolean noUmbra, boolean noReal,
               boolean trancado, boolean destrancavel, String condicao) {
             this.area         = area;
             this.nome         = nome;
-            this.destino      = destino;
+            this.label        = label;
             this.spawn        = spawn;
+            this.areaDestino  = areaDestino;
             this.video        = video;
             this.usarFade     = usarFade;
             this.noUmbra      = noUmbra;
@@ -147,7 +179,6 @@ public class GerenciadorPortas {
             this.condicao     = condicao;
         }
 
-        // Consulta do estado
         public boolean isAtivo(boolean umbra) {
             return umbra ? noUmbra : noReal;
         }

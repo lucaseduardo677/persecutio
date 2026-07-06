@@ -193,11 +193,6 @@
             "id": 1,
             "members": [
                 {
-                    "name": "lado",
-                    "type": "string",
-                    "value": ""
-                },
-                {
                     "name": "real",
                     "type": "bool",
                     "value": true
@@ -222,12 +217,12 @@
             "id": 7,
             "members": [
                 {
-                    "name": "condicao",
+                    "name": "area",
                     "type": "string",
                     "value": ""
                 },
                 {
-                    "name": "coordenadas",
+                    "name": "condicao",
                     "type": "string",
                     "value": ""
                 },

@@ -1,8 +1,8 @@
 {
     "activeFile": "casaderepouso.tmx",
     "expandedProjectPaths": [
-        "tiles",
-        "."
+        ".",
+        "tiles"
     ],
     "fileStates": {
         "": {
@@ -74,8 +74,8 @@
             "scale": 3,
             "selectedLayer": 15,
             "viewCenter": {
-                "x": 294,
-                "y": 567.1666666666666
+                "x": 1299,
+                "y": 709.5
             }
         },
         "casaderepouso.tmx#Content": {
@@ -152,7 +152,7 @@
             "scaleInDock": 1
         }
     },
-    "last.imagePath": "/home/poseidon/Downloads/persecutio-main/assets/img",
+    "last.imagePath": "/home/lucas/Dev/jogo-persecutio-libgdx/assets/map/tilemaps",
     "openFiles": [
         "casaderepouso.tmx"
     ],

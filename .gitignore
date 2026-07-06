@@ -21,6 +21,8 @@ html/build/
 ios/build/
 lwjgl3/build/
 *.bak
+*.bckup
+*.bcup
 *.bkup
 *.backup
 *.tmp

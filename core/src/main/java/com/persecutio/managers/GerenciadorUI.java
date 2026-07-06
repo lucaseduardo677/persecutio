@@ -487,7 +487,7 @@ public class GerenciadorUI {
                 ? "Aperte [E] para inspecionar a Porta"
                 : "Porta trancada para sempre";
         } else {
-            label = "Aperte [E] para ir para " + proxima.destino;
+            label = "Aperte [E] para ir para " + proxima.label;
         }
 
         desenharCentralizado(ctx, ctx.fonteIndicadores, label, -40);

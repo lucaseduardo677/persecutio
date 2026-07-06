@@ -115,8 +115,8 @@ public class GerenciadorDebug {
             ctx.fonteIndicadores.setColor(aberta ? Color.GREEN : Color.RED);
             String cond = porta.destrancavel ? " [" + porta.condicao + "]" : "";
             ctx.fonteIndicadores.draw(ctx.batch,
-                porta.nome + " -> " + porta.destino + "  " + (aberta ? "ABERTA" : "TRANCADA") + cond,
-                x, y); y -= dy;
+            porta.nome + " -> " + porta.label + "  " + (aberta ? "ABERTA" : "TRANCADA") + cond,
+            x, y); y -= dy;
         } else {
             ctx.fonteIndicadores.setColor(new Color(0.45f, 0.45f, 0.45f, 1f));
             ctx.fonteIndicadores.draw(ctx.batch, "Porta: nenhuma", x, y); y -= dy;

@@ -296,6 +296,10 @@ public class GerenciadorLuzes {
 
     private Color parseCorTiled(MapProperties props) {
         Object colorObj = props.get("cor");
+        if (colorObj instanceof Color) {
+            // tiled ja retorna Color pronto pra propriedade tipo color, nao reparsear
+            return new Color((Color) colorObj);
+        }
         if (colorObj != null) {
             String hex = colorObj.toString().trim();
             if (!hex.isEmpty()) {
