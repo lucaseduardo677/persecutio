@@ -68,51 +68,74 @@
             "scaleInDock": 1
         },
         "casaderepouso.tmx": {
-            "scale": 1,
-            "selectedLayer": 14,
+            "expandedGroupLayers": [
+                29
+            ],
+            "scale": 3,
+            "selectedLayer": 15,
             "viewCenter": {
-                "x": 1081.5,
-                "y": 111.5
+                "x": 294,
+                "y": 567.1666666666666
             }
         },
         "casaderepouso.tmx#Content": {
-            "scaleInDock": 0.125
+            "scaleInDock": 0.125,
+            "scaleInEditor": 1
         },
         "casaderepouso.tmx#InteriorTilesLITE": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "casaderepouso.tmx#Scene Overview": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "casaderepouso.tmx#TX Plant": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "casaderepouso.tmx#TX Props": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "casaderepouso.tmx#TX Tileset Grass": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "casaderepouso.tmx#enfermeira": {
             "scaleInDock": 1
         },
         "casaderepouso.tmx#fancy_mansion_furnitureset_withshadow": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "casaderepouso.tmx#fancy_mansion_room_door_tiles": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "casaderepouso.tmx#furniture_and_props": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "casaderepouso.tmx#mockup2": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "casaderepouso.tmx#mockup6": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "casaderepouso.tmx#statues1": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "casaderepouso.tmx#windows_and_doors": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "casaderepouso.tmx#windows_and_doors2": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "tiles/mapa_quarto.tmx": {
             "scale": 1.5,
@@ -129,7 +152,7 @@
             "scaleInDock": 1
         }
     },
-    "last.imagePath": "/home/lucas/Dev/jogo-persecutio-libgdx-git/assets/img",
+    "last.imagePath": "/home/poseidon/Downloads/persecutio-main/assets/img",
     "openFiles": [
         "casaderepouso.tmx"
     ],
@@ -142,5 +165,5 @@
         "/home/lucas/Dev/jogo-persecutio-libgdx-git/assets/sprites/Sprites_NPCs.tsx"
     ],
     "tileset.embedInMap": true,
-    "tileset.type": 1
+    "tileset.type": 0
 }
