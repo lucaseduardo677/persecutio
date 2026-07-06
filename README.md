@@ -15,6 +15,10 @@ Branch do jogo implementado com **libGDX**. A estrutura está dividida entre o m
 - [ ] Implementar puzzle de fichas no mundo umbra com associação de pacientes a tipos de violência.
 - [ ] Implementar tela de introdução antes da primeira sessão.
 - [ ] Criar `TelaFinal` com três variações de conteúdo conforme pontuação.
+- [ ] Criar a introdução do jogo.
+- [ ] Criar a pixelart do Elimar
+- [ ] Criar o sprite do Elimar (tlvz?)
+- [ ] Criar o "cadeado" da porta
 
 ## Build
 
