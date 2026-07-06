@@ -1,16 +1,19 @@
 package com.persecutio.entities;
 
-// Animação frame personagem enquanto caminha
+// Animacao de frames do personagem enquanto caminha
 public class AnimadorPersonagem {
 
-    // Duração cada frame segundos
+    // Duracao de cada frame em segundos
     private static final float DURACAO_FRAME = 0.1f;
+    // Total de frames na animacao
     private static final int   TOTAL_FRAMES  = 4;
 
+    // Frame atual
     private int   frame  = 0;
+    // Timer para troca de frame
     private float timer  = 0f;
 
-    // Atualização do estado
+    // Atualiza animacao
     public void atualizar(float delta, boolean andando) {
         if (andando) {
             timer += delta;
@@ -19,12 +22,11 @@ public class AnimadorPersonagem {
                 frame = (frame + 1) % TOTAL_FRAMES;
             }
         } else {
-            // Volta frame parado parar mover
             frame = 0;
             timer = 0f;
         }
     }
 
-    // Consulta do estado
+    // Retorna frame atual
     public int getFrame() { return frame; }
 }

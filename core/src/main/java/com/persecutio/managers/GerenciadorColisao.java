@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-// Colisao do mapa
+// Sistema de colisao do mapa
 public class GerenciadorColisao {
 
-    // Leitura do valor
+    // Leitura dos defaults de tipos do projeto Tiled
     private static Map<String, Map<String, Object>> lerDefaults(String caminho) {
         Map<String, Map<String, Object>> resultado = new HashMap<>();
         try {
@@ -57,6 +57,7 @@ public class GerenciadorColisao {
         return resultado;
     }
 
+    // Leitura de valor booleano default
     private static boolean getDefault(Map<String, Map<String, Object>> defaults,
                                       String classe, String prop, boolean fallback) {
         Map<String, Object> props = defaults.get(classe.toLowerCase());
@@ -65,6 +66,7 @@ public class GerenciadorColisao {
         return (v instanceof Boolean) ? (Boolean) v : fallback;
     }
 
+    // Representa um objeto com colisao no mapa
     public static class ObjetoColisao {
         public final Rectangle area;
         public final String    nome;
@@ -74,6 +76,7 @@ public class GerenciadorColisao {
         public final boolean   destrancavel;
         public final String    condicao;
 
+        // Construtor do objeto de colisao
         public ObjetoColisao(Rectangle area, String nome, MapProperties props,
                              Map<String, Map<String, Object>> defaults) {
             this.area = area;
@@ -103,36 +106,51 @@ public class GerenciadorColisao {
             this.condicao = (c != null) ? c.toString() : "";
         }
 
-        // Consulta do estado
+        // Verifica se o objeto esta ativo no mundo atual
         public boolean isAtivo(boolean umbra) {
             return umbra ? noUmbra : noReal;
         }
     }
 
+    // Lista de paredes do mapa
     private final List<ObjetoColisao> paredes;
+    // Lista de hitboxes de portas
     private final List<ObjetoColisao> hitboxPortas;
+    // Mapa de objetos interativos
     private final Map<String, ObjetoColisao> interativos;
+    // Mapa de NPCs
     private final Map<String, EntidadeMapa> npcs;
 
+    // Cache reutilizavel de paredes
     private final List<Rectangle> cacheParedes = new ArrayList<>();
+    // Cache reutilizavel de portas
     private final List<ObjetoColisao> cachePortas = new ArrayList<>();
+    // Cache reutilizavel de interativos
     private final Map<String, Rectangle> cacheInterativos = new HashMap<>();
+    // Cache reutilizavel de interativos completos
     private final Map<String, ObjetoColisao> cacheInterativosCompletos = new HashMap<>();
+    // Cache reutilizavel de NPCs
     private final Map<String, EntidadeMapa> cacheNpcs = new HashMap<>();
 
+    // Conjunto de portas destrancadas
     private final Set<String> destrancados = new HashSet<>();
+    // Mapa de defaults do projeto Tiled
     private final Map<String, Map<String, Object>> defaults;
 
+    // Retangulo temporario para verificacoes
     private final Rectangle rectTemp = new Rectangle();
+    // Flag para desativar colisoes
     private boolean colisoesDesativadas = false;
 
+    // Alterna estado das colisoes
     public void alternarColisoes() {
         colisoesDesativadas = !colisoesDesativadas;
     }
 
+    // Retorna se as colisoes estao desativadas
     public boolean isColisoesDesativadas() { return colisoesDesativadas; }
 
-    // Criacao da colisao do mapa
+    // Construtor do sistema de colisao
     public GerenciadorColisao(TiledMap mapa, float escala, String caminhoProjeto) {
         CoordenadasTiled.setEscala(escala);
         defaults     = lerDefaults(caminhoProjeto);
@@ -148,7 +166,7 @@ public class GerenciadorColisao {
         carregarParedes(mapa, "Portas", hitboxPortas);
     }
 
-    // Leitura do valor
+    // Leitura da chave identificadora de um objeto
     private String lerChave(MapObject objeto) {
         String chave = objeto.getName();
         if (chave == null || chave.trim().isEmpty())
@@ -178,7 +196,7 @@ public class GerenciadorColisao {
         return chave != null ? chave.trim().toLowerCase() : "";
     }
 
-    // Carregamento dos dados
+    // Carrega paredes de uma camada do Tiled
     private void carregarParedes(TiledMap mapa, String camadaNome, List<ObjetoColisao> lista) {
         MapLayer camada = mapa.getLayers().get(camadaNome);
         if (camada == null) return;
@@ -191,7 +209,7 @@ public class GerenciadorColisao {
         }
     }
 
-    // Carregamento dos dados
+    // Carrega objetos interativos do Tiled
     private void carregarInterativos(TiledMap mapa, String camadaNome) {
         MapLayer camada = mapa.getLayers().get(camadaNome);
         if (camada == null) return;
@@ -205,7 +223,7 @@ public class GerenciadorColisao {
         }
     }
 
-    // Carregamento dos dados
+    // Carrega NPCs do Tiled
     private void carregarNpcs(TiledMap mapa, String camadaNome) {
         MapLayer camada = mapa.getLayers().get(camadaNome);
         if (camada == null) return;
@@ -231,6 +249,7 @@ public class GerenciadorColisao {
         }
     }
 
+    // Verifica se uma posicao esta livre de colisoes
     public boolean verificarPosicao(float proximoX, float proximoY,
                                     float largura, float altura, boolean umbra) {
         if (colisoesDesativadas) return true;
@@ -249,7 +268,7 @@ public class GerenciadorColisao {
         return true;
     }
 
-    // Consulta do estado
+    // Retorna a area de um objeto pelo nome
     public Rectangle getArea(String nome, boolean umbra) {
         String chave = nome.toLowerCase();
 
@@ -266,26 +285,26 @@ public class GerenciadorColisao {
         return null;
     }
 
-    // Consulta do estado
+    // Retorna um objeto interativo completo pelo nome
     public ObjetoColisao getInterativo(String nome, boolean umbra) {
         String        chave = nome.toLowerCase();
         ObjetoColisao o     = interativos.get(chave);
         return (o != null && o.isAtivo(umbra)) ? o : null;
     }
 
-    // Consulta do estado
+    // Retorna um NPC pelo nome
     public EntidadeMapa getNpc(String nome, boolean umbra) {
         EntidadeMapa n = npcs.get(nome.toLowerCase());
         return (n != null && n.isAtivo(umbra)) ? n : null;
     }
 
-    // Area reflexo
+    // Retorna a area do reflexo do espelho
     public Rectangle getReflexoArea(boolean umbra) {
         ObjetoColisao o = interativos.get("reflexo");
         return (o != null && o.isAtivo(umbra)) ? o.area : null;
     }
 
-    // Consulta do estado
+    // Retorna lista de paredes ativas no mundo
     public List<Rectangle> getParedes(boolean umbra) {
         cacheParedes.clear();
         for (ObjetoColisao p : paredes) {
@@ -297,21 +316,21 @@ public class GerenciadorColisao {
         return cacheParedes;
     }
 
-    // Consulta do estado
+    // Retorna lista de hitboxes de porta
     public List<Rectangle> getHitboxPortas() {
         cacheParedes.clear();
         for (ObjetoColisao p : hitboxPortas) cacheParedes.add(p.area);
         return cacheParedes;
     }
 
-    // Consulta do estado
+    // Retorna lista completa de objetos de porta
     public List<ObjetoColisao> getHitboxPortasCompletas() {
         cachePortas.clear();
         cachePortas.addAll(hitboxPortas);
         return cachePortas;
     }
 
-    // Consulta do estado
+    // Retorna mapa de interativos ativos
     public Map<String, Rectangle> getInterativos(boolean umbra) {
         cacheInterativos.clear();
         for (Map.Entry<String, ObjetoColisao> e : interativos.entrySet()) {
@@ -320,7 +339,7 @@ public class GerenciadorColisao {
         return cacheInterativos;
     }
 
-    // Consulta do estado
+    // Retorna mapa de interativos completos ativos
     public Map<String, ObjetoColisao> getInterativosCompletos(boolean umbra) {
         cacheInterativosCompletos.clear();
         for (Map.Entry<String, ObjetoColisao> e : interativos.entrySet()) {
@@ -329,7 +348,7 @@ public class GerenciadorColisao {
         return cacheInterativosCompletos;
     }
 
-    // Consulta do estado
+    // Retorna mapa de NPCs ativos
     public Map<String, EntidadeMapa> getNpcs(boolean umbra) {
         cacheNpcs.clear();
         for (Map.Entry<String, EntidadeMapa> e : npcs.entrySet()) {
@@ -338,7 +357,7 @@ public class GerenciadorColisao {
         return cacheNpcs;
     }
 
-    // Retorna TODAS as paredes Colisoes Portas para criar corpos Box2D das luzes
+    // Retorna todas as paredes e portas para criar corpos Box2D
     public List<Rectangle> getTodasParedesBox2D() {
         List<Rectangle> todas = new ArrayList<>();
         for (ObjetoColisao p : paredes) {
@@ -350,7 +369,7 @@ public class GerenciadorColisao {
         return todas;
     }
 
-    // Retorna so as paredes de colisao sem portas para sombra Box2D
+    // Retorna apenas paredes para sombra Box2D
     public List<Rectangle> getParedesBox2D() {
         List<Rectangle> lista = new ArrayList<>();
         for (ObjetoColisao p : paredes) {
@@ -359,7 +378,7 @@ public class GerenciadorColisao {
         return lista;
     }
 
-    // Retorna so as hitboxes de porta para sombra Box2D
+    // Retorna apenas hitboxes de porta para sombra Box2D
     public List<Rectangle> getPortasBox2D() {
         List<Rectangle> lista = new ArrayList<>();
         for (ObjetoColisao p : hitboxPortas) {
@@ -368,15 +387,15 @@ public class GerenciadorColisao {
         return lista;
     }
 
-    // Processamento interno
+    // Destranca uma porta pelo nome
     public void destrancar(String nome) {
         if (nome != null && !nome.isEmpty()) destrancados.add(nome.toLowerCase());
     }
 
-    // Consulta do estado
+    // Retorna o mapa de defaults
     public Map<String, Map<String, Object>> getDefaults() { return defaults; }
 
-    // Consulta do estado
+    // Verifica se uma porta foi destrancada
     public boolean isDestrancado(String nome) {
         return nome != null && !nome.isEmpty() && destrancados.contains(nome.toLowerCase());
     }

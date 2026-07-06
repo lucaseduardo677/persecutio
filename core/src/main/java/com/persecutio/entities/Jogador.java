@@ -7,33 +7,40 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.persecutio.managers.GerenciadorColisao;
 
-// Estado jogador movimentacao
+// Estado e movimentacao do jogador
 public class Jogador {
 
-// Direcoes usadas animacao
+    // Direcoes usadas na animacao
     public static final int DIRECAO_BAIXO    = 0;
     public static final int DIRECAO_DIREITA  = 1;
     public static final int DIRECAO_ESQUERDA = 2;
     public static final int DIRECAO_CIMA     = 3;
 
-// Posicao jogador mundo
+    // Posicao do jogador no mundo
     public float mundoX;
     public float mundoY;
 
+    // Tamanho do sprite em pixels
     private final int TAMANHO = 32;
+    // Velocidade de movimento
     private final float VELOCIDADE = 180f;
 
-// Componentes movimento colisao
+    // Configuracao da hitbox
     private final HitboxConfig       hitboxConfig;
+    // Hitbox de colisao
     public  final Rectangle          hitbox;
+    // Controlador de input
     private final ControladorInput   controladorInput;
+    // Animador de personagem
     private final AnimadorPersonagem animador;
 
+    // Flag se esta andando
     private boolean andando = false;
 
+    // Frames do spritesheet
     private final TextureRegion[][] framesSprites;
 
-// Jogador textura personagem
+    // Construtor do jogador
     public Jogador(float x, float y, Texture spriteSheet) {
         this.mundoX = x;
         this.mundoY = y;
@@ -54,7 +61,7 @@ public class Jogador {
         );
     }
 
-// Movimento animacao jogador
+    // Atualiza movimento e animacao do jogador
     public void atualizar(float delta, GerenciadorColisao sistemaColisao, boolean umbra) {
         hitbox.setPosition(mundoX + hitboxConfig.offsetX(), mundoY + hitboxConfig.offsetY());
 
@@ -84,30 +91,35 @@ public class Jogador {
         animador.atualizar(delta, andando);
     }
 
-// Frame atual personagem
+    // Desenha o personagem na tela
     public void desenhar(SpriteBatch batch, float telaX, float telaY) {
         if (framesSprites == null) return;
         TextureRegion frameAtual = framesSprites[controladorInput.getDirecaoAnimacao()][animador.getFrame()];
         batch.draw(frameAtual, telaX - 28, telaY - 28, 56, 56);
     }
 
-// Jogador outra posicao
+    // Teleporta jogador para nova posicao
     public void teleportar(float novoX, float novoY) {
         mundoX = novoX;
         mundoY = novoY;
         hitbox.setPosition(mundoX + hitboxConfig.offsetX(), mundoY + hitboxConfig.offsetY());
     }
 
-    // Processamento interno
+    // Retorna offset X da hitbox
     public float   hitboxOffsetX()  { return hitboxConfig.offsetX(); }
-    // Processamento interno
+
+    // Retorna offset Y da hitbox
     public float   hitboxOffsetY()  { return hitboxConfig.offsetY(); }
-    // Consulta do estado
+
+    // Retorna se esta andando
     public boolean isAndando()      { return andando; }
-    // Consulta do estado
+
+    // Retorna direcao atual
     public int     getDirecao()     { return controladorInput.getDirecaoAnimacao(); }
-    // Consulta do estado
+
+    // Retorna frame atual da animacao
     public int     getFrame()       { return animador.getFrame(); }
-    // Consulta do estado
+
+    // Retorna tamanho do sprite
     public int     getTamanho()     { return TAMANHO; }
 }

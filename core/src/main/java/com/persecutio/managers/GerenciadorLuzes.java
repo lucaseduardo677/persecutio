@@ -25,27 +25,41 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// Sistema de iluminacao do jogo
 public class GerenciadorLuzes {
 
+    // Mundo Box2D para raycasting das luzes
     private final World mundoBox2D;
+    // RayHandler para gerenciar luzes
     private final RayHandler rayHandler;
+    // Lista de corpos de parede para sombra
     private final List<Body> corposParedes = new ArrayList<>();
 
+    // Luz que segue o jogador
     private Light luzJogador;
+    // Luz ambiente do Umbra
     private Light luzAmbienteUmbra;
 
+    // Lista de luzes fixas do mapa
     private final List<Light> luzesFixas = new ArrayList<>();
 
+    // Mapa de luzes ativas no Umbra
     private final Map<Light, Boolean> luzNoUmbra = new HashMap<>();
+    // Mapa de luzes ativas no Real
     private final Map<Light, Boolean> luzNoReal  = new HashMap<>();
+    // Mapa de comodo de cada luz fixa
     private final Map<Light, GerenciadorComodos.Comodo> luzComodo = new HashMap<>();
 
+    // Flag se o ambiente Umbra esta ativo
     private boolean ambienteUmbraAtivo = false;
 
+    // Contador de frames para otimizacao
     private int contadorFrame = 0;
 
+    // Referencia ao gerenciador de comodos
     private GerenciadorComodos gerComodos;
 
+    // Construtor do sistema de luzes
     public GerenciadorLuzes() {
         this.mundoBox2D = new World(new com.badlogic.gdx.math.Vector2(0, 0), true);
         this.rayHandler = new RayHandler(mundoBox2D);
@@ -56,34 +70,36 @@ public class GerenciadorLuzes {
         RayHandler.setGammaCorrection(true);
     }
 
+    // Define o gerenciador de comodos
     public void setGerenciadorComodos(GerenciadorComodos gerComodos) {
         this.gerComodos = gerComodos;
     }
 
-    // Categoria 0x0002 fixture de sombra de parede bloqueia luz nao colide com player
-    // Categoria 0x0004 fixture de sombra de porta bloqueia luz nao colide com player
+    // Categoria de fixture de sombra de parede
     private static final short CAT_SOMBRA_PAREDE = 0x0002;
+    // Categoria de fixture de sombra de porta
     private static final short CAT_SOMBRA_PORTA  = 0x0004;
 
-    // Tamanho de um tile no mundo 16px escala 1 375
+    // Tamanho de um tile no mundo em pixels
     private static final float TILE_MUNDO = 16f * 1.375f;
 
+    // Cria corpos de parede e porta para sombra
     public void criarParedes(List<Rectangle> paredes, List<Rectangle> portas) {
         criarCorpos(paredes, CAT_SOMBRA_PAREDE);
         criarCorpos(portas,  CAT_SOMBRA_PORTA);
     }
 
-    // Compatibilidade com chamadas antigas que passam tudo junto
+    // Cria corpos para sombra compativel com chamadas antigas
     public void criarParedes(List<Rectangle> todas) {
         criarCorpos(todas, CAT_SOMBRA_PAREDE);
     }
 
+    // Cria corpos estaticos Box2D para bloquear luz
     private void criarCorpos(List<Rectangle> lista, short categoria) {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
 
         FixtureDef fixtureDef = new FixtureDef();
-        // Nao colide com nada fisicamente so existe para o raycast das luzes
         fixtureDef.filter.categoryBits = categoria;
         fixtureDef.filter.maskBits     = 0x0000;
 
@@ -92,15 +108,10 @@ public class GerenciadorLuzes {
         for (Rectangle r : lista) {
             if (r.width <= 0.5f || r.height <= 0.5f) continue;
 
-            // Determina recuo da borda superior do corpo de sombra
-            // Porta ou parede horizontal topo de comodo recua 1 tile inteiro
-            // Para a luz iluminar o sprite antes de ser bloqueada
-            // Parede vertical ou base sem recuo corpo ocupa a hitbox inteira
             boolean horizontal = r.width > r.height * 1.5f;
             float recuoTopo    = (ePorta || horizontal) ? TILE_MUNDO : 0f;
 
             float cx = r.x + r.width  / 2f;
-            // Desloca o centro para baixo na metade do recuo mantendo a base intacta
             float cy = r.y + (r.height - recuoTopo) / 2f;
             float hw = Math.max(0.5f, r.width  / 2f);
             float hh = Math.max(0.5f, (r.height - recuoTopo) / 2f);
@@ -116,6 +127,7 @@ public class GerenciadorLuzes {
         }
     }
 
+    // Carrega luzes definidas no Tiled
     public void carregarLuzesDoTiled(TiledMap mapa) {
         MapLayer camada = mapa.getLayers().get("Luzes");
         if (camada == null) return;
@@ -169,7 +181,6 @@ public class GerenciadorLuzes {
                 luz.setXray(atravessa);
                 luz.setActive(ligada);
 
-                // So fixtures de sombra 0x0002 0x0004 bloqueiam esta luz
                 short mascaraSombra = (short) (CAT_SOMBRA_PAREDE | CAT_SOMBRA_PORTA);
                 luz.setContactFilter(CAT_SOMBRA_PAREDE, (short) 0, mascaraSombra);
 
@@ -189,9 +200,8 @@ public class GerenciadorLuzes {
         }
     }
 
+    // Inicializa luzes do jogador e ambiente
     public void inicializar(float jogadorX, float jogadorY) {
-        // Mascara de sombra so fixtures de categoria 0x0002 parede e 0x0004 porta
-        // Bloqueiam os raios hitboxes fisicas do player 0x0001 sao ignoradas
         short mascaraSombra = (short) (CAT_SOMBRA_PAREDE | CAT_SOMBRA_PORTA);
 
         if (luzJogador == null) {
@@ -212,11 +222,13 @@ public class GerenciadorLuzes {
         setAmbienteUmbra(false);
     }
 
+    // Atualiza posicao das luzes que seguem o jogador
     public void atualizarPosicaoJogador(float mundoX, float mundoY) {
         if (luzJogador != null) luzJogador.setPosition(mundoX, mundoY);
         if (luzAmbienteUmbra != null) luzAmbienteUmbra.setPosition(mundoX, mundoY);
     }
 
+    // Define o ambiente de iluminacao
     public void setAmbienteUmbra(boolean umbra) {
         if (ambienteUmbraAtivo == umbra) return;
         ambienteUmbraAtivo = umbra;
@@ -230,6 +242,7 @@ public class GerenciadorLuzes {
         }
     }
 
+    // Renderiza as luzes
     public void render(ContextoRender ctx, GerenciadorComodos gerComodosRef,
                        GerenciadorComodos.Comodo comodoJogador) {
         contadorFrame++;
@@ -268,36 +281,41 @@ public class GerenciadorLuzes {
         rayHandler.updateAndRender();
     }
 
+    // Libera recursos de luzes
     public void dispose() {
         rayHandler.dispose();
         mundoBox2D.dispose();
     }
 
+    // Leitura de texto de propriedade
     private String lerTexto(MapProperties p, String chave, String padrao) {
         Object v = p.get(chave);
         return v != null ? v.toString().trim() : padrao;
     }
 
+    // Leitura de numero de propriedade
     private float lerNumero(MapProperties p, String chave, float padrao) {
         try { return Float.parseFloat(lerTexto(p, chave, String.valueOf(padrao))); }
         catch (Exception e) { return padrao; }
     }
 
+    // Leitura de inteiro de propriedade
     private int lerInteiro(MapProperties p, String chave, int padrao) {
         try { return Integer.parseInt(lerTexto(p, chave, String.valueOf(padrao))); }
         catch (Exception e) { return padrao; }
     }
 
+    // Leitura de boolean de propriedade
     private boolean lerBool(MapProperties p, String chave, boolean padrao) {
         String s = lerTexto(p, chave, "").toLowerCase();
         if (s.isEmpty()) return padrao;
         return s.equals("true") || s.equals("1") || s.equals("yes");
     }
 
+    // Parse de cor de propriedade do Tiled
     private Color parseCorTiled(MapProperties props) {
         Object colorObj = props.get("cor");
         if (colorObj instanceof Color) {
-            // tiled ja retorna Color pronto pra propriedade tipo color, nao reparsear
             return new Color((Color) colorObj);
         }
         if (colorObj != null) {
@@ -315,6 +333,7 @@ public class GerenciadorLuzes {
         return new Color(1f, 1f, 1f, 1f);
     }
 
+    // Parse de cor hexadecimal
     private Color parseHexColor(String hex) {
         String h = hex.startsWith("#") ? hex.substring(1) : hex;
         h = h.trim();
@@ -346,6 +365,7 @@ public class GerenciadorLuzes {
         return new Color(1f, 1f, 1f, 1f);
     }
 
+    // Parse de cor a partir de string
     private Color parseCorString(String str) {
         String s = str.trim();
         if (s.startsWith("#")) {

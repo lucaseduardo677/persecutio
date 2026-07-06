@@ -9,28 +9,36 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.persecutio.screens.TelaJogo;
 
-// Ferramentas depuracao jogo
+// Ferramentas de debug do jogo
 public class GerenciadorDebug {
 
     private final ShapeRenderer shapes;
 
+    // Cor das paredes no debug
     private static final Color COR_PAREDE     = new Color(0.2f, 0.85f, 0.2f, 1f);
+    // Cor dos interativos no debug
     private static final Color COR_INTERATIVO = new Color(0f,   0.9f,  0.9f, 1f);
+    // Cor dos NPCs no debug
     private static final Color COR_NPC        = new Color(0.8f, 0f,    0.9f, 1f);
+    // Cor das portas no debug
     private static final Color COR_PORTA      = new Color(1f,   0.55f, 0f,   1f);
+    // Cor do alcance de interacao no debug
     private static final Color COR_ALCANCE    = new Color(1f,   1f,    0f,   1f);
+    // Cor do jogador no debug
     private static final Color COR_JOGADOR    = new Color(1f,   0.15f, 0.15f,1f);
 
+    // Folga do alcance de interacao
     private static final float FOLGA_PORTA = 24f;
 
+    // Retangulo temporario para alcance
     private final Rectangle rectAlcance = new Rectangle();
 
-    // Criação da ferramentas de depuração
+    // Construtor das ferramentas de debug
     public GerenciadorDebug() {
         shapes = new ShapeRenderer();
     }
 
-    // Atalhos depuracao
+    // Processa atalhos de debug
     public void tratarAtalhos(TelaJogo jogo) {
         boolean ctrl = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)
                     || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
@@ -55,7 +63,7 @@ public class GerenciadorDebug {
         }
     }
 
-    // Hitboxes tela de forma direta e sem inversao
+    // Desenha hitboxes na tela
     public void desenharHitboxes(TelaJogo jogo, float cameraX, float cameraY) {
         shapes.begin(ShapeType.Line);
 
@@ -86,7 +94,7 @@ public class GerenciadorDebug {
         shapes.end();
     }
 
-    // Informacoes depuracao
+    // Desenha informacoes de debug na tela
     public void desenharInfo(TelaJogo jogo, ContextoRender ctx) {
         float x  = 8f;
         float y  = ctx.vAltura - 10f;
@@ -128,7 +136,7 @@ public class GerenciadorDebug {
         ctx.fonteIndicadores.setColor(Color.WHITE);
     }
 
-    // Procura porta mais proxima
+    // Procura porta mais proxima do jogador
     private GerenciadorPortas.Porta portaNoAlcance(TelaJogo jogo) {
         Rectangle hj = jogo.hitboxJogador;
         rectAlcance.set(
@@ -142,6 +150,6 @@ public class GerenciadorDebug {
         return null;
     }
 
-    // Liberação dos recursos
+    // Libera recursos do debug
     public void dispose() { shapes.dispose(); }
 }

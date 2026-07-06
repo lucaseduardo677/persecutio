@@ -31,50 +31,80 @@ import com.persecutio.managers.GerenciadorProgresso;
 import com.persecutio.managers.GerenciadorRenderizacao;
 import com.persecutio.managers.GerenciadorUI;
 
+// Tela principal do jogo durante a gameplay
 public class TelaJogo implements Screen {
 
+    // Referencia para a classe principal do jogo
     private final PersecutioGame jogo;
 
+    // Sistema de colisao do mapa
     public  GerenciadorColisao         sistemaColisao;
+    // Ferramentas de debug
     private GerenciadorDebug           sistemaDebug;
+    // Gerenciador de audio
     private GerenciadorAudio           sistemaAudio;
+    // Progresso da historia
     public  GerenciadorProgresso       progresso;
+    // Interface do usuario
     private GerenciadorUI              interfaceJogo;
+    // Renderizador do mapa
     private GerenciadorRenderizacao    renderizador;
+    // Gerenciador de comodos
     private GerenciadorComodos         gerComodos;
+    // Gerenciador de portas
     public  GerenciadorPortas          gerPortas;
+    // Sistema de iluminacao
     private GerenciadorLuzes           gerLuzes;
+    // Mapa carregado do Tiled
     private TiledMap                   mapaTiled;
+    // Renderizador do mapa Tiled
     private OrthogonalTiledMapRenderer rendererTiled;
 
+    // Entidade do jogador
     public  Jogador jogador;
 
+    // Hitbox do jogador para referencia rapida
     public Rectangle hitboxJogador;
 
+    // Indica se o jogador esta no mundo Umbra
     public boolean mundoUmbra            = false;
+    // Indica se a porta do Umbra foi destrancada
     public boolean portaUmbraDestrancada = false;
 
+    // Flag para mostrar hitboxes de debug
     private boolean mostrarHitboxes = false;
+    // Flag se o jogador esta andando
     private boolean andando         = false;
 
+    // Comodo atual onde o jogador se encontra
     private GerenciadorComodos.Comodo comodoAtual = null;
 
+    // Spritesheet do personagem
     private Texture spriteSheet;
 
+    // Texturas das partes da porta
     private Texture imgPorta0, imgPorta1, imgPorta2, imgPorta3;
+    // Textura do reflexo do espelho
     private Texture imgEspelho;
 
+    // Duracao do fade inicial em segundos
     private static final float DURACAO_FADE = 1.0f;
+    // Timer do fade
     private float timerFade  = 0f;
+    // Flag se o fade esta ativo
     private boolean fadeAtivo = true;
+    // Textura branca para o fade
     private Texture texBranca;
 
+    // Contexto compartilhado de renderizacao
     private final ContextoRender ctx = new ContextoRender();
 
+    // Construtor da tela do jogo
     public TelaJogo(PersecutioGame jogo) {
         this.jogo = jogo;
     }
 
+    // Carrega uma textura com fallback para branco se nao existir
     private Texture carregarTextura(String caminho) {
         if (Gdx.files.internal(caminho).exists()) {
             try { return new Texture(Gdx.files.internal(caminho)); }
@@ -103,6 +133,7 @@ public class TelaJogo implements Screen {
         return fallback;
     }
 
+    // Inicializa recursos ao entrar na tela
     @Override
     public void show() {
         spriteSheet = carregarTextura("img/personagem.png");
@@ -146,11 +177,11 @@ public class TelaJogo implements Screen {
         gerLuzes.carregarLuzesDoTiled(mapaTiled);
         gerLuzes.criarParedes(sistemaColisao.getParedesBox2D(), sistemaColisao.getPortasBox2D());
 
-        // Fallback hardcoded
+        // Posicao inicial do jogador caso nao encontre spawnpoint
         float inicialX = 75f * escala;
         float inicialY = (768f + 180f) * escala;
 
-        // Procura spawnpoint na camada "Destinos"
+        // Procura spawnpoint na camada Destinos
         Rectangle spawnRect = null;
         MapLayer camadaDestinos = mapaTiled.getLayers().get("Destinos");
         if (camadaDestinos != null) {
@@ -171,7 +202,7 @@ public class TelaJogo implements Screen {
         }
 
         if (spawnRect != null) {
-            // Centraliza a hitbox do jogador dentro do retângulo do spawnpoint
+            // Centraliza a hitbox do jogador dentro do retangulo do spawnpoint
             HitboxConfig cfg = HitboxConfig.padrao();
             float cx = spawnRect.x + spawnRect.width / 2f;
             float cy = spawnRect.y + spawnRect.height / 2f;
@@ -188,6 +219,7 @@ public class TelaJogo implements Screen {
         fadeAtivo  = true;
     }
 
+    // Loop principal de renderizacao
     @Override
     public void render(float delta) {
         if (fadeAtivo) {
@@ -301,6 +333,7 @@ public class TelaJogo implements Screen {
         desenharFade(ctx);
     }
 
+    // Desenha overlay preto para fade inicial
     private void desenharFade(ContextoRender ctx) {
         if (!fadeAtivo) return;
         float alfa = 1f - (timerFade / DURACAO_FADE);
@@ -316,6 +349,7 @@ public class TelaJogo implements Screen {
         ctx.batch.end();
     }
 
+    // Valida a senha digitada pelo jogador
     private void processarSenha() {
         String senha = interfaceJogo.pegarSenha();
         if (senha == null) return;
@@ -323,6 +357,7 @@ public class TelaJogo implements Screen {
         else                               interfaceJogo.senhaErro();
     }
 
+    // Processa entrada do jogador a cada frame
     private void tratarInput(float delta) {
         sistemaAudio.tratarInputVolume();
 
@@ -354,7 +389,7 @@ public class TelaJogo implements Screen {
         interfaceJogo.atualizarTutorial(andando, delta);
     }
 
-    // Teleporta o jogador centralizando a hitbox dentro do retângulo destino
+    // Teleporta o jogador centralizando a hitbox dentro do retangulo destino
     private void teleportarJogadorParaDestino(Jogador jogador, GerenciadorPortas.Porta porta) {
         if (porta.areaDestino != null) {
             float cx = porta.areaDestino.x + porta.areaDestino.width / 2f;
@@ -367,6 +402,7 @@ public class TelaJogo implements Screen {
         }
     }
 
+    // Trata interacao do jogador com portas e objetos
     private void tratarInteracao() {
         GerenciadorPortas.Porta porta = gerPortas.acharProxima(jogador, mundoUmbra);
         if (porta != null) {
@@ -403,6 +439,7 @@ public class TelaJogo implements Screen {
         if (progresso.isGaveta())     interfaceJogo.mudarEstado(GerenciadorUI.UI_SENHA);
     }
 
+    // Libera todos os recursos da tela
     @Override
     public void dispose() {
         spriteSheet.dispose();
@@ -421,6 +458,7 @@ public class TelaJogo implements Screen {
         if (rendererTiled != null) rendererTiled.dispose();
     }
 
+    // Ajusta a tela quando a janela e redimensionada
     @Override
     public void resize(int width, int height) {
         jogo.viewport.update(width, height, true);

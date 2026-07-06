@@ -20,12 +20,13 @@ import com.persecutio.entities.Jogador;
 
 import java.util.List;
 
-// Renderizacao do jogo com cull de comodos por tile filtro 50 de area
+// Renderizacao do jogo com cull de comodos por tile
 public class GerenciadorRenderizacao {
 
+    // Textura preta para tint de Umbra
     private final Texture texPreto;
 
-    // Criacao do renderizador
+    // Construtor do renderizador
     public GerenciadorRenderizacao(float escala) {
         Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pm.setColor(Color.BLACK);
@@ -34,7 +35,7 @@ public class GerenciadorRenderizacao {
         pm.dispose();
     }
 
-    // Desenha npcs visiveis no mundo atual
+    // Desenha NPCs visiveis no mundo atual
     public void desenharNpcs(ContextoRender ctx, GerenciadorColisao sistemaColisao, boolean umbra) {
         for (EntidadeMapa npc : sistemaColisao.getNpcs(umbra).values()) {
             ctx.batch.draw(npc.textura,
@@ -70,7 +71,7 @@ public class GerenciadorRenderizacao {
         ctx.batch.draw(region, Math.round(telaX) - 28, Math.round(telaY) - 28, 56, 56);
     }
 
-    // Renderiza o mapa tiled com cull por comodo via filtro de tiles 50
+    // Renderiza o mapa Tiled com cull por comodo
     public void renderizarMapa(ContextoRender ctx,
                                OrthogonalTiledMapRenderer rendererTiled,
                                GerenciadorComodos gerComodos,
@@ -89,10 +90,10 @@ public class GerenciadorRenderizacao {
         batch.setTransformMatrix(batch.getTransformMatrix());
 
         if (cullAtivo.isEmpty()) {
-            // Jogador fora de qualquer comodo renderiza tudo sem corte
+            // Jogador fora de qualquer comodo renderiza tudo
             renderCamadas(rendererTiled, ctx, umbra);
         } else {
-            // Renderiza apenas tiles que passam no filtro 50 dos comodos ativos
+            // Renderiza apenas tiles que passam no filtro
             TiledMap mapa = rendererTiled.getMap();
             float escala = CoordenadasTiled.getEscala();
 
@@ -122,7 +123,7 @@ public class GerenciadorRenderizacao {
         batch.setTransformMatrix(matrizOriginal);
     }
 
-    // Renderiza uma camada de tiles aplicando o filtro de 50 de area dentro dos comodos ativos
+    // Renderiza camada de tiles aplicando filtro de area
     private void renderTileLayerComCull(SpriteBatch batch, TiledMapTileLayer layer,
                                         List<GerenciadorComodos.Comodo> cullAtivo, float escala) {
         final float tileWidth  = layer.getTileWidth()  * escala;
@@ -130,7 +131,7 @@ public class GerenciadorRenderizacao {
         final int layerWidth   = layer.getWidth();
         final int layerHeight  = layer.getHeight();
 
-        // Calcula bounds em tiles dos comodos ativos para otimizar iteracao
+        // Calcula bounds em tiles dos comodos ativos
         float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE;
         float maxX = Float.MIN_VALUE, maxY = Float.MIN_VALUE;
         for (GerenciadorComodos.Comodo c : cullAtivo) {
@@ -173,7 +174,7 @@ public class GerenciadorRenderizacao {
         }
     }
 
-    // Renderiza as camadas do mapa normal e tint de umbra se ativo
+    // Renderiza camadas do mapa normal e tint de Umbra
     private void renderCamadas(OrthogonalTiledMapRenderer rendererTiled,
                                ContextoRender ctx, boolean umbra) {
         rendererTiled.getBatch().setColor(Color.WHITE);
@@ -192,6 +193,6 @@ public class GerenciadorRenderizacao {
         }
     }
 
-    // Liberacao dos recursos
+    // Libera recursos do renderizador
     public void dispose() { texPreto.dispose(); }
 }

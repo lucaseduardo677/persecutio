@@ -21,9 +21,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.persecutio.entities.Jogador;
 
-// Interface do jogo
+// Interface do usuario do jogo
 public class GerenciadorUI {
 
+    // Estados da interface
     public static final int UI_JOGO    = 0;
     public static final int UI_PORTA   = 1;
     public static final int UI_ESPELHO = 2;
@@ -31,48 +32,71 @@ public class GerenciadorUI {
     public static final int UI_SENHA   = 4;
     public static final int UI_FADE    = 5;
 
+    // Fases do fade
     private enum FaseFade { INATIVO, ESCURECENDO, ESCURO, VIDEO, AGUARDANDO, CLAREANDO }
 
+    // Estado atual da UI
     private int     estadoUi       = UI_JOGO;
+    // Flag para mostrar mensagem de area liberada
     private boolean mostrarLiberada = false;
 
+    // Timer da cinematica de NPC
     private float timerNpc   = -1f;
+    // Timer da mensagem verde
     private float timerVerde = -1f;
 
+    // Opacidade do tutorial
     private float opacidade = 1.0f;
 
+    // Flag se esta pausado
     private boolean pausado    = false;
+    // Opcao selecionada no menu de pausa
     private int     opcaoPausa = 0;
+    // Opcao anterior para som
     private int     opcaoPausaAnterior = 0;
 
+    // Puzzle de senha
     private PuzzleSenha puzzle;
 
+    // Duracao do fade
     private static final float T_FADE   = 0.6f;
+    // Tempo de espera entre fades
     private static final float T_ESPERA = 0.3f;
 
+    // Fase atual do fade
     private FaseFade faseFade  = FaseFade.INATIVO;
+    // Timer do fade
     private float    timerFade = 0f;
+    // Alpha do fade
     private float    alfaFade  = 0f;
 
+    // Acao a executar ao escurecer
     private Runnable aoEscurecer;
 
+    // Textura branca para overlays
     private Texture         texBranca;
+    // Gerenciador de video
     private GerenciadorVideo video;
+    // Referencia ao audio
     private GerenciadorAudio audio;
 
+    // Coordenadas do mouse
     private final Vector2     mouse   = new Vector2();
+    // Medidor de texto
     private final GlyphLayout medidor = new GlyphLayout();
 
+    // Ultimo prompt interativo exibido
     private String ultimoPromptInterativo = null;
 
+    // Retangulo temporario
     private final Rectangle rectTemp = new Rectangle();
 
-    // Inicialização dos recursos
+    // Inicializa recursos da UI
     public void inicializar(BitmapFont fonte, ExtendViewport viewport) {
         inicializar(fonte, viewport, null);
     }
 
-    // Inicialização dos recursos
+    // Inicializa recursos da UI com audio
     public void inicializar(BitmapFont fonte, ExtendViewport viewport, GerenciadorAudio audioRef) {
         audio  = audioRef;
         puzzle = new PuzzleSenha();
@@ -87,19 +111,19 @@ public class GerenciadorUI {
         video = new GerenciadorVideo();
     }
 
-    // Definição do valor
+    // Define o gerenciador de audio
     public void setAudio(GerenciadorAudio audioRef) {
         audio = audioRef;
     }
 
-    // Reprodução do som
+    // Toca som de selecao
     private void tocarSomSelecao() {
         if (audio != null) {
             audio.tocarSelecao();
         }
     }
 
-    // Atualização do estado
+    // Atualiza timers da UI
     public void atualizarTimers(float delta) {
         if (audio != null) audio.atualizar(delta);
 
@@ -178,7 +202,7 @@ public class GerenciadorUI {
         }
     }
 
-    // Início do processo
+    // Inicia fade com video opcional
     public void iniciarFade(String caminhoVideo, Runnable aoEscurecer) {
         this.aoEscurecer = aoEscurecer;
         estadoUi         = UI_FADE;
@@ -188,15 +212,15 @@ public class GerenciadorUI {
         video.preparar(caminhoVideo);
     }
 
-    // Início do processo
+    // Inicia fade simples sem video
     public void iniciarFadeSimples(Runnable aoEscurecer) {
         iniciarFade(null, aoEscurecer);
     }
 
-    // Consulta do estado
+    // Retorna se o fade esta ativo
     public boolean isFadeAtivo() { return faseFade != FaseFade.INATIVO; }
 
-    // Leitura do input
+    // Processa input do jogador
     public boolean puxarInput(ExtendViewport viewport) {
         if (estadoUi == UI_FADE) return true;
 
@@ -278,64 +302,69 @@ public class GerenciadorUI {
         return false;
     }
 
-    // Troca de estado
+    // Muda o estado da UI
     public void mudarEstado(int novoEstado) {
         estadoUi = novoEstado;
         if (novoEstado == UI_SENHA) abrirSenha();
     }
 
-    // Consulta do estado
+    // Retorna estado atual da UI
     public int getEstado() { return estadoUi; }
 
-    // Início do processo
+    // Inicia cinematica de NPC
     public void iniciarCinematica() {
         estadoUi = UI_NPC;
         timerNpc = 3f;
     }
 
-    // Atualização do estado
+    // Atualiza opacidade do tutorial
     public void atualizarTutorial(boolean andando, float delta) {
         if (andando && opacidade > 0f)
             opacidade = Math.max(0f, opacidade - 1.5f * delta);
     }
 
-    // Ajuste da interface
+    // Ajusta interface ao redimensionar
     public void redimensionar(int w, int h) { if (puzzle != null) puzzle.redimensionar(w, h); }
 
-    // Abertura da tela
+    // Abre tela de senha
     public void   abrirSenha()    { estadoUi = UI_SENHA; if (puzzle != null) puzzle.abrir(); }
-    // Consulta do estado
+
+    // Retorna se esta na tela de senha
     public boolean isSenha()      { return estadoUi == UI_SENHA; }
-    // Atualização do estado
+
+    // Atualiza puzzle de senha
     public void   atualizarSenha(float delta) {
         if (puzzle != null) { puzzle.atualizar(delta); if (!puzzle.isAberto()) estadoUi = UI_JOGO; }
     }
-    // Leitura da senha
+
+    // Retorna senha digitada
     public String  pegarSenha()   { return puzzle != null ? puzzle.pegarSenha() : null; }
-    // Processamento interno
+
+    // Processa sucesso na senha
     public void    senhaSucesso()  { if (puzzle != null) puzzle.fecharSucesso(); }
-    // Processamento interno
+
+    // Processa erro na senha
     public void    senhaErro()     { if (puzzle != null) puzzle.mostrarErro(); }
 
-    // Desenho dos elementos
+    // Desenha overlay escuro
     public void desenharEscuro(ContextoRender ctx) {
         desenharEscuro(ctx, 0.86f);
     }
 
-    // Desenho dos elementos
+    // Desenha overlay escuro com alpha customizado
     public void desenharEscuro(ContextoRender ctx, float alpha) {
         ctx.batch.setColor(0f, 0f, 0f, alpha);
         ctx.batch.draw(texBranca, 0, 0, ctx.vLargura, ctx.vAltura);
         ctx.batch.setColor(Color.WHITE);
     }
 
-    // Desenho dos elementos
+    // Desenha texto centralizado na tela
     private void desenharCentralizado(ContextoRender ctx, BitmapFont fonte, String texto, float offsetY) {
         medidor.setText(fonte, texto);
         fonte.draw(ctx.batch, texto, ctx.centroX - medidor.width / 2f, ctx.centroY + offsetY);
     }
 
-    // Desenho dos elementos
+    // Desenha tutorial na tela
     public void desenharTutorial(ContextoRender ctx) {
         if (opacidade <= 0f) return;
         ctx.fonteIndicadores.setColor(0.78f, 0.78f, 0.78f, opacidade);
@@ -344,26 +373,24 @@ public class GerenciadorUI {
         ctx.fonteIndicadores.setColor(Color.WHITE);
     }
 
-    // Desenho dos elementos
+    // Desenha tela de NPC
     public void desenharNpc(ContextoRender ctx, Texture imgPorta3) {
         float popupL = Math.min(300, ctx.vLargura - 40f);
         float popupA = (popupL / imgPorta3.getWidth()) * imgPorta3.getHeight();
         ctx.batch.draw(imgPorta3, ctx.centroX - popupL/2, ctx.centroY - popupA/2, popupL, popupA);
     }
 
-    // Desenho dos elementos
+    // Desenha tela do espelho
     public void desenharEspelho(ContextoRender ctx, Texture imgEspelho) {
-        // Fundo escuro
         desenharEscuro(ctx, 0.86f);
 
-        // Imagem espelho tela cheia
         ctx.batch.draw(imgEspelho, 0, 0, ctx.vLargura, ctx.vAltura);
 
-        // Texto
         ctx.fonteDialogos.setColor(Color.WHITE);
         desenharCentralizado(ctx, ctx.fonteDialogos, "Pressione [ESC] ou [E] para fechar", -80);
     }
 
+    // Desenha tela da porta
     public void desenharPorta(ContextoRender ctx,
                               Texture p0, Texture p1, Texture p2, Texture p3, int partes) {
         desenharEscuro(ctx);
@@ -382,7 +409,7 @@ public class GerenciadorUI {
         desenharCentralizado(ctx, ctx.fonteDialogos, "Pressione [ESC] ou [E] para fechar", -260);
     }
 
-    // Desenho dos elementos
+    // Desenha fade e video
     public void desenharFadeEVideo(ContextoRender ctx) {
         if (faseFade == FaseFade.INATIVO) return;
 
@@ -403,7 +430,7 @@ public class GerenciadorUI {
         ctx.batch.end();
     }
 
-    // Desenho dos elementos
+    // Desenha fade do espelho
     public void desenharFadeEspelho(ContextoRender ctx) {
         if (faseFade == FaseFade.INATIVO) return;
         if (alfaFade <= 0.001f) return;
@@ -418,6 +445,7 @@ public class GerenciadorUI {
         ctx.batch.end();
     }
 
+    // Desenha avisos e prompts interativos
     public void desenharAvisos(ContextoRender ctx, GerenciadorColisao sistemaColisao,
                                Jogador jogador, boolean mundoUmbra, boolean destrancada, String aviso) {
         ctx.fonteIndicadores.setColor(Color.WHITE);
@@ -471,6 +499,7 @@ public class GerenciadorUI {
         }
     }
 
+    // Desenha prompt de porta proxima
     public void desenharPromptPorta(ContextoRender ctx, GerenciadorPortas gerPortas,
                                     GerenciadorColisao colisao, Jogador jogador, boolean umbra) {
         if (gerPortas == null) return;
@@ -493,7 +522,7 @@ public class GerenciadorUI {
         desenharCentralizado(ctx, ctx.fonteIndicadores, label, -40);
     }
 
-    // Desenho dos elementos
+    // Desenha mensagem de area liberada
     public void desenharLiberada(ContextoRender ctx) {
         if (!mostrarLiberada) return;
         ctx.fonteIndicadores.setColor(Color.GREEN);
@@ -501,34 +530,40 @@ public class GerenciadorUI {
         ctx.fonteIndicadores.setColor(Color.WHITE);
     }
 
-    // Desenho dos elementos
+    // Desenha menu de pausa
     public void desenharPausa(ContextoRender ctx) {
         ctx.fonteMenu.setColor(Color.WHITE);
         desenharCentralizado(ctx, ctx.fonteMenu, opcaoPausa == 0 ? "> VOLTAR" : "  VOLTAR", 60);
         desenharCentralizado(ctx, ctx.fonteMenu, opcaoPausa == 1 ? "> SAIR"   : "  SAIR",    0);
     }
 
-    // Processamento interno
+    // Verifica se hitbox esta sobre uma area
     private boolean sobreArea(Rectangle hi, Rectangle area) {
         return area != null && hi.overlaps(area);
     }
 
-    // Consulta do estado
+    // Retorna se esta na tela de porta
     public boolean isPorta()   { return estadoUi == UI_PORTA; }
-    // Consulta do estado
+
+    // Retorna se esta na tela de espelho
     public boolean isEspelho() { return estadoUi == UI_ESPELHO; }
-    // Consulta do estado
+
+    // Retorna se esta em cinematica de NPC
     public boolean isNpc()     { return estadoUi == UI_NPC; }
-    // Consulta do estado
+
+    // Retorna se esta pausado
     public boolean isPausado() { return pausado; }
-    // Consulta do estado
+
+    // Retorna se esta em fade
     public boolean isFade()    { return estadoUi == UI_FADE; }
-    // Consulta do estado
+
+    // Retorna se esta em video
     public boolean isVideo()   { return faseFade == FaseFade.VIDEO; }
-    // Consulta do estado
+
+    // Retorna gerenciador de video
     public GerenciadorVideo getVideo() { return video; }
 
-    // Liberação dos recursos
+    // Libera recursos da UI
     public void dispose() {
         if (puzzle    != null) puzzle.dispose();
         if (texBranca != null) texBranca.dispose();
@@ -536,19 +571,28 @@ public class GerenciadorUI {
         medidor.reset();
     }
 
+    // Puzzle de senha interno
     private static class PuzzleSenha {
+        // Tamanho maximo da senha
         private static final int TAMANHO_SENHA = 4;
 
+        // Stage do puzzle
         private Stage     stage;
+        // Campo de texto da senha
         private TextField campoSenha;
+        // Label de feedback
         private Label     labelFeedback;
+        // Flag se esta aberto
         private boolean   aberto        = false;
+        // Flag para fechar no proximo frame
         private boolean   fecharProximo = false;
+        // Senha submetida
         private String    senhaSubmetida = null;
 
+        // Texturas do cursor selecao e fundo
         private Texture cursorTex, selecaoTex, backTex;
 
-        // Inicialização dos recursos
+        // Inicializa recursos do puzzle
         public void inicializar(BitmapFont fonte, ExtendViewport vp) {
             stage = new Stage(new ExtendViewport(
                 Math.round(vp.getWorldWidth()), Math.round(vp.getWorldHeight())));
@@ -588,7 +632,7 @@ public class GerenciadorUI {
             stage.addActor(t);
         }
 
-        // Abertura da tela
+        // Abre o puzzle de senha
         public void abrir() {
             aberto        = true;
             senhaSubmetida = null;
@@ -599,10 +643,10 @@ public class GerenciadorUI {
             Gdx.input.setInputProcessor(stage);
         }
 
-        // Consulta do estado
+        // Retorna se esta aberto
         public boolean isAberto() { return aberto; }
 
-        // Atualização do estado
+        // Atualiza estado do puzzle
         public void atualizar(float delta) {
             if (!aberto) return;
             if (fecharProximo) {
@@ -618,14 +662,14 @@ public class GerenciadorUI {
             stage.draw();
         }
 
-        // Exibição do aviso
+        // Mostra erro na senha
         public void mostrarErro() {
             labelFeedback.setText("Senha incorreta. Tente de novo:");
             campoSenha.setText("");
             stage.setKeyboardFocus(campoSenha);
         }
 
-        // Abertura da tela
+        // Fecha puzzle cancelando
         public void fecharCancelar() {
             senhaSubmetida = null;
             fecharProximo  = true;
@@ -633,26 +677,26 @@ public class GerenciadorUI {
             if (Gdx.input.getInputProcessor() == stage) Gdx.input.setInputProcessor(null);
         }
 
-        // Abertura da tela
+        // Fecha puzzle com sucesso
         public void fecharSucesso() {
             fecharProximo = true;
             Gdx.input.setOnscreenKeyboardVisible(false);
             if (Gdx.input.getInputProcessor() == stage) Gdx.input.setInputProcessor(null);
         }
 
-        // Leitura da senha
+        // Retorna senha digitada
         public String pegarSenha() {
             String r       = senhaSubmetida;
             senhaSubmetida = null;
             return r;
         }
 
-        // Ajuste da interface
+        // Ajusta tamanho do puzzle
         public void redimensionar(int w, int h) {
             if (stage != null) stage.getViewport().update(w, h, true);
         }
 
-        // Liberação dos recursos
+        // Libera recursos do puzzle
         public void dispose() {
             if (stage      != null) stage.dispose();
             if (cursorTex  != null) cursorTex.dispose();

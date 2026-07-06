@@ -4,20 +4,23 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.Vector2;
 
-// Teclado produz direção movimento animação
+// Processa teclado para movimento e direcao de animacao
 public class ControladorInput {
 
-    // Índices direção usados selecionar linha spritesheet
+    // Indices de direcao para selecionar linha do spritesheet
     public static final int DIRECAO_BAIXO    = 0;
     public static final int DIRECAO_DIREITA  = 1;
     public static final int DIRECAO_ESQUERDA = 2;
     public static final int DIRECAO_CIMA     = 3;
 
+    // Vetor de direcao do movimento
     private final Vector2 direcaoMovimento = new Vector2();
+    // Direcao da animacao
     private int     direcaoAnimacao = DIRECAO_BAIXO;
+    // Flag se esta se movendo
     private boolean movendo         = false;
 
-    // Atualização do estado
+    // Atualiza estado do input
     public void atualizar() {
         direcaoMovimento.setZero();
         movendo = false;
@@ -44,10 +47,12 @@ public class ControladorInput {
         }
     }
 
-    // Consulta do estado
+    // Retorna vetor de direcao do movimento
     public Vector2 getDirecaoMovimento() { return direcaoMovimento; }
-    // Consulta do estado
+
+    // Retorna direcao da animacao
     public int     getDirecaoAnimacao()  { return direcaoAnimacao; }
-    // Consulta do estado
+
+    // Retorna se esta se movendo
     public boolean isMovendo()           { return movendo; }
 }

@@ -14,21 +14,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// Gerenciador de portas do mapa
 public class GerenciadorPortas {
 
+    // Folga de alcance para interagir com porta
     private static final float FOLGA = 24f;
 
+    // Lista de portas carregadas
     private final List<Porta> portas = new ArrayList<>();
+    // Escala de conversao
     private final float escala;
 
+    // Retangulo temporario para verificacao de alcance
     private final Rectangle rectAlcance = new Rectangle();
 
+    // Construtor do gerenciador de portas
     public GerenciadorPortas(TiledMap mapa, float escala,
                              Map<String, Map<String, Object>> defaults) {
         this.escala = escala;
         CoordenadasTiled.setEscala(escala);
 
-        // Carrega objetos da camada "Destinos" (retângulo completo, não só centro)
+        // Carrega destinos da camada Destinos
         Map<String, Rectangle> destinos = new HashMap<>();
         MapLayer camadaDestinos = mapa.getLayers().get("Destinos");
         if (camadaDestinos != null) {
@@ -57,15 +63,12 @@ public class GerenciadorPortas {
             MapProperties props = obj.getProperties();
             Rectangle     r     = ((RectangleMapObject) obj).getRectangle();
 
-            // "destino" = nome do objeto spawn na camada "Destinos"
             String spawnNome = lerProp(props, "destino");
             if (spawnNome == null || spawnNome.isEmpty()) continue;
 
-            // "area" = nome legível do próximo cômodo
             String label = lerProp(props, "area");
             if (label == null || label.isEmpty()) label = spawnNome;
 
-            // Resolve spawn: procura na camada "Destinos", senão tenta x,y direto
             Rectangle areaDestino = null;
             Vector2 spawn;
             Rectangle destinoRect = destinos.get(spawnNome.trim().toLowerCase());
@@ -109,6 +112,7 @@ public class GerenciadorPortas {
         }
     }
 
+    // Procura porta mais proxima do jogador
     public Porta acharProxima(Jogador jogador, boolean umbra) {
         rectAlcance.set(
             jogador.hitbox.x - FOLGA,
@@ -123,6 +127,7 @@ public class GerenciadorPortas {
         return null;
     }
 
+    // Leitura de propriedade de texto
     private static String lerProp(MapProperties props, String chave) {
         if (props.containsKey(chave)) {
             Object val = props.get(chave);
@@ -131,6 +136,7 @@ public class GerenciadorPortas {
         return null;
     }
 
+    // Leitura de propriedade booleana com fallback
     private static boolean lerBool(MapProperties props, Map<String, Map<String, Object>> defaults,
                                    String classOrig, String chave, boolean fallback) {
         String val = lerProp(props, chave);
@@ -144,14 +150,16 @@ public class GerenciadorPortas {
         return fallback;
     }
 
+    // Retorna lista de portas
     public List<Porta> getPortas() { return portas; }
 
+    // Dados de uma porta do mapa
     public static class Porta {
         public final Rectangle area;
         public final String    nome;
         public final String    label;
         public final Vector2   spawn;
-        public final Rectangle areaDestino; // retângulo do objeto na camada "Destinos"
+        public final Rectangle areaDestino;
         public final String    video;
         public final boolean   usarFade;
 
@@ -162,6 +170,7 @@ public class GerenciadorPortas {
         public final boolean destrancavel;
         public final String  condicao;
 
+        // Construtor da porta
         Porta(Rectangle area, String nome, String label, Vector2 spawn, Rectangle areaDestino,
               String video, boolean usarFade, boolean noUmbra, boolean noReal,
               boolean trancado, boolean destrancavel, String condicao) {
@@ -179,6 +188,7 @@ public class GerenciadorPortas {
             this.condicao     = condicao;
         }
 
+        // Verifica se a porta esta ativa no mundo atual
         public boolean isAtivo(boolean umbra) {
             return umbra ? noUmbra : noReal;
         }

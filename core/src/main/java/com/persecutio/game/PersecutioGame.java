@@ -13,26 +13,30 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.persecutio.managers.GerenciadorAudio;
 import com.persecutio.screens.TelaMenu;
 
-// Ponto entrada jogo
+// Ponto de entrada do jogo
 public class PersecutioGame extends Game {
 
-    // Resolução virtual base viewport
+    // Resolucao virtual base do viewport
     public static final int V_LARGURA = 640;
     public static final int V_ALTURA  = 480;
 
+    // Batch para desenho
     public SpriteBatch   batch;
+    // Gerenciador de assets
     public AssetManager  assets;
+    // Viewport do jogo
     public ExtendViewport viewport;
+    // Gerenciador de audio
     public GerenciadorAudio audio;
 
-    // Fontes compartilhadas telas
+    // Fontes compartilhadas entre telas
     public BitmapFont fonteMenu;
     public BitmapFont fonteDialogos;
     public BitmapFont fonteNomes;
     public BitmapFont fonteIndicadores;
 
+    // Inicializa o jogo
     @Override
-    // Processamento interno
     public void create() {
         batch    = new SpriteBatch();
         assets   = new AssetManager();
@@ -44,7 +48,7 @@ public class PersecutioGame extends Game {
         setScreen(new TelaMenu(this));
     }
 
-    // Recria fontes escaladas altura física atual
+    // Recria fontes escaladas pela altura fisica
     public void atualizarFontes(int alturaFisica) {
         if (fonteMenu        != null) fonteMenu.dispose();
         if (fonteDialogos    != null) fonteDialogos.dispose();
@@ -59,7 +63,7 @@ public class PersecutioGame extends Game {
         fonteIndicadores = carregarFonte("fonts/fonte_indicadores.ttf", 12, proporcaoY, Color.WHITE, true);
     }
 
-    // Fonte type borda opcional
+    // Carrega fonte com borda opcional
     private BitmapFont carregarFonte(String caminho, int tamanhoVirtual,
                                      float proporcaoY, Color cor, boolean comBorda) {
         int tamanhoFisico = Math.max(1, Math.round(tamanhoVirtual * proporcaoY));
@@ -81,33 +85,30 @@ public class PersecutioGame extends Game {
                 BitmapFont fonte = gerador.generateFont(parametro);
                 gerador.dispose();
 
-                // Escala inversa compensar geração tamanho físico
                 fonte.getData().setScale(1f / proporcaoY);
                 return fonte;
             } catch (Exception e) {
-                // Fallback fonte padrão LibGDX arquivo falhar
                 BitmapFont padrao = new BitmapFont();
                 padrao.getData().setScale(tamanhoVirtual / 15f);
                 return padrao;
             }
         }
 
-        // Fonte padrão arquivo não existe
         BitmapFont padrao = new BitmapFont();
         padrao.getData().setScale(tamanhoVirtual / 15f);
         return padrao;
     }
 
+    // Ajusta tela ao redimensionar
     @Override
-    // Ajuste de tela
     public void resize(int width, int height) {
         viewport.update(width, height, true);
         atualizarFontes(height);
         super.resize(width, height);
     }
 
+    // Libera todos os recursos
     @Override
-    // Liberação dos recursos
     public void dispose() {
         batch.dispose();
         assets.dispose();

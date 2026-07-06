@@ -6,31 +6,44 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.persecutio.game.PersecutioGame;
 
-// Contexto compartilhado renderizacao
+// Contexto compartilhado para renderizacao
 public class ContextoRender {
 
+    // Batch para desenho
     public SpriteBatch batch;
+    // Fonte do menu
     public BitmapFont  fonteMenu;
+    // Fonte dos dialogos
     public BitmapFont  fonteDialogos;
+    // Fonte dos nomes
     public BitmapFont  fonteNomes;
+    // Fonte dos indicadores
     public BitmapFont  fonteIndicadores;
 
+    // Largura da tela virtual
     public float vLargura;
+    // Altura da tela virtual
     public float vAltura;
 
+    // Centro X da tela virtual
     public float centroX;
+    // Centro Y da tela virtual
     public float centroY;
 
+    // Offset X da camera
     public float cameraX;
+    // Offset Y da camera
     public float cameraY;
 
+    // Camera atual
     public Camera   camera;
+    // Viewport atual
     public Viewport viewport;
 
-    // Criação da contexto de renderização
+    // Construtor do contexto de renderizacao
     public ContextoRender() {}
 
-    // Camera referencias tela
+    // Atualiza camera e referencias da tela
     public void atualizar(PersecutioGame jogo, float jogadorMundoX, float jogadorMundoY) {
         this.batch            = jogo.batch;
         this.fonteMenu        = jogo.fonteMenu;
@@ -49,7 +62,7 @@ public class ContextoRender {
         this.cameraY = Math.round(centroY - jogadorMundoY);
     }
 
-    // Camera comodo estatico
+    // Atualiza camera com comodo estatico
     public void atualizar(PersecutioGame jogo, float jogadorMundoX, float jogadorMundoY,
                           GerenciadorComodos.Comodo comodo) {
         atualizar(jogo, jogadorMundoX, jogadorMundoY);
@@ -62,8 +75,9 @@ public class ContextoRender {
         }
     }
 
-    // Coordenadas mundo tela
+    // Converte coordenada X do mundo para coordenada da tela
     public float mundoParaTelaX(float mundoX) { return cameraX + mundoX; }
-    // Processamento interno
+
+    // Converte coordenada Y do mundo para coordenada da tela
     public float mundoParaTelaY(float mundoY) { return cameraY + mundoY; }
 }
