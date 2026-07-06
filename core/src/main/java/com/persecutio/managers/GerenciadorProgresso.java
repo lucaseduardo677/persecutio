@@ -129,8 +129,7 @@ public class GerenciadorProgresso {
                 leuDocumento = true;
                 documentos++;
                 missao = 2;
-                aviso  = "CONTEUDO DO PAPEL: Relatorio de Incidente...
-[Missao 1 Concluida!]";
+                aviso  = "CONTEUDO DO PAPEL: Relatorio de Incidente...\n[Missao 1 Concluida!]";
             } else {
                 aviso = "Voce ja leu este documento.";
             }

@@ -107,7 +107,7 @@ public class GerenciadorComodos {
     // Remove sufixo numerico do nome para agrupar comodos
     private static String normalizarNome(String nome) {
         if (nome == null || nome.isEmpty()) return "";
-        return nome.replaceAll("\d+$", "").toLowerCase().trim();
+        return nome.replaceAll("\\d+$", "").toLowerCase().trim();
     }
 
     // Retorna o comodo que contem o ponto dado
