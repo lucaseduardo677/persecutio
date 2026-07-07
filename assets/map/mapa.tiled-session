@@ -1,5 +1,5 @@
 {
-    "activeFile": "casaderepouso.tmx",
+    "activeFile": "casaderepousoumbra.tmx",
     "expandedProjectPaths": [
         ".",
         "tiles"
@@ -71,15 +71,18 @@
             "expandedGroupLayers": [
                 29
             ],
-            "scale": 3,
-            "selectedLayer": 15,
+            "expandedObjectLayers": [
+                32
+            ],
+            "scale": 0.33,
+            "selectedLayer": 18,
             "viewCenter": {
-                "x": 1299,
-                "y": 709.5
+                "x": 1690.909090909091,
+                "y": 750.0000000000001
             }
         },
         "casaderepouso.tmx#Content": {
-            "scaleInDock": 0.125,
+            "scaleInDock": 0.75,
             "scaleInEditor": 1
         },
         "casaderepouso.tmx#InteriorTilesLITE": {
@@ -106,7 +109,7 @@
             "scaleInDock": 1
         },
         "casaderepouso.tmx#fancy_mansion_furnitureset_withshadow": {
-            "scaleInDock": 1,
+            "scaleInDock": 1.5,
             "scaleInEditor": 1
         },
         "casaderepouso.tmx#fancy_mansion_room_door_tiles": {
@@ -137,6 +140,62 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "casaderepousoumbra.tmx": {
+            "expandedObjectLayers": [
+                28
+            ],
+            "scale": 0.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 1186,
+                "y": 547
+            }
+        },
+        "casaderepousoumbra.tmx#Content": {
+            "scaleInDock": 1
+        },
+        "casaderepousoumbra.tmx#InteriorTilesLITE": {
+            "scaleInDock": 1
+        },
+        "casaderepousoumbra.tmx#Scene Overview": {
+            "scaleInDock": 1
+        },
+        "casaderepousoumbra.tmx#TX Plant": {
+            "scaleInDock": 1
+        },
+        "casaderepousoumbra.tmx#TX Props": {
+            "scaleInDock": 1
+        },
+        "casaderepousoumbra.tmx#TX Tileset Grass": {
+            "scaleInDock": 1
+        },
+        "casaderepousoumbra.tmx#enfermeira": {
+            "scaleInDock": 1
+        },
+        "casaderepousoumbra.tmx#fancy_mansion_furnitureset_withshadow": {
+            "scaleInDock": 1
+        },
+        "casaderepousoumbra.tmx#fancy_mansion_room_door_tiles": {
+            "scaleInDock": 1
+        },
+        "casaderepousoumbra.tmx#furniture_and_props": {
+            "scaleInDock": 0.75
+        },
+        "casaderepousoumbra.tmx#mockup2": {
+            "scaleInDock": 1
+        },
+        "casaderepousoumbra.tmx#mockup6": {
+            "scaleInDock": 1
+        },
+        "casaderepousoumbra.tmx#statues1": {
+            "scaleInDock": 1
+        },
+        "casaderepousoumbra.tmx#windows_and_doors": {
+            "scaleInDock": 1
+        },
+        "casaderepousoumbra.tmx#windows_and_doors2": {
+            "scaleInDock": 1
+        },
         "tiles/mapa_quarto.tmx": {
             "scale": 1.5,
             "selectedLayer": 2,
@@ -154,11 +213,12 @@
     },
     "last.imagePath": "/home/lucas/Dev/jogo-persecutio-libgdx/assets/map/tilemaps",
     "openFiles": [
-        "casaderepouso.tmx"
+        "casaderepousoumbra.tmx"
     ],
     "project": "mapa.tiled-project",
     "property.type": "string",
     "recentFiles": [
+        "casaderepousoumbra.tmx",
         "casaderepouso.tmx",
         "tiles/mapa_quarto.tmx",
         "/home/lucas/Downloads/casaderepouso-1.tmx",
