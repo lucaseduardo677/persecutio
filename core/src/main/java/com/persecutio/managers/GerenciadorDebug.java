@@ -20,6 +20,8 @@ public class GerenciadorDebug {
     private static final Color COR_INTERATIVO = new Color(0f,   0.9f,  0.9f, 1f);
     // Cor dos NPCs no debug
     private static final Color COR_NPC        = new Color(0.8f, 0f,    0.9f, 1f);
+    // Cor dos objetos de colisao no debug
+    private static final Color COR_OBJETO     = new Color(0.2f, 0.4f,  1f,   1f);
     // Cor das portas no debug
     private static final Color COR_PORTA      = new Color(1f,   0.55f, 0f,   1f);
     // Cor do alcance de interacao no debug
@@ -82,6 +84,12 @@ public class GerenciadorDebug {
         shapes.setColor(COR_PORTA);
         for (GerenciadorColisao.ObjetoColisao p : jogo.sistemaColisao.getHitboxPortasCompletas())
             shapes.rect(p.area.x + cameraX, p.area.y + cameraY, p.area.width, p.area.height);
+
+        shapes.setColor(COR_OBJETO);
+        for (GerenciadorColisao.ObjetoColisao obj : jogo.sistemaColisao.getObjetosColisaoCompletos()) {
+            if (obj.isAtivo(jogo.mundoUmbra))
+                shapes.rect(obj.area.x + cameraX, obj.area.y + cameraY, obj.area.width, obj.area.height);
+        }
 
         shapes.setColor(COR_ALCANCE);
         Rectangle hj = jogo.hitboxJogador;

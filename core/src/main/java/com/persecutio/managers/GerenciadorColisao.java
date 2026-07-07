@@ -116,6 +116,8 @@ public class GerenciadorColisao {
     private final List<ObjetoColisao> paredes;
     // Lista de hitboxes de portas
     private final List<ObjetoColisao> hitboxPortas;
+    // Objetos com classe objeto que possuem colisao
+    private final List<ObjetoColisao> objetos;
     // Mapa de objetos interativos
     private final Map<String, ObjetoColisao> interativos;
     // Mapa de NPCs
@@ -125,6 +127,8 @@ public class GerenciadorColisao {
     private final List<Rectangle> cacheParedes = new ArrayList<>();
     // Cache reutilizavel de portas
     private final List<ObjetoColisao> cachePortas = new ArrayList<>();
+    // Cache reutilizavel de objetos
+    private final List<ObjetoColisao> cacheObjetos = new ArrayList<>();
     // Cache reutilizavel de interativos
     private final Map<String, Rectangle> cacheInterativos = new HashMap<>();
     // Cache reutilizavel de interativos completos
@@ -157,11 +161,13 @@ public class GerenciadorColisao {
 
         paredes      = new ArrayList<>();
         hitboxPortas = new ArrayList<>();
+        objetos      = new ArrayList<>();
         interativos  = new HashMap<>();
         npcs         = new HashMap<>();
 
         carregarParedes(mapa, "Colisoes", paredes);
         carregarInterativos(mapa, "Interativos");
+        carregarInterativos(mapa, "Objetos");
         carregarNpcs(mapa, "NPCs");
         carregarParedes(mapa, "Portas", hitboxPortas);
     }
@@ -196,6 +202,14 @@ public class GerenciadorColisao {
         return chave != null ? chave.trim().toLowerCase() : "";
     }
 
+    // Leitura da classe real do objeto (type ou class)
+    private String lerClasse(MapObject objeto) {
+        MapProperties props = objeto.getProperties();
+        String classe = props.get("type") != null ? props.get("type").toString() :
+                        props.get("class") != null ? props.get("class").toString() : "";
+        return classe.trim().toLowerCase();
+    }
+
     // Carrega paredes de uma camada do Tiled
     private void carregarParedes(TiledMap mapa, String camadaNome, List<ObjetoColisao> lista) {
         MapLayer camada = mapa.getLayers().get(camadaNome);
@@ -215,11 +229,20 @@ public class GerenciadorColisao {
         if (camada == null) return;
         for (MapObject objeto : camada.getObjects()) {
             if (!(objeto instanceof RectangleMapObject)) continue;
-            String classe = lerChave(objeto);
-            if (classe.isEmpty()) continue;
+            String chave = lerChave(objeto);
+
+            String classeReal = lerClasse(objeto);
             Rectangle r = ((RectangleMapObject) objeto).getRectangle();
-            interativos.put(classe, new ObjetoColisao(CoordenadasTiled.paraMundo(r), classe,
-                                                      objeto.getProperties(), defaults));
+            ObjetoColisao obj = new ObjetoColisao(CoordenadasTiled.paraMundo(r), chave,
+                                                  objeto.getProperties(), defaults);
+
+            if ("objeto".equals(classeReal)) {
+                objetos.add(obj);
+            }
+
+            if (!chave.isEmpty()) {
+                interativos.put(chave, obj);
+            }
         }
     }
 
@@ -263,6 +286,11 @@ public class GerenciadorColisao {
 
         for (ObjetoColisao porta : hitboxPortas) {
             if (rectTemp.overlaps(porta.area)) return false;
+        }
+
+        for (ObjetoColisao obj : objetos) {
+            if (!obj.isAtivo(umbra)) continue;
+            if (rectTemp.overlaps(obj.area)) return false;
         }
 
         return true;
@@ -328,6 +356,13 @@ public class GerenciadorColisao {
         cachePortas.clear();
         cachePortas.addAll(hitboxPortas);
         return cachePortas;
+    }
+
+    // Retorna lista completa de objetos com classe objeto
+    public List<ObjetoColisao> getObjetosColisaoCompletos() {
+        cacheObjetos.clear();
+        cacheObjetos.addAll(objetos);
+        return cacheObjetos;
     }
 
     // Retorna mapa de interativos ativos

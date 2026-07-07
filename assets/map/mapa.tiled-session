@@ -106,7 +106,9 @@
             "scaleInEditor": 1
         },
         "casaderepouso.tmx#enfermeira": {
-            "scaleInDock": 1
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "casaderepouso.tmx#fancy_mansion_furnitureset_withshadow": {
             "scaleInDock": 1.5,
@@ -144,11 +146,11 @@
             "expandedObjectLayers": [
                 28
             ],
-            "scale": 0.5,
-            "selectedLayer": 3,
+            "scale": 0.75,
+            "selectedLayer": 20,
             "viewCenter": {
-                "x": 1186,
-                "y": 547
+                "x": 253.99999999999994,
+                "y": 558
             }
         },
         "casaderepousoumbra.tmx#Content": {
@@ -196,6 +198,10 @@
         "casaderepousoumbra.tmx#windows_and_doors2": {
             "scaleInDock": 1
         },
+        "sprites/Sprites_NPCs.tsx": {
+            "dynamicWrapping": true,
+            "scaleInEditor": 1
+        },
         "tiles/mapa_quarto.tmx": {
             "scale": 1.5,
             "selectedLayer": 2,
@@ -211,13 +217,14 @@
             "scaleInDock": 1
         }
     },
-    "last.imagePath": "/home/lucas/Dev/jogo-persecutio-libgdx/assets/map/tilemaps",
+    "last.imagePath": "/home/lucas/Dev/persecutio/assets/img",
     "openFiles": [
         "casaderepousoumbra.tmx"
     ],
     "project": "mapa.tiled-project",
     "property.type": "string",
     "recentFiles": [
+        "sprites/Sprites_NPCs.tsx",
         "casaderepousoumbra.tmx",
         "casaderepouso.tmx",
         "tiles/mapa_quarto.tmx",
