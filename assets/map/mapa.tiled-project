@@ -183,6 +183,7 @@
             "type": "class",
             "useAs": [
                 "property",
+                "layer",
                 "object",
                 "project"
             ]
