@@ -10,7 +10,7 @@ Branch do jogo implementado com **libGDX**. A estrutura está dividida entre o m
 - [x] Implementar culling automático dos tiles do mapa.
 - [ ] Implementar sistema de pontuação com categorias separadas (documentos e sessões).
 - [ ] Implementar sistema de finais (bom, médio, ruim) com tela de encerramento.
-- [ ] Implementar sistema de diálogo com o Dr. Gonzalez com perguntas, opções de resposta e três sessões progressivas.
+- [ ] Implementar sistema de diálogo com o Dr. Gonzalez com perguntas, opções de resposta e três sessões progressivas; Possivelmente usando `blade-ink`.
 - [ ] Implementar sistema de inventário de panfletos/documentos por ID para liberar repertório de diálogo.
 - [ ] Implementar puzzle de fichas no mundo umbra com associação de pacientes a tipos de violência.
 - [ ] Implementar tela de introdução antes da primeira sessão.
