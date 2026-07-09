@@ -33,7 +33,7 @@ public class TelaMenu implements Screen {
     private float                      tempoAnim = 0f;
 
     // Opcoes do menu
-    private final String[] opcoes = {"NOVO JOGO", "SAIR"};
+    private final String[] opcoes = {"iniciar", "sair"};
     private int opcaoSelecionada  = 0;
     // Opcao anterior para detectar mudanca e tocar som
     private int opcaoAnterior     = 0;
