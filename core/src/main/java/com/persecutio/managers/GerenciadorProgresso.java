@@ -61,7 +61,7 @@ public class GerenciadorProgresso {
 
     // Alterna entre mundo Real e Umbra
     public void alternarUmbra() {
-        mundoUmbra = !mundoUmbra;
+        mundoUmbra = !mundoUmbra; 
     }
 
     // Cria hitbox com folga para interacao

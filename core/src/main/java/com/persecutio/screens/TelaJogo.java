@@ -57,8 +57,14 @@ public class TelaJogo implements Screen {
     private GerenciadorLuzes           gerLuzes;
     // Mapa carregado do Tiled
     private TiledMap                   mapaTiled;
+    // Mapas alternativos para os mundos real e umbra
+    private TiledMap                   mapaTiledReal;
+    private TiledMap                   mapaTiledUmbra;
     // Renderizador do mapa Tiled
     private OrthogonalTiledMapRenderer rendererTiled;
+
+    // Estado do mapa atualmente renderizado
+    private boolean mapaAtualUmbra = false;
 
     // Entidade do jogador
     public  Jogador jogador;
@@ -159,7 +165,10 @@ public class TelaJogo implements Screen {
         pmLoader.textureMinFilter = Texture.TextureFilter.Nearest;
         pmLoader.textureMagFilter = Texture.TextureFilter.Nearest;
 
-        mapaTiled      = new TmxMapLoader().load("map/casaderepouso.tmx", pmLoader);
+        mapaTiledReal  = new TmxMapLoader().load("map/casaderepouso.tmx", pmLoader);
+        mapaTiledUmbra = new TmxMapLoader().load("map/casaderepousoumbra.tmx", pmLoader);
+        mapaTiled      = mapaTiledReal;
+        mapaAtualUmbra = false;
         float escala   = 1.375f;
 
         sistemaColisao = new GerenciadorColisao(mapaTiled, escala, "map/mapa.tiled-project");
@@ -245,6 +254,7 @@ public class TelaJogo implements Screen {
         mundoUmbra            = umbra;
         portaUmbraDestrancada = destrancada;
 
+        atualizarMapaParaMundo(umbra);
         gerLuzes.setAmbienteUmbra(mundoUmbra);
 
         float hcX   = jogador.hitbox.x + jogador.hitbox.width  / 2f;
@@ -333,6 +343,15 @@ public class TelaJogo implements Screen {
         desenharFade(ctx);
     }
 
+    private void atualizarMapaParaMundo(boolean umbra) {
+        if (mapaAtualUmbra == umbra) return;
+        mapaAtualUmbra = umbra;
+        mapaTiled = umbra ? mapaTiledUmbra : mapaTiledReal;
+        if (rendererTiled != null && mapaTiled != null) {
+            rendererTiled.setMap(mapaTiled);
+        }
+    }
+
     // Desenha overlay preto para fade inicial
     private void desenharFade(ContextoRender ctx) {
         if (!fadeAtivo) return;
@@ -371,7 +390,7 @@ public class TelaJogo implements Screen {
             return;
         }
 
-        sistemaDebug.tratarAtalhos(this);
+        sistemaDebug.tratarAtalhos(this); // --------- ctrl + U
 
         if (interfaceJogo.puxarInput(jogo.viewport)) return;
 
@@ -454,7 +473,8 @@ public class TelaJogo implements Screen {
         interfaceJogo.dispose();
         renderizador.dispose();
         if (gerLuzes != null) gerLuzes.dispose();
-        mapaTiled.dispose();
+        if (mapaTiledReal != null) mapaTiledReal.dispose();
+        if (mapaTiledUmbra != null) mapaTiledUmbra.dispose();
         if (rendererTiled != null) rendererTiled.dispose();
     }
 
