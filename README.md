@@ -2,7 +2,7 @@
 
 Branch do jogo implementado com **libGDX**. A estrutura está dividida entre o módulo `core`, responsável pela lógica compartilhada do jogo, e o módulo `lwjgl3`, responsável pela execução no desktop.
 ## A fazer
-- [x] Portar as funcionalidades da branch `main`.
+- [x] Portar as funcionalidades da branch `main` do repositório antigo.
 - [x] Implementar iluminação usando o `Box2DLights`.
 - [x] Desacoplar a lógica e o progresso do jogo da classe `TelaJogo`.
 - [ ] Migrar o carregamento de texturas e áudios para o `AssetManager` a fim de evitar memory leaks.
