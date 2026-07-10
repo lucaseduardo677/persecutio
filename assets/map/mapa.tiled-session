@@ -1,8 +1,8 @@
 {
-    "activeFile": "casaderepousoumbra.tmx",
+    "activeFile": "casaderepouso.tmx",
     "expandedProjectPaths": [
-        "tiles",
-        "."
+        ".",
+        "tiles"
     ],
     "fileStates": {
         "": {
@@ -72,13 +72,14 @@
                 29
             ],
             "expandedObjectLayers": [
+                27,
                 32
             ],
-            "scale": 0.33,
-            "selectedLayer": 18,
+            "scale": 0.5,
+            "selectedLayer": 9,
             "viewCenter": {
-                "x": 1690.909090909091,
-                "y": 750.0000000000001
+                "x": 545,
+                "y": 599
             }
         },
         "casaderepouso.tmx#Content": {
@@ -192,6 +193,7 @@
             "scaleInDock": 1
         },
         "casaderepousoumbra.tmx#statues1": {
+            "dynamicWrapping": false,
             "scaleInDock": 1
         },
         "casaderepousoumbra.tmx#windows_and_doors": {
@@ -202,6 +204,7 @@
         },
         "sprites/Sprites_NPCs.tsx": {
             "dynamicWrapping": true,
+            "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "tiles/mapa_quarto.tmx": {
@@ -221,14 +224,15 @@
     },
     "last.imagePath": "/home/lucas/Dev/persecutio/assets/img",
     "openFiles": [
-        "casaderepousoumbra.tmx"
+        "casaderepousoumbra.tmx",
+        "casaderepouso.tmx"
     ],
     "project": "mapa.tiled-project",
     "property.type": "string",
     "recentFiles": [
         "casaderepousoumbra.tmx",
-        "sprites/Sprites_NPCs.tsx",
         "casaderepouso.tmx",
+        "sprites/Sprites_NPCs.tsx",
         "tiles/mapa_quarto.tmx",
         "/home/lucas/Downloads/casaderepouso-1.tmx",
         "/home/lucas/Dev/jogo-persecutio-libgdx-git/assets/sprites/Sprites_NPCs.tsx"

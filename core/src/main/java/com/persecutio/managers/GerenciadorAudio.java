@@ -10,8 +10,6 @@ public class GerenciadorAudio {
 
     // Volume maximo permitido
     private static final float VOLUME_MAXIMO       = 1.0f;
-    // Velocidade do fade
-    private static final float FADE_SPEED          = 0.8f;
     // Incremento de volume por tecla
     private static final float INCREMENTO_VOLUME   = 0.1f;
     // Volume padrao da musica
@@ -41,6 +39,10 @@ public class GerenciadorAudio {
     private boolean fazendoFadeIn  = false;
     // Volume durante o fade
     private float   volumeFade     = 0f;
+    // Duracao personalizada do fade out
+    private float   tempoFadeOut   = 1.0f;
+    // Duracao personalizada do fade in
+    private float   tempoFadeIn    = 1.0f;
 
     // Som dos passos
     private Sound somPasso;
@@ -54,8 +56,7 @@ public class GerenciadorAudio {
         if (Gdx.files.internal("audio/musica_menu.ogg").exists()) {
             musicaMenu = Gdx.audio.newMusic(Gdx.files.internal("audio/musica_menu.ogg"));
             musicaMenu.setLooping(true);
-            musicaMenu.setVolume(volumeMusica);
-            musicaMenu.play();
+            musicaMenu.setVolume(0f); // Comeca silenciado para o fade in
         }
         if (Gdx.files.internal("audio/selecao.ogg").exists()) {
             somSelecao = Gdx.audio.newSound(Gdx.files.internal("audio/selecao.ogg"));
@@ -123,35 +124,85 @@ public class GerenciadorAudio {
     // Atualiza fades de volume
     public void atualizar(float delta) {
         if (fazendoFadeOut) {
-            volumeFade = Math.max(0f, volumeFade - FADE_SPEED * delta);
-            if (ambiente != null) ambiente.setVolume(volumeFade);
+            // Calcula velocidade com base no tempo de duracao
+            float velocidade = volumeMusica / tempoFadeOut;
+            volumeFade = Math.max(0f, volumeFade - velocidade * delta);
+
+            if (ambiente != null && ambiente.isPlaying()) {
+                ambiente.setVolume(volumeFade);
+            }
+            if (musicaMenu != null && musicaMenu.isPlaying()) {
+                musicaMenu.setVolume(volumeFade);
+            }
+
             if (volumeFade <= 0f) {
                 fazendoFadeOut = false;
                 if (ambiente != null) ambiente.pause();
+                if (musicaMenu != null) musicaMenu.stop();
             }
         }
         if (fazendoFadeIn) {
-            if (ambiente != null && !ambiente.isPlaying()) ambiente.play();
-            volumeFade = Math.min(volumeMusica, volumeFade + FADE_SPEED * delta);
-            if (ambiente != null) ambiente.setVolume(volumeFade);
+            // Calcula velocidade com base no tempo de duracao
+            float velocidade = volumeMusica / tempoFadeIn;
+            volumeFade = Math.min(volumeMusica, volumeFade + velocidade * delta);
+
+            if (ambiente != null && ambiente.isPlaying()) {
+                ambiente.setVolume(volumeFade);
+            }
+            if (musicaMenu != null && musicaMenu.isPlaying()) {
+                musicaMenu.setVolume(volumeFade);
+            }
+
             if (volumeFade >= volumeMusica) {
                 fazendoFadeIn = false;
             }
         }
     }
 
-    // Inicia fade out da musica
+    // Inicia fade-out com tempo padrao de 1 segundo
     public void iniciarFadeOut() {
-        fazendoFadeOut = true;
-        fazendoFadeIn  = false;
-        volumeFade = (ambiente != null) ? ambiente.getVolume() : volumeMusica;
+        iniciarFadeOut(1.0f);
     }
 
-    // Inicia fade in da musica
+    // Inicia fade-out com tempo personalizado
+    public void iniciarFadeOut(float segundos) {
+        fazendoFadeOut = true;
+        fazendoFadeIn  = false;
+        tempoFadeOut   = segundos > 0 ? segundos : 0.01f;
+
+        if (musicaMenu != null && musicaMenu.isPlaying()) {
+            volumeFade = musicaMenu.getVolume();
+        } else if (ambiente != null && ambiente.isPlaying()) {
+            volumeFade = ambiente.getVolume();
+        } else {
+            volumeFade = volumeMusica;
+        }
+    }
+
+    // Inicia fade in com tempo padrao de 1 segundo
     public void iniciarFadeIn() {
+        iniciarFadeIn(1.0f);
+    }
+
+    // Inicia fade in da musica com tempo personalizado
+    public void iniciarFadeIn(float segundos) {
         fazendoFadeIn  = true;
         fazendoFadeOut = false;
-        volumeFade = 0f;
+        tempoFadeIn    = segundos > 0 ? segundos : 0.01f;
+        volumeFade     = 0f;
+
+        if (musicaMenu != null) {
+            musicaMenu.setVolume(0f);
+            if (!musicaMenu.isPlaying()) {
+                musicaMenu.play();
+            }
+        }
+        if (ambiente != null) {
+            ambiente.setVolume(0f);
+            if (!ambiente.isPlaying()) {
+                ambiente.play();
+            }
+        }
     }
 
     // Aumenta volume geral
@@ -162,7 +213,7 @@ public class GerenciadorAudio {
     }
 
     // Diminui volume geral
-    public void diminuirVolume() {
+    public void  diminuirVolume() {
         volumeMusica  = Math.max(0f, volumeMusica  - INCREMENTO_VOLUME);
         volumeEfeitos = Math.max(0f, volumeEfeitos - INCREMENTO_VOLUME);
         aplicarVolume();
@@ -187,7 +238,7 @@ public class GerenciadorAudio {
 
     // Processa teclas de ajuste de volume
     public void tratarInputVolume() {
-        if (Gdx.input.isKeyJustPressed(Keys.PLUS) || Gdx.input.isKeyJustPressed(Keys.EQUALS)) {
+        if (Gdx.input.isKeyPressed(Keys.PLUS) || Gdx.input.isKeyJustPressed(Keys.EQUALS)) {
             aumentarVolume();
         }
         if (Gdx.input.isKeyJustPressed(Keys.MINUS)) {

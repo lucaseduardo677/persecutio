@@ -24,7 +24,6 @@ dependencies {
   api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
   api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
   api "com.badlogicgames.gdx:gdx:$gdxVersion"
-  api "com.bladecoder.ink:blade-ink:$bladeInkVersion"
   api "com.github.lyze237:gdx-UnBox2D:$unbox2dVersion"
   api "com.github.tommyettinger:anim8-gdx:$anim8Version"
   api "games.rednblack.hyperlap2d:runtime-libgdx:$h2dVersion"

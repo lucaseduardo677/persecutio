@@ -21,6 +21,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.persecutio.entities.Jogador;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 // Interface do usuario do jogo
 public class GerenciadorUI {
 
@@ -31,6 +35,7 @@ public class GerenciadorUI {
     public static final int UI_NPC     = 3;
     public static final int UI_SENHA   = 4;
     public static final int UI_FADE    = 5;
+    public static final int UI_DIALOGO = 6;
 
     // Fases do fade
     private enum FaseFade { INATIVO, ESCURECENDO, ESCURO, VIDEO, AGUARDANDO, CLAREANDO }
@@ -57,6 +62,14 @@ public class GerenciadorUI {
 
     // Puzzle de senha
     private PuzzleSenha puzzle;
+
+    // Referencia ao dialogo ativo
+    private GerenciadorDialogo dialogo;
+    // Escolha selecionada no dialogo
+    private int escolhaDialogo = 0;
+
+    // Cache de texturas carregadas dinamicamente
+    private final Map<String, Texture> cacheTexturas = new HashMap<>();
 
     // Duracao do fade
     private static final float T_FADE   = 0.6f;
@@ -114,6 +127,11 @@ public class GerenciadorUI {
     // Define o gerenciador de audio
     public void setAudio(GerenciadorAudio audioRef) {
         audio = audioRef;
+    }
+
+    // Define o gerenciador de dialogo
+    public void setDialogo(GerenciadorDialogo dialogoRef) {
+        dialogo = dialogoRef;
     }
 
     // Toca som de selecao
@@ -233,6 +251,9 @@ public class GerenciadorUI {
                 estadoUi = UI_JOGO;
                 return true;
             }
+            if (estadoUi == UI_DIALOGO) {
+                return true;
+            }
             pausado = !pausado;
             if (!pausado) {
                 opcaoPausa = 0;
@@ -298,14 +319,46 @@ public class GerenciadorUI {
             return true;
         }
 
+        if (estadoUi == UI_DIALOGO) {
+            puxarInputDialogo();
+            return true;
+        }
+
         if (estadoUi != UI_JOGO) return true;
         return false;
+    }
+
+    // Processa input do dialogo ativo
+    private void puxarInputDialogo() {
+        if (dialogo == null) { estadoUi = UI_JOGO; return; }
+
+        if (dialogo.temEscolhas()) {
+            List<String> escolhas = dialogo.getEscolhas();
+
+            if (Gdx.input.isKeyJustPressed(Keys.UP) || Gdx.input.isKeyJustPressed(Keys.W)) {
+                if (escolhaDialogo > 0) { escolhaDialogo--; tocarSomSelecao(); }
+            }
+            if (Gdx.input.isKeyJustPressed(Keys.DOWN) || Gdx.input.isKeyJustPressed(Keys.S)) {
+                if (escolhaDialogo < escolhas.size() - 1) { escolhaDialogo++; tocarSomSelecao(); }
+            }
+            if (Gdx.input.isKeyJustPressed(Keys.ENTER) || Gdx.input.isKeyJustPressed(Keys.E)) {
+                dialogo.escolher(escolhaDialogo);
+                escolhaDialogo = 0;
+            }
+        } else {
+            if (Gdx.input.isKeyJustPressed(Keys.ENTER) || Gdx.input.isKeyJustPressed(Keys.E)) {
+                dialogo.avancar();
+            }
+        }
+
+        if (!dialogo.estaAtivo()) estadoUi = UI_JOGO;
     }
 
     // Muda o estado da UI
     public void mudarEstado(int novoEstado) {
         estadoUi = novoEstado;
-        if (novoEstado == UI_SENHA) abrirSenha();
+        if (novoEstado == UI_SENHA)   abrirSenha();
+        if (novoEstado == UI_DIALOGO) escolhaDialogo = 0;
     }
 
     // Retorna estado atual da UI
@@ -408,6 +461,101 @@ public class GerenciadorUI {
         ctx.fonteDialogos.setColor(Color.WHITE);
         desenharCentralizado(ctx, ctx.fonteDialogos, "Pressione [ESC] ou [E] para fechar", -260);
     }
+
+    // Desenha caixa de dialogo
+        public void desenharDialogo(ContextoRender ctx) {
+            if (dialogo == null || !dialogo.estaAtivo()) return;
+
+            // Fundo preenchido modular vindo do dialogo
+            Color corBg   = dialogo.getCorFundo();
+            float alphaBg = dialogo.getOpacidade();
+
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+            ctx.batch.setColor(corBg.r, corBg.g, corBg.b, alphaBg);
+            ctx.batch.draw(texBranca, 0, 0, ctx.vLargura, ctx.vAltura);
+            ctx.batch.setColor(Color.WHITE);
+
+            // Resolve textura usando o cache dinâmico de caminhos
+            String path = dialogo.getRetrato();
+            Texture texRetrato = null;
+
+            if (path != null && !path.isEmpty()) {
+                texRetrato = cacheTexturas.get(path);
+                if (texRetrato == null) {
+                    if (Gdx.files.internal(path).exists()) {
+                        texRetrato = new Texture(Gdx.files.internal(path));
+                        texRetrato.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+                        cacheTexturas.put(path, texRetrato);
+                    }
+                }
+            }
+
+            // Caso a textura seja nula, desenha caixa branca
+            if (texRetrato == null) {
+                texRetrato = texBranca;
+            }
+
+            // Limites maximos da caixa de retrato
+            float maxLarg = 220f;
+            float maxAlt  = 220f;
+
+            // Calcula proporcao para nao distorcer a imagem
+            float proporcao = (float) texRetrato.getWidth() / texRetrato.getHeight();
+            float largRetrato = maxLarg;
+            float altRetrato  = maxAlt;
+
+            if (proporcao > 1f) {
+                altRetrato = maxLarg / proporcao;
+            } else {
+                largRetrato = maxAlt * proporcao;
+            }
+
+            // Calcula posicoes de desenho centralizadas
+            float posXRetrato = ctx.centroX - (largRetrato / 2f);
+            float posYRetrato = ctx.centroY - 30f;
+
+            ctx.batch.draw(texRetrato, posXRetrato, posYRetrato, largRetrato, altRetrato);
+
+            // Posicao base do texto
+            float baseX = ctx.vLargura * 0.25f;
+            float baseY = ctx.vAltura  * 0.25f;
+
+            String falante = dialogo.getFalante();
+            String texto   = dialogo.getTexto();
+            float avancoX  = baseX;
+
+            if (!falante.isEmpty()) {
+                String textoNome = falante + ": ";
+                ctx.fonteNomes.setColor(Color.ORANGE);
+                ctx.fonteNomes.draw(ctx.batch, textoNome, avancoX, baseY);
+                ctx.fonteNomes.setColor(Color.WHITE);
+
+                medidor.setText(ctx.fonteNomes, textoNome);
+                avancoX += medidor.width;
+            }
+
+            ctx.fonteDialogos.setColor(Color.WHITE);
+            ctx.fonteDialogos.draw(ctx.batch, texto, avancoX, baseY);
+
+            // Lista de escolhas
+            List<String> escolhas = dialogo.getEscolhas();
+            float linhaY = baseY - 35f;
+
+            if (escolhas.isEmpty()) {
+                ctx.fonteIndicadores.setColor(Color.GRAY);
+                ctx.fonteIndicadores.draw(ctx.batch, "> [E] Continuar", baseX, linhaY);
+                ctx.fonteIndicadores.setColor(Color.WHITE);
+            } else {
+                for (int i = 0; i < escolhas.size(); i++) {
+                    String prefixo = (i == escolhaDialogo) ? "> " : "  ";
+                    ctx.fonteDialogos.setColor((i == escolhaDialogo) ? Color.YELLOW : Color.WHITE);
+                    ctx.fonteDialogos.draw(ctx.batch, prefixo + escolhas.get(i), baseX, linhaY);
+                    linhaY -= 25f;
+                }
+                ctx.fonteDialogos.setColor(Color.WHITE);
+            }
+        }
 
     // Desenha fade e video
     public void desenharFadeEVideo(ContextoRender ctx) {
@@ -551,6 +699,9 @@ public class GerenciadorUI {
     // Retorna se esta em cinematica de NPC
     public boolean isNpc()     { return estadoUi == UI_NPC; }
 
+    // Retorna se esta em dialogo
+    public boolean isDialogo() { return estadoUi == UI_DIALOGO; }
+
     // Retorna se esta pausado
     public boolean isPausado() { return pausado; }
 
@@ -568,6 +719,13 @@ public class GerenciadorUI {
         if (puzzle    != null) puzzle.dispose();
         if (texBranca != null) texBranca.dispose();
         if (video     != null) video.dispose();
+
+        // Libera texturas dos retratos guardadas no cache
+        for (Texture tex : cacheTexturas.values()) {
+            if (tex != null) tex.dispose();
+        }
+        cacheTexturas.clear();
+
         medidor.reset();
     }
 
@@ -606,7 +764,7 @@ public class GerenciadorUI {
             selecaoTex = new Texture(sp); sp.dispose();
 
             Pixmap bp = new Pixmap(120, 30, Pixmap.Format.RGBA8888);
-            bp.setColor(new Color(0.12f, 0.12f, 0.12f, 0.85f)); bp.fill();
+            bp.setColor(Color.valueOf("#1e1e1ed8")); bp.fill();
             backTex = new Texture(bp); bp.dispose();
 
             TextFieldStyle ts = new TextFieldStyle();
@@ -703,6 +861,23 @@ public class GerenciadorUI {
             if (selecaoTex != null) selecaoTex.dispose();
             if (backTex    != null) backTex.dispose();
             if (Gdx.input.getInputProcessor() == stage) Gdx.input.setInputProcessor(null);
+        }
+    }
+
+    // Configuracao de retrato
+    public static class ConfigRetrato {
+        // Cor do fundo
+        public final Color   corFundo;
+        // Opacidade do fundo
+        public final float   opacidade;
+        // Textura do retrato
+        public final Texture imagem;
+
+        // Construtor da configuracao
+        public ConfigRetrato(Color corFundo, float opacidade, Texture imagem) {
+            this.corFundo  = corFundo;
+            this.opacidade = opacidade;
+            this.imagem    = imagem;
         }
     }
 }

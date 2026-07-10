@@ -15,19 +15,19 @@ public class GerenciadorDebug {
     private final ShapeRenderer shapes;
 
     // Cor das paredes no debug
-    private static final Color COR_PAREDE     = new Color(0.2f, 0.85f, 0.2f, 1f);
+    private static final Color COR_PAREDE     = Color.valueOf("#33d833");
     // Cor dos interativos no debug
-    private static final Color COR_INTERATIVO = new Color(0f,   0.9f,  0.9f, 1f);
+    private static final Color COR_INTERATIVO = Color.valueOf("#00e5e5");
     // Cor dos NPCs no debug
-    private static final Color COR_NPC        = new Color(0.8f, 0f,    0.9f, 1f);
+    private static final Color COR_NPC        = Color.valueOf("#cc00e5");
     // Cor dos objetos de colisao no debug
-    private static final Color COR_OBJETO     = new Color(0.2f, 0.4f,  1f,   1f);
+    private static final Color COR_OBJETO     = Color.valueOf("#3366ff");
     // Cor das portas no debug
-    private static final Color COR_PORTA      = new Color(1f,   0.55f, 0f,   1f);
+    private static final Color COR_PORTA      = Color.valueOf("#ff8c00");
     // Cor do alcance de interacao no debug
-    private static final Color COR_ALCANCE    = new Color(1f,   1f,    0f,   1f);
+    private static final Color COR_ALCANCE    = Color.valueOf("#ffff00");
     // Cor do jogador no debug
-    private static final Color COR_JOGADOR    = new Color(1f,   0.15f, 0.15f,1f);
+    private static final Color COR_JOGADOR    = Color.valueOf("#ff2626");
 
     // Folga do alcance de interacao
     private static final float FOLGA_PORTA = 24f;
@@ -134,11 +134,11 @@ public class GerenciadorDebug {
             porta.nome + " -> " + porta.label + "  " + (aberta ? "ABERTA" : "TRANCADA") + cond,
             x, y); y -= dy;
         } else {
-            ctx.fonteIndicadores.setColor(new Color(0.45f, 0.45f, 0.45f, 1f));
+            ctx.fonteIndicadores.setColor(Color.valueOf("#737373"));
             ctx.fonteIndicadores.draw(ctx.batch, "Porta: nenhuma", x, y); y -= dy;
         }
 
-        ctx.fonteIndicadores.setColor(new Color(0.55f, 0.55f, 0.55f, 1f));
+        ctx.fonteIndicadores.setColor(Color.valueOf("#8c8c8c"));
         ctx.fonteIndicadores.draw(ctx.batch, "Ctrl+U umbra  Ctrl+P +parte  Ctrl+D 3partes  Ctrl+I noclip", x, y);
 
         ctx.fonteIndicadores.setColor(Color.WHITE);

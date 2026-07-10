@@ -42,6 +42,8 @@ public class GerenciadorProgresso {
 
     // Mensagem de aviso atual
     private String  aviso        = "";
+    // No de dialogo a iniciar (blade-ink)
+    private String  dialogoAlvo  = null;
 
     // Flag se esta em cinematica
     private boolean cinematica   = false;
@@ -80,6 +82,7 @@ public class GerenciadorProgresso {
         cinematica   = false;
         abriuEspelho = false;
         abriuGaveta  = false;
+        dialogoAlvo  = null;
 
         Rectangle hitboxInteracao = hitboxFolga(jogador);
 
@@ -100,24 +103,13 @@ public class GerenciadorProgresso {
 
         EntidadeMapa paciente = colisao.getNpc("paciente", false);
         if (paciente != null && hitboxInteracao.overlaps(paciente.area)) {
-            if (!pecaNpc) {
-                if (sabePalavra) {
-                    pecaNpc = true;
-                    partes++;
-                    cinematica = true;
-                    aviso = "";
-                } else {
-                    aviso = "Paciente: Eu tenho algo util, mas... qual e a palavra magica?";
-                }
-            } else {
-                aviso = "Paciente: Va em frente, voce tem o que precisa.";
-            }
+            dialogoAlvo = pecaNpc ? "paciente_feito" : sabePalavra ? "paciente_sabe" : "paciente_pergunta";
             return;
         }
 
         EntidadeMapa enfermeira = colisao.getNpc("enfermeira", false);
         if (enfermeira != null && hitboxInteracao.overlaps(enfermeira.area)) {
-            aviso = "Enfermeira: Volte para o seu quarto. Voce nao devia estar aqui.";
+            dialogoAlvo = "enfermeira";
             return;
         }
 
@@ -237,6 +229,18 @@ public class GerenciadorProgresso {
     // Adiciona uma parte coletada
     public void adicionarParte() {
         if (partes < 3) partes++;
+    }
+
+    // Marca que a peca do NPC foi entregue
+    public void marcarPecaNpc() {
+        pecaNpc = true;
+    }
+
+    // Retorna e limpa o no de dialogo pendente
+    public String pegarDialogo() {
+        String r    = dialogoAlvo;
+        dialogoAlvo = null;
+        return r;
     }
 
     // Forca quantidade de partes

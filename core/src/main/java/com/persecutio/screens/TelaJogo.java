@@ -23,6 +23,7 @@ import com.persecutio.entities.Jogador;
 import com.persecutio.managers.ContextoRender;
 import com.persecutio.managers.GerenciadorAudio;
 import com.persecutio.managers.GerenciadorColisao;
+import com.persecutio.managers.GerenciadorDialogo;
 import com.persecutio.managers.GerenciadorComodos;
 import com.persecutio.managers.GerenciadorDebug;
 import com.persecutio.managers.GerenciadorLuzes;
@@ -47,6 +48,8 @@ public class TelaJogo implements Screen {
     public  GerenciadorProgresso       progresso;
     // Interface do usuario
     private GerenciadorUI              interfaceJogo;
+    // Dialogos do jogo
+    private GerenciadorDialogo         gerDialogo;
     // Renderizador do mapa
     private GerenciadorRenderizacao    renderizador;
     // Gerenciador de comodos
@@ -178,6 +181,10 @@ public class TelaJogo implements Screen {
         progresso      = new GerenciadorProgresso(sistemaColisao, gerPortas);
         interfaceJogo  = new GerenciadorUI();
         interfaceJogo.inicializar(jogo.fonteDialogos, jogo.viewport, sistemaAudio);
+
+        gerDialogo = new GerenciadorDialogo();
+        interfaceJogo.setDialogo(gerDialogo);
+
         renderizador   = new GerenciadorRenderizacao(escala);
         rendererTiled  = new OrthogonalTiledMapRenderer(mapaTiled, escala, jogo.batch);
 
@@ -327,6 +334,7 @@ public class TelaJogo implements Screen {
         interfaceJogo.desenharAvisos(ctx, sistemaColisao, jogador, umbra, destrancada, progresso.getAviso());
         interfaceJogo.desenharPromptPorta(ctx, gerPortas, sistemaColisao, jogador, umbra);
         interfaceJogo.desenharLiberada(ctx);
+        interfaceJogo.desenharDialogo(ctx);
         if (interfaceJogo.isPausado()) interfaceJogo.desenharPausa(ctx);
 
         batch.end();
@@ -378,6 +386,8 @@ public class TelaJogo implements Screen {
 
     // Processa entrada do jogador a cada frame
     private void tratarInput(float delta) {
+        for (String efeito : gerDialogo.pegarEfeitos()) processarEfeito(efeito);
+
         sistemaAudio.tratarInputVolume();
 
         if (interfaceJogo.isSenha()) return;
@@ -421,6 +431,19 @@ public class TelaJogo implements Screen {
         }
     }
 
+    // Processa um efeito de jogo disparado por uma tag do ink
+    private void processarEfeito(String nome) {
+        switch (nome) {
+            case "dar_peca":
+                progresso.marcarPecaNpc();
+                progresso.adicionarParte();
+                sistemaAudio.tocarConfirmar();
+                break;
+            default:
+                Gdx.app.log("TelaJogo", "efeito de dialogo desconhecido: " + nome);
+        }
+    }
+
     // Trata interacao do jogador com portas e objetos
     private void tratarInteracao() {
         GerenciadorPortas.Porta porta = gerPortas.acharProxima(jogador, mundoUmbra);
@@ -452,6 +475,12 @@ public class TelaJogo implements Screen {
         }
 
         progresso.tratarInteracao(jogador);
+
+        String no = progresso.pegarDialogo();
+        if (no != null) {
+            gerDialogo.iniciar(no);
+            interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+        }
 
         if (progresso.isCinematica()) interfaceJogo.iniciarCinematica();
         if (progresso.isEspelho())    interfaceJogo.mudarEstado(GerenciadorUI.UI_ESPELHO);

@@ -47,14 +47,18 @@ public class TelaMenu implements Screen {
     // Largura maxima do logo
     private static final float LOGO_LARGURA_MAX = 380f;
 
-    // Duracao do fade in do menu
-    private static final float DURACAO_FADE_IN = 1.5f;
+    // Tempo de duracao do fade in em segundos
+    private float tempoEntrada = 1.5f;
+    // Timer do fade in do menu
     private float timerFadeIn = 0f;
+    // Flag se o fade in esta ativo
     private boolean fadeInAtivo = true;
 
-    // Duracao do fade out ao confirmar
-    private static final float DURACAO_FADE_OUT = 0.5f;
+    // Tempo de duracao do fade out em segundos
+    private float tempoFade = 0.8f;
+    // Timer do fade out
     private float timerFadeOut = 0f;
+    // Flag se o fade out esta ativo
     private boolean fadeOutAtivo = false;
     // Flag se confirmou novo jogo
     private boolean confirmouNovoJogo = false;
@@ -103,6 +107,8 @@ public class TelaMenu implements Screen {
         animVhs.setPlayMode(Animation.PlayMode.LOOP);
 
         jogo.audio.carregarMenu();
+        // Ativa o fade in gradual da musica junto com o visual usando o tempo configurado
+        jogo.audio.iniciarFadeIn(tempoEntrada);
 
         // Reseta estados
         timerFadeIn = 0f;
@@ -133,8 +139,8 @@ public class TelaMenu implements Screen {
         // Fase do fade in do menu
         if (fadeInAtivo) {
             timerFadeIn += delta;
-            if (timerFadeIn >= DURACAO_FADE_IN) {
-                timerFadeIn = DURACAO_FADE_IN;
+            if (timerFadeIn >= tempoEntrada) {
+                timerFadeIn = tempoEntrada;
                 fadeInAtivo = false;
             }
         }
@@ -142,8 +148,8 @@ public class TelaMenu implements Screen {
         // Fase do fade out ao confirmar
         if (fadeOutAtivo) {
             timerFadeOut += delta;
-            if (timerFadeOut >= DURACAO_FADE_OUT) {
-                timerFadeOut = DURACAO_FADE_OUT;
+            if (timerFadeOut >= tempoFade) {
+                timerFadeOut = tempoFade;
                 fadeOutAtivo = false;
                 if (confirmouNovoJogo) {
                     iniciarVideoIntro();
@@ -156,10 +162,10 @@ public class TelaMenu implements Screen {
         }
 
         // Alpha do fade in
-        float alphaFadeIn = fadeInAtivo ? (timerFadeIn / DURACAO_FADE_IN) : 1f;
+        float alphaFadeIn = fadeInAtivo ? (timerFadeIn / tempoEntrada) : 1f;
 
         // Alpha do fade out
-        float alphaFadeOut = fadeOutAtivo ? (1f - timerFadeOut / DURACAO_FADE_OUT) : 1f;
+        float alphaFadeOut = fadeOutAtivo ? (1f - timerFadeOut / tempoFade) : 1f;
 
         // Alpha final combinado
         float alphaFinal = alphaFadeIn * alphaFadeOut;
@@ -212,7 +218,7 @@ public class TelaMenu implements Screen {
 
         // Overlay preto do fade out
         if (fadeOutAtivo) {
-            float alfaFadePreto = timerFadeOut / DURACAO_FADE_OUT;
+            float alfaFadePreto = timerFadeOut / tempoFade;
             batch.begin();
             batch.setColor(0f, 0f, 0f, alfaFadePreto);
             batch.draw(texBranca, 0, 0, larguraMundo, alturaMundo);
@@ -363,6 +369,8 @@ public class TelaMenu implements Screen {
     // Inicia confirmacao com fade e som
     private void iniciarConfirmacao(boolean novoJogo) {
         jogo.audio.tocarConfirmar();
+        // Inicia o fade out da musica com a mesma duracao do fade visual
+        jogo.audio.iniciarFadeOut(tempoFade);
         confirmouNovoJogo = novoJogo;
         fadeOutAtivo = true;
         timerFadeOut = 0f;
