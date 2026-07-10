@@ -1,8 +1,8 @@
 {
     "activeFile": "casaderepouso.tmx",
     "expandedProjectPaths": [
-        ".",
-        "tiles"
+        "tiles",
+        "."
     ],
     "fileStates": {
         "": {
@@ -72,14 +72,14 @@
                 29
             ],
             "expandedObjectLayers": [
-                27,
-                32
+                32,
+                27
             ],
-            "scale": 0.5,
-            "selectedLayer": 9,
+            "scale": 0.75,
+            "selectedLayer": 18,
             "viewCenter": {
-                "x": 545,
-                "y": 599
+                "x": 1017.9999999999999,
+                "y": 260.66666666666663
             }
         },
         "casaderepouso.tmx#Content": {

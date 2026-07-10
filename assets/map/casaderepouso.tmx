@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="80" height="44" tilewidth="32" tileheight="32" infinite="0" nextlayerid="35" nextobjectid="706">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="80" height="44" tilewidth="32" tileheight="32" infinite="0" nextlayerid="35" nextobjectid="718">
  <tileset firstgid="1" name="InteriorTilesLITE" tilewidth="32" tileheight="32" tilecount="224" columns="16">
   <image source="tilemaps/InteriorTilesLITE.png" width="512" height="448"/>
  </tileset>
@@ -517,7 +517,7 @@
 0,0,0,0,0,0,0,8224,0,0,0,0,0,0,0,0,0,8224,0,0,0,0,0,0,0,0,0,8223,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6407,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6815,0,0,0,0,0,0,0,0,6502,0,6537,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6537,0,6502,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6537,6409,0,0,6535,6536,0,0,0,6815,0,6535,0,6502,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6537,6409,0,0,6535,6536,0,0,0,0,0,6535,0,6502,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6409,0,0,0,0,0,0,0,0,0,0,0,6535,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6535,6536,6536,0,0,0,0,0,6628,0,0,0,0,6628,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6537,6537,0,0,6644,0,6575,6576,0,6644,6535,6536,0,0,0,0,0,6815,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -940,7 +940,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="25" name="Objetos" class="objeto">
+ <objectgroup id="25" name="Objetos" class="objeto" visible="0">
   <object id="216" type="objeto" x="733" y="54" width="130" height="183.167"/>
   <object id="217" type="objeto" x="937.875" y="98.125" width="47.25" height="87.2159"/>
   <object id="230" type="objeto" x="1250.55" y="243.25" width="58.9091" height="44.9318"/>
@@ -1056,7 +1056,7 @@
     <property name="real" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="677" type="objeto" x="1580.99" y="1078" width="45.1477" height="102.978"/>
+  <object id="677" type="objeto" x="1582.99" y="1078" width="39.1477" height="102.978"/>
   <object id="678" type="objeto" x="809" y="49" width="14.9091" height="10.8182"/>
   <object id="679" type="objeto" x="778.545" y="49.7273" width="10.3636" height="12.4545"/>
   <object id="682" type="objeto" x="1668.9" y="1174.09" width="22.1023" height="37"/>
@@ -1069,7 +1069,6 @@
   <object id="689" type="objeto" x="1699.36" y="1200.97" width="27.2844" height="60.0543"/>
   <object id="690" type="objeto" x="1674.36" y="1226.64" width="82.9511" height="60.0543"/>
   <object id="691" type="objeto" x="1681.86" y="1208.64" width="63.6178" height="63.721"/>
-  <object id="692" type="objeto" x="1568.5" y="1090.07" width="43.25" height="15.9318"/>
   <object id="693" type="objeto" x="2336" y="783.909" width="8" height="12.9091"/>
   <object id="694" type="objeto" x="2359" y="787.002" width="7.99596" height="8.99798"/>
   <object id="695" type="objeto" x="2336" y="293" width="16.0625" height="26.9375"/>
@@ -1083,8 +1082,15 @@
   <object id="703" type="objeto" x="646.25" y="703.75" width="22.5" height="31.5"/>
   <object id="704" type="objeto" x="1189.33" y="543.333" width="23.3333" height="34"/>
   <object id="705" type="objeto" x="1190" y="640" width="23.3333" height="32"/>
+  <object id="710" type="objeto" x="1580.88" y="1090" width="11.5" height="37.875"/>
+  <object id="711" type="objeto" x="1579.13" y="1095.13" width="16.75" height="10.8125"/>
+  <object id="712" type="objeto" x="1580.13" y="1093" width="13.875" height="13.9375"/>
+  <object id="714" type="objeto" x="1620.52" y="1120.78" width="2.3913" height="10.2609"/>
+  <object id="715" type="objeto" x="1621" y="1122.13" width="3" height="8.86957"/>
+  <object id="716" type="objeto" x="1620.3" y="1125.04" width="4.65217" height="5"/>
+  <object id="717" type="objeto" x="1620.61" y="1125.96" width="5.3913" height="3.04348"/>
  </objectgroup>
- <objectgroup id="27" name="NPCs">
+ <objectgroup id="27" name="NPCs" visible="0">
   <object id="329" name="enfermeira" type="npc" x="832" y="145.637" width="64" height="7.27271">
    <properties>
     <property name="umbra" type="bool" value="false"/>
@@ -1107,7 +1113,7 @@
     <property name="cameraEstatica" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="346" name="Banheiro" type="comodo" x="211.75" y="319.75" width="139.5" height="159">
+  <object id="346" name="Banheiro" type="comodo" x="211.75" y="319.75" width="108.5" height="159">
    <properties>
     <property name="cameraEstatica" type="bool" value="true"/>
    </properties>
@@ -1133,32 +1139,8 @@
   <object id="671" name="JardimExterno" type="comodo" x="1216" y="896" width="768" height="512"/>
   <object id="672" x="2060" y="1209.33"/>
  </objectgroup>
- <objectgroup id="28" name="Luzes" visible="0" locked="1">
-  <object id="411" name="abajur" type="luz" x="75.9688" y="331.063" width="9.0625" height="7.875">
-   <properties>
-    <property name="cor" type="color" value="#ffffff00"/>
-    <property name="distancia" type="float" value="50"/>
-   </properties>
-  </object>
-  <object id="412" name="abajur" type="luz" x="85.0313" y="334" width="0.875" height="3.96875">
-   <properties>
-    <property name="cor" type="color" value="#ffffff00"/>
-    <property name="distancia" type="float" value="50"/>
-   </properties>
-  </object>
-  <object id="413" name="abajur" type="luz" x="75.0938" y="334.094" width="0.84375" height="3.90625">
-   <properties>
-    <property name="cor" type="color" value="#ffffff00"/>
-    <property name="distancia" type="float" value="50"/>
-   </properties>
-  </object>
-  <object id="415" name="abajur" type="luz" x="76.875" y="329" width="7" height="3.6875">
-   <properties>
-    <property name="cor" type="color" value="#ffffff00"/>
-    <property name="distancia" type="float" value="50"/>
-   </properties>
-  </object>
-  <object id="416" name="abajur" type="luz" x="77.9688" y="328.063" width="5" height="2.59375">
+ <objectgroup id="28" name="Luzes">
+  <object id="411" name="abajur" type="luz" x="75.0001" y="328.032" width="11" height="11.9688">
    <properties>
     <property name="cor" type="color" value="#ffffff00"/>
     <property name="distancia" type="float" value="50"/>
@@ -1168,7 +1150,7 @@
    <properties>
     <property name="ativo" type="bool" value="true"/>
     <property name="atravessa" type="bool" value="false"/>
-    <property name="distancia" type="float" value="400"/>
+    <property name="distancia" type="float" value="415"/>
     <property name="estatica" type="bool" value="true"/>
    </properties>
   </object>
@@ -1176,7 +1158,7 @@
    <properties>
     <property name="ativo" type="bool" value="true"/>
     <property name="atravessa" type="bool" value="false"/>
-    <property name="distancia" type="float" value="400"/>
+    <property name="distancia" type="float" value="415"/>
     <property name="estatica" type="bool" value="true"/>
    </properties>
   </object>
@@ -1184,7 +1166,7 @@
    <properties>
     <property name="ativo" type="bool" value="true"/>
     <property name="atravessa" type="bool" value="false"/>
-    <property name="distancia" type="float" value="400"/>
+    <property name="distancia" type="float" value="415"/>
     <property name="estatica" type="bool" value="true"/>
    </properties>
   </object>
@@ -1192,101 +1174,207 @@
    <properties>
     <property name="ativo" type="bool" value="true"/>
     <property name="atravessa" type="bool" value="false"/>
-    <property name="distancia" type="float" value="400"/>
+    <property name="distancia" type="float" value="415"/>
     <property name="estatica" type="bool" value="true"/>
    </properties>
   </object>
   <object id="433" type="luz" x="224" y="384" width="96" height="32">
    <properties>
-    <property name="distancia" type="float" value="600"/>
+    <property name="distancia" type="float" value="330"/>
    </properties>
   </object>
-  <object id="435" type="luz" x="64" y="640" width="32" height="96"/>
-  <object id="436" type="luz" x="160" y="640" width="32" height="96"/>
-  <object id="437" type="luz" x="256" y="640" width="32" height="96"/>
-  <object id="438" type="luz" x="352" y="640" width="32" height="96"/>
-  <object id="439" type="luz" x="448" y="640" width="32" height="96"/>
-  <object id="441" type="luz" x="544" y="640" width="32" height="96"/>
-  <object id="442" type="luz" x="640" y="640" width="32" height="96"/>
-  <object id="443" type="luz" x="736" y="640" width="32" height="96"/>
-  <object id="445" type="luz" x="832" y="640" width="32" height="96"/>
-  <object id="446" type="luz" x="928" y="640" width="32" height="96"/>
-  <object id="447" type="luz" x="984" y="672" width="96" height="32"/>
-  <object id="448" type="luz" x="984" y="576" width="96" height="32"/>
-  <object id="449" type="luz" x="984" y="768" width="96" height="32"/>
-  <object id="452" type="luz" x="984" y="864" width="96" height="32"/>
-  <object id="453" type="luz" x="984" y="960" width="96" height="32"/>
-  <object id="454" type="luz" x="1144" y="960" width="32" height="96"/>
-  <object id="455" type="luz" x="984" y="480" width="96" height="32"/>
-  <object id="456" type="luz" x="984" y="384" width="96" height="32"/>
-  <object id="457" type="luz" x="1144" y="576" width="32" height="96"/>
-  <object id="458" type="luz" x="1240" y="576" width="32" height="96"/>
-  <object id="459" type="luz" x="1336" y="576" width="32" height="96"/>
-  <object id="460" type="luz" x="1432" y="576" width="32" height="96"/>
-  <object id="461" type="luz" x="1528" y="576" width="32" height="96"/>
-  <object id="462" type="luz" x="1624" y="576" width="32" height="96"/>
-  <object id="463" type="luz" x="1720" y="576" width="32" height="96"/>
-  <object id="464" type="luz" x="1816" y="576" width="32" height="96"/>
-  <object id="466" type="luz" x="1912" y="576" width="32" height="96"/>
-  <object id="470" type="luz" x="992" y="224" width="96" height="32">
+  <object id="435" type="luz" x="64" y="640" width="32" height="96">
    <properties>
-    <property name="distancia" type="float" value="400"/>
+    <property name="distancia" type="float" value="340"/>
    </properties>
   </object>
-  <object id="471" type="luz" x="992" y="128" width="96" height="32">
+  <object id="436" type="luz" x="160" y="640" width="32" height="96">
    <properties>
-    <property name="distancia" type="float" value="400"/>
+    <property name="distancia" type="float" value="340"/>
    </properties>
   </object>
-  <object id="472" type="luz" x="992" y="32" width="96" height="32">
+  <object id="437" type="luz" x="256" y="640" width="32" height="96">
    <properties>
-    <property name="distancia" type="float" value="400"/>
+    <property name="distancia" type="float" value="340"/>
    </properties>
   </object>
-  <object id="473" type="luz" x="1152" y="32" width="96" height="32">
+  <object id="438" type="luz" x="352" y="640" width="32" height="96">
    <properties>
-    <property name="distancia" type="float" value="400"/>
+    <property name="distancia" type="float" value="340"/>
    </properties>
   </object>
-  <object id="474" type="luz" x="1152" y="128" width="96" height="32">
+  <object id="439" type="luz" x="448" y="640" width="32" height="96">
    <properties>
-    <property name="distancia" type="float" value="400"/>
+    <property name="distancia" type="float" value="340"/>
    </properties>
   </object>
-  <object id="475" type="luz" x="1152" y="224" width="96" height="32">
+  <object id="441" type="luz" x="544" y="640" width="32" height="96">
    <properties>
-    <property name="distancia" type="float" value="400"/>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="442" type="luz" x="640" y="640" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="443" type="luz" x="736" y="640" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="445" type="luz" x="832" y="640" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="446" type="luz" x="928" y="640" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="447" type="luz" x="991" y="633" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="448" type="luz" x="991" y="537" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="449" type="luz" x="991" y="729" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="452" type="luz" x="991" y="825" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="453" type="luz" x="991" y="921" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="706" type="luz" x="991" y="1010" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="454" type="luz" x="1144" y="960" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="455" type="luz" x="991" y="441" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="456" type="luz" x="991" y="345" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="457" type="luz" x="1144" y="576" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="458" type="luz" x="1240" y="576" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="459" type="luz" x="1336" y="576" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="460" type="luz" x="1432" y="576" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="461" type="luz" x="1528" y="576" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="462" type="luz" x="1624" y="576" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="463" type="luz" x="1720" y="576" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="464" type="luz" x="1816" y="576" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="466" type="luz" x="1912" y="576" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="471" type="luz" x="995" y="138" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="4000"/>
    </properties>
   </object>
   <object id="476" type="luz" x="1312" y="64" width="32" height="32"/>
-  <object id="479" type="luz" x="832" y="32" width="96" height="32">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="481" type="luz" x="832" y="128" width="96" height="32">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="482" type="luz" x="832" y="224" width="96" height="32">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
   <object id="484" type="luz" x="816" y="57.3333">
    <properties>
-    <property name="distancia" type="float" value="20"/>
+    <property name="cor" type="color" value="#ffd7fffa"/>
+    <property name="distancia" type="float" value="40"/>
    </properties>
   </object>
-  <object id="489" type="luz" x="2016" y="960" width="32" height="96"/>
-  <object id="490" type="luz" x="2112" y="960" width="32" height="96"/>
-  <object id="491" type="luz" x="2208" y="960" width="32" height="96"/>
-  <object id="492" type="luz" x="2208" y="864" width="96" height="32"/>
-  <object id="493" type="luz" x="2208" y="768" width="96" height="32"/>
-  <object id="494" type="luz" x="2208" y="672" width="96" height="32"/>
-  <object id="495" type="luz" x="2208" y="576" width="96" height="32"/>
-  <object id="496" type="luz" x="2208" y="480" width="96" height="32"/>
+  <object id="489" type="luz" x="2016" y="960" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="490" type="luz" x="2112" y="960" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="491" type="luz" x="2208" y="960" width="32" height="96">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="492" type="luz" x="2208" y="864" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="493" type="luz" x="2208" y="768" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="494" type="luz" x="2208" y="672" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="495" type="luz" x="2208" y="576" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
+  <object id="496" type="luz" x="2208" y="480" width="96" height="32">
+   <properties>
+    <property name="distancia" type="float" value="340"/>
+   </properties>
+  </object>
   <object id="497" type="luz" x="2208" y="352" width="96" height="32">
    <properties>
     <property name="distancia" type="float" value="400"/>
@@ -1382,94 +1470,10 @@
     <property name="distancia" type="float" value="400"/>
    </properties>
   </object>
-  <object id="632" type="luz" x="1280" y="960" width="96" height="96">
+  <object id="641" type="luz" x="1552" y="1078.67" width="96" height="96">
    <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="633" type="luz" x="1280" y="1088" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="634" type="luz" x="1280" y="1216" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="636" type="luz" x="1408" y="1216" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="637" type="luz" x="1408" y="1088" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="638" type="luz" x="1408" y="960" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="640" type="luz" x="1536" y="960" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="641" type="luz" x="1536" y="1088" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="642" type="luz" x="1536" y="1216" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="643" type="luz" x="1664" y="1216" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="645" type="luz" x="1664" y="1088" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="646" type="luz" x="1664" y="960" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="647" type="luz" x="1792" y="1216" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="648" type="luz" x="1792" y="1088" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="649" type="luz" x="1792" y="960" width="96" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="653" type="luz" x="1920" y="960" width="32" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="654" type="luz" x="1920" y="1088" width="32" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
-   </properties>
-  </object>
-  <object id="655" type="luz" x="1920" y="1216" width="32" height="96">
-   <properties>
-    <property name="distancia" type="float" value="400"/>
+    <property name="abertura" type="float" value="90"/>
+    <property name="distancia" type="float" value="3650"/>
    </properties>
   </object>
  </objectgroup>

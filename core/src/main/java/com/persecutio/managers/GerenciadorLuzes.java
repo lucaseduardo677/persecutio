@@ -37,8 +37,6 @@ public class GerenciadorLuzes {
 
     // Luz que segue o jogador
     private Light luzJogador;
-    // Luz ambiente do Umbra
-    private Light luzAmbienteUmbra;
 
     // Lista de luzes fixas do mapa
     private final List<Light> luzesFixas = new ArrayList<>();
@@ -161,8 +159,8 @@ public class GerenciadorLuzes {
             boolean atravessa = lerBool(props, "atravessa", false);
             boolean noUmbra = lerBool(props, "umbra", true);
             boolean noReal = lerBool(props, "real", true);
-            boolean segue = lerBool(props, "segue", false);
-            boolean ligada = lerBool(props, "ligada", true);
+            boolean segue = lerBool(props, "segue", false) || lerBool(props, "segueJogador", false);
+            boolean ligada = lerBool(props, "ligada", true) || lerBool(props, "ativo", true);
             float direcao = lerNumero(props, "direcao", 0f);
             float abertura = lerNumero(props, "abertura", 45f);
 
@@ -200,32 +198,28 @@ public class GerenciadorLuzes {
         }
     }
 
-    // Inicializa luzes do jogador e ambiente
+    // Inicializa o sistema de luzes
     public void inicializar(float jogadorX, float jogadorY) {
         short mascaraSombra = (short) (CAT_SOMBRA_PAREDE | CAT_SOMBRA_PORTA);
 
+        // Se nenhuma luz com 'segue' foi carregada do mapa, cria a luz padrao
         if (luzJogador == null) {
             luzJogador = new PointLight(rayHandler, 128,
-                new Color(1f, 0.95f, 0.8f, 0.9f),
-                250f, jogadorX, jogadorY);
+                Color.valueOf("#fff2cce5"),
+                100f, jogadorX, jogadorY);
             luzJogador.setSoft(true);
             luzJogador.setSoftnessLength(20f);
             luzJogador.setContactFilter(CAT_SOMBRA_PAREDE, (short) 0, mascaraSombra);
         }
-
-        luzAmbienteUmbra = new PointLight(rayHandler, 64,
-            new Color(0.6f, 0f, 0f, 0.3f),
-            400f, jogadorX, jogadorY);
-        luzAmbienteUmbra.setContactFilter(CAT_SOMBRA_PAREDE, (short) 0, mascaraSombra);
-        luzAmbienteUmbra.setActive(false);
 
         setAmbienteUmbra(false);
     }
 
     // Atualiza posicao das luzes que seguem o jogador
     public void atualizarPosicaoJogador(float mundoX, float mundoY) {
-        if (luzJogador != null) luzJogador.setPosition(mundoX, mundoY);
-        if (luzAmbienteUmbra != null) luzAmbienteUmbra.setPosition(mundoX, mundoY);
+        if (luzJogador != null) {
+            luzJogador.setPosition(mundoX, mundoY);
+        }
     }
 
     // Define o ambiente de iluminacao
@@ -235,10 +229,8 @@ public class GerenciadorLuzes {
 
         if (umbra) {
             rayHandler.setAmbientLight(0.05f, 0.02f, 0.02f, 0.15f);
-            if (luzJogador != null) luzJogador.setDistance(180f);
         } else {
             rayHandler.setAmbientLight(0.4f, 0.4f, 0.45f, 0.6f);
-            if (luzJogador != null) luzJogador.setDistance(250f);
         }
     }
 
