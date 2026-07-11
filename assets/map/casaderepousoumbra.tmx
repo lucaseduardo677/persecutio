@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2-2-geb83ddb9" orientation="orthogonal" renderorder="right-down" width="80" height="44" tilewidth="32" tileheight="32" infinite="0" nextlayerid="36" nextobjectid="632">
+<map version="1.10" tiledversion="1.12.2-2-geb83ddb9" orientation="orthogonal" renderorder="right-down" width="80" height="44" tilewidth="32" tileheight="32" infinite="0" nextlayerid="36" nextobjectid="646">
  <tileset firstgid="1" name="InteriorTilesLITE" tilewidth="32" tileheight="32" tilecount="224" columns="16">
   <image source="tilemaps/InteriorTilesLITE.png" width="512" height="448"/>
  </tileset>
@@ -483,7 +483,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7030,0,0,0,0,7030,0,0,0,0,7030,0,0,0,0,7030,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="13" name="objetos1" width="80" height="44" locked="1">
+ <layer id="13" name="objetos1" width="80" height="44">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8185,0,0,0,0,0,0,0,0,0,8157,8157,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8148,8148,8148,8148,0,0,0,0,0,0,0,0,0,0,0,0,8173,8173,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -513,7 +513,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8185,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,90,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8185,0,0,8151,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,8125,0,0,0,0,0,0,0,0,0,8125,0,0,0,0,0,0,0,0,0,8125,0,0,0,0,0,0,0,0,0,0,106,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8167,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,8141,0,0,0,0,0,0,0,0,0,8141,0,0,0,0,0,0,0,0,0,8141,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -771,7 +771,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="21" name="Colisoes" class="parede" visible="0" locked="1">
+ <objectgroup id="21" name="Colisoes" class="parede" visible="0">
   <object id="4" type="parede" x="0.5" y="321.5" width="31.5" height="733.5"/>
   <object id="7" type="parede" x="4" y="322.667" width="982.667" height="28"/>
   <object id="10" type="parede" x="320.5" y="323" width="30.5" height="315.5"/>
@@ -887,8 +887,11 @@
   <object id="187" type="parede" x="114.721" y="77.2156" width="0.0609214" height="0.0463286" visible="0"/>
   <object id="188" type="parede" x="114.793" y="77.2261" width="0.0246519" height="0.0376863" visible="0"/>
   <object id="190" type="parede" x="114.751" y="77.271" width="0.017568" height="0.0296106" visible="0"/>
+  <object id="632" type="parede" x="1216" y="960" width="32" height="96"/>
+  <object id="633" type="parede" x="1952" y="960" width="32" height="96"/>
+  <object id="634" x="1936.13" y="991.125"/>
  </objectgroup>
- <objectgroup id="24" name="Portas" visible="0" locked="1">
+ <objectgroup id="24" name="Portas" visible="0">
   <object id="192" name="portaQuartoMaria1" type="porta" x="256" y="609.667" width="33" height="4.33333">
    <properties>
     <property name="area" value="Corredor"/>
@@ -915,13 +918,13 @@
     <property name="destino" value="Recepcao"/>
    </properties>
   </object>
-  <object id="206" name="portaCorredorJardim2" type="porta" x="1242.25" y="991.25" width="5.25" height="34">
+  <object id="206" name="portaCorredorJardim2" type="porta" x="1248.13" y="990.75" width="5.25" height="34">
    <properties>
     <property name="area" value="Corredor"/>
     <property name="destino" value="CorredorJardim"/>
    </properties>
   </object>
-  <object id="208" name="portaEscritorioJardim" type="porta" x="1952.25" y="989.5" width="5.25" height="36">
+  <object id="208" name="portaEscritorioJardim" type="porta" x="1946.63" y="989.625" width="5.25" height="36">
    <properties>
     <property name="area" value="Corredor"/>
     <property name="destino" value="CorredorEscritorios"/>
@@ -953,86 +956,86 @@
     <property name="destino" value="BanheiroMaria"/>
    </properties>
   </object>
-  <object id="521" name="portaCorredorJardim" type="porta" x="1232.88" y="991.5" width="4" height="33.5">
+  <object id="521" name="portaCorredorJardim" type="porta" x="1212.26" y="992.75" width="4" height="33.5">
    <properties>
     <property name="area" value="Jardim"/>
     <property name="destino" value="Jardim"/>
    </properties>
   </object>
-  <object id="522" name="portaEscritorioJardim2" type="porta" x="1970.64" y="991.364" width="5.81818" height="32.9091">
+  <object id="522" name="portaEscritorioJardim2" type="porta" x="1984.64" y="991.364" width="5.81818" height="32.9091">
    <properties>
     <property name="area" value="Jardim"/>
     <property name="destino" value="Jardim2"/>
    </properties>
   </object>
-  <object id="562" name="portaEscritorio1" type="porta" x="2202.5" y="447" width="4.875" height="33.25">
+  <object id="562" name="portaEscritorio1" type="porta" x="2208.25" y="447.188" width="4.875" height="33.25">
    <properties>
     <property name="area" value="Escritorio"/>
     <property name="destino" value="Escritorio1"/>
    </properties>
   </object>
-  <object id="563" name="portaEscritorio1-2" type="porta" x="2194.44" y="445.625" width="5.125" height="35.5">
+  <object id="563" name="portaEscritorio1-2" type="porta" x="2190.44" y="440.875" width="5.125" height="45.75">
    <properties>
     <property name="area" value="Corredor"/>
     <property name="destino" value="CorredorEscritorios1"/>
    </properties>
   </object>
-  <object id="564" name="portaEscritorio2" type="porta" x="2303.63" y="447.75" width="6" height="32.25">
+  <object id="564" name="portaEscritorio2" type="porta" x="2298.01" y="447.875" width="6" height="32.25">
    <properties>
     <property name="area" value="Escritorio"/>
     <property name="destino" value="Escritorio2"/>
    </properties>
   </object>
-  <object id="565" name="portaEscritorio2-2" type="porta" x="2312.94" y="445.625" width="5.125" height="35.5">
+  <object id="565" name="portaEscritorio2-2" type="porta" x="2316.69" y="437.375" width="5.125" height="51.375">
    <properties>
     <property name="area" value="Corredor"/>
     <property name="destino" value="CorredorEscritorios2"/>
    </properties>
   </object>
-  <object id="568" name="portaEscritorio4" type="porta" x="2304" y="608" width="6.375" height="32.5">
+  <object id="568" name="portaEscritorio4" type="porta" x="2297.51" y="608.25" width="6.375" height="32.5">
    <properties>
     <property name="area" value="Escritorio"/>
     <property name="destino" value="Escritorio4"/>
    </properties>
   </object>
-  <object id="569" name="portaEscritorio4-2" type="porta" x="2312.26" y="608.25" width="6.125" height="32">
+  <object id="569" name="portaEscritorio4-2" type="porta" x="2316.39" y="600.125" width="6.125" height="49.25">
    <properties>
     <property name="area" value="Corredor"/>
     <property name="destino" value="CorredorEscritorios4"/>
    </properties>
   </object>
-  <object id="570" name="portaEscritorio6" type="porta" x="2304" y="768" width="5.875" height="32.25">
+  <object id="570" name="portaEscritorio6" type="porta" x="2297.63" y="768" width="5.875" height="32.25">
    <properties>
     <property name="area" value="Escritorio"/>
     <property name="condicao" value=""/>
     <property name="destino" value="Escritorio6"/>
    </properties>
   </object>
-  <object id="571" name="portaEscritorio6-2" type="porta" x="2312.02" y="768.5" width="6.5" height="31">
+  <object id="571" name="portaEscritorio6-2" type="porta" x="2315.64" y="755.875" width="6.5" height="53">
    <properties>
     <property name="area" value="Corredor"/>
     <property name="destino" value="CorredorEscritorios6"/>
    </properties>
   </object>
-  <object id="572" name="portaEscritorio5" type="porta" x="2202.75" y="768" width="5.25" height="31.875">
+  <object id="572" name="portaEscritorio5" type="porta" x="2208.13" y="768" width="5.25" height="31.875">
    <properties>
     <property name="area" value="Escritorio"/>
     <property name="destino" value="Escritorio5"/>
    </properties>
   </object>
-  <object id="573" name="portaEscritorio5-2" type="porta" x="2193.75" y="767.938" width="6.125" height="31">
+  <object id="573" name="portaEscritorio5-2" type="porta" x="2190.13" y="759.188" width="6.125" height="46.375">
    <properties>
     <property name="area" value="Corredor"/>
     <property name="destino" value="CorredorEscritorios5"/>
    </properties>
   </object>
-  <object id="574" name="portaEscritorios3" type="porta" x="2202.13" y="608" width="5.875" height="31.875">
+  <object id="574" name="portaEscritorios3" type="porta" x="2208.01" y="608.25" width="5.875" height="31.875">
    <properties>
     <property name="area" value="Escritorio"/>
     <property name="destino" value="Escritorioo3"/>
    </properties>
   </object>
-  <object id="575" name="portaEscritorio3-2" type="porta" x="2193.63" y="608" width="6.25" height="32.25">
+  <object id="575" name="portaEscritorio3-2" type="porta" x="2189.64" y="596.75" width="6.25" height="46.125">
    <properties>
     <property name="area" value="Corredor"/>
     <property name="destino" value="CorredorEscritorios3"/>
@@ -1194,8 +1197,8 @@
   <object id="612" x="2515.64" y="410.182" width="1.63636" height="20.1818"/>
   <object id="613" type="objeto" x="2502.91" y="420.545" width="15.2727" height="13.4545"/>
  </objectgroup>
- <objectgroup id="27" name="NPC"/>
- <objectgroup id="32" name="Comodos" visible="0" locked="1">
+ <objectgroup id="27" name="NPC" visible="0"/>
+ <objectgroup id="32" name="Comodos">
   <object id="342" name="QuartoMaria" type="comodo" x="0.666667" y="320" width="223.333" height="318.667">
    <properties>
     <property name="cameraEstatica" type="bool" value="true"/>
@@ -1246,8 +1249,38 @@
     <property name="cameraEstatica" type="bool" value="true"/>
    </properties>
   </object>
+  <object id="638" name="escritorio1" type="comodo" x="1952" y="384" width="256" height="192">
+   <properties>
+    <property name="cameraEstatica" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="639" name="escritorio3" type="comodo" x="1952" y="544" width="256" height="192">
+   <properties>
+    <property name="cameraEstatica" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="640" name="escritorio5" type="comodo" x="1952" y="704" width="256" height="192">
+   <properties>
+    <property name="cameraEstatica" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="642" name="escritorio6" type="comodo" x="2304" y="704" width="256" height="192">
+   <properties>
+    <property name="cameraEstatica" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="644" name="escritorio4" type="comodo" x="2304" y="544" width="256" height="192">
+   <properties>
+    <property name="cameraEstatica" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="645" name="escritorio2" type="comodo" x="2304" y="384" width="256" height="192">
+   <properties>
+    <property name="cameraEstatica" type="bool" value="true"/>
+   </properties>
+  </object>
  </objectgroup>
- <objectgroup id="28" name="Luzes" visible="0" locked="1">
+ <objectgroup id="28" name="Luzes" visible="0">
   <object id="411" name="abajur" type="luz" x="75.9688" y="331.063" width="9.0625" height="7.875">
    <properties>
     <property name="cor" type="color" value="#ffffff00"/>
@@ -1480,11 +1513,6 @@
     <property name="distancia" type="float" value="200"/>
    </properties>
   </object>
-  <object id="476" type="luz" x="1312" y="64" width="32" height="32">
-   <properties>
-    <property name="distancia" type="float" value="20"/>
-   </properties>
-  </object>
   <object id="479" type="luz" x="832" y="32" width="96" height="32">
    <properties>
     <property name="distancia" type="float" value="200"/>
@@ -1498,11 +1526,6 @@
   <object id="482" type="luz" x="832" y="224" width="96" height="32">
    <properties>
     <property name="distancia" type="float" value="200"/>
-   </properties>
-  </object>
-  <object id="484" type="luz" x="816" y="57.3333">
-   <properties>
-    <property name="distancia" type="float" value="20"/>
    </properties>
   </object>
   <object id="486" type="luz" x="1248" y="928" width="704" height="448">
@@ -1646,7 +1669,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="34" name="Destinos" visible="0" locked="1">
+ <objectgroup id="34" name="Destinos">
   <object id="510" name="QuartoCorredor" x="265.438" y="640.528" width="12.75" height="11.75"/>
   <object id="511" name="spawnpoint" x="41" y="366" width="13.5" height="14"/>
   <object id="513" name="QuartoMaria" x="265.79" y="593.869" width="12.75" height="11.75"/>
@@ -1654,23 +1677,23 @@
   <object id="515" name="BanheiroMaria" x="262.5" y="429.75" width="20.75" height="15.5"/>
   <object id="516" name="Recepcao" x="1032.18" y="271.818" width="15.6364" height="14.9091"/>
   <object id="517" name="CorredorRecepcao" x="1033.09" y="322.364" width="16.5455" height="16.5455"/>
-  <object id="518" name="CorredorJardim" x="1207.25" y="999" width="17.5" height="18"/>
-  <object id="519" name="Jardim" x="1250.5" y="999.75" width="19" height="17"/>
-  <object id="523" name="CorredorEscritorios" x="1986" y="1000.73" width="16.7273" height="14.9091"/>
-  <object id="524" name="Jardim2" x="1935.64" y="1001.64" width="13.8182" height="13.4545"/>
+  <object id="518" name="CorredorJardim" x="1190.38" y="998.5" width="17.5" height="18"/>
+  <object id="519" name="Jardim" x="1265.25" y="999.5" width="19" height="17"/>
+  <object id="523" name="CorredorEscritorios" x="1998.38" y="1000.36" width="16.7273" height="14.9091"/>
+  <object id="524" name="Jardim2" x="1924.89" y="1001.01" width="13.8182" height="13.4545"/>
   <object id="525" name="EscritorioElimar" x="2249.09" y="366.909" width="14.1818" height="14.3636"/>
   <object id="528" name="CorredorEscritorios0" x="2248" y="419.818" width="17.8182" height="18.7273"/>
-  <object id="545" name="Escritorio2" x="2324.44" y="457.438" width="17.5" height="13.625"/>
-  <object id="547" name="CorredorEscritorios2" x="2289.25" y="458.5" width="10.375" height="13.125"/>
-  <object id="548" name="CorredorEscritorios1" x="2210" y="458" width="15.375" height="13.625"/>
-  <object id="549" name="Escritorio1" x="2177.75" y="458.813" width="12.25" height="13"/>
-  <object id="552" name="Escritorio3" x="2178.13" y="617.5" width="12.125" height="11.875"/>
-  <object id="553" name="CorredorEscritorios3" x="2212.75" y="620.125" width="11.625" height="9.75"/>
-  <object id="554" name="CorredorEscritorios5" x="2211.25" y="778.875" width="13.75" height="12.375"/>
-  <object id="556" name="Escritorio5" x="2173.44" y="777.75" width="12.875" height="13.375"/>
-  <object id="557" name="Escritorio6" x="2323.57" y="779.375" width="12" height="10.125"/>
-  <object id="558" name="CorredorEscritorios6" x="2286.63" y="780.25" width="12.5" height="10"/>
-  <object id="559" name="CorredorEscritorios4" x="2289.75" y="619.75" width="11.5" height="10.5"/>
-  <object id="561" name="Escritorio4" x="2324.44" y="619.5" width="12.625" height="10.375"/>
+  <object id="545" name="Escritorio2" x="2328.44" y="448.938" width="17.5" height="13.625"/>
+  <object id="547" name="CorredorEscritorios2" x="2280.13" y="455.25" width="10.375" height="13.125"/>
+  <object id="548" name="CorredorEscritorios1" x="2219.38" y="456.625" width="15.375" height="13.625"/>
+  <object id="549" name="Escritorio1" x="2169.51" y="450.438" width="12.25" height="13"/>
+  <object id="552" name="Escritorio3" x="2170.39" y="608.5" width="12.125" height="11.875"/>
+  <object id="553" name="CorredorEscritorios3" x="2220.75" y="618.125" width="11.625" height="9.75"/>
+  <object id="554" name="CorredorEscritorios5" x="2220.13" y="777.375" width="13.75" height="12.375"/>
+  <object id="556" name="Escritorio5" x="2168.57" y="770.125" width="12.875" height="13.375"/>
+  <object id="557" name="Escritorio6" x="2330.07" y="772.875" width="12" height="10.125"/>
+  <object id="558" name="CorredorEscritorios6" x="2279.51" y="778.625" width="12.5" height="10"/>
+  <object id="559" name="CorredorEscritorios4" x="2281.75" y="618.375" width="11.5" height="10.5"/>
+  <object id="561" name="Escritorio4" x="2327.19" y="609.625" width="12.625" height="10.375"/>
  </objectgroup>
 </map>
