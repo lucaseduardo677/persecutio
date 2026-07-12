@@ -13,6 +13,8 @@ import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTile;
+import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -48,8 +50,8 @@ public class GerenciadorLuzes {
     // Mapa de comodo de cada luz fixa
     private final Map<Light, GerenciadorComodos.Comodo> luzComodo = new HashMap<>();
 
-    // Flag se o ambiente Umbra esta ativo
-    private boolean ambienteUmbraAtivo = false;
+    // Inicia como true para que a primeira chamada setAmbienteUmbra(false) force a atualizacao
+    private boolean ambienteUmbraAtivo = true;
 
     // Contador de frames para otimizacao
     private int contadorFrame = 0;
@@ -125,8 +127,13 @@ public class GerenciadorLuzes {
         }
     }
 
-    // Carrega luzes definidas no Tiled
+    // Carrega luzes definidas no Tiled (versao padrao para compatibilidade)
     public void carregarLuzesDoTiled(TiledMap mapa) {
+        carregarLuzesDoTiled(mapa, false);
+    }
+
+    // Carrega luzes definidas no Tiled separando o comportamento padrao por mundo
+    public void carregarLuzesDoTiled(TiledMap mapa, boolean umbra) {
         MapLayer camada = mapa.getLayers().get("Luzes");
         if (camada == null) return;
 
@@ -157,8 +164,11 @@ public class GerenciadorLuzes {
             float suavidade = lerNumero(props, "suavidade", 20f);
             boolean estatica = lerBool(props, "estatica", true);
             boolean atravessa = lerBool(props, "atravessa", false);
-            boolean noUmbra = lerBool(props, "umbra", true);
-            boolean noReal = lerBool(props, "real", true);
+
+            // Forca o isolamento entre mundos baseando-se estritamente no mapa de origem da carga
+            boolean noUmbra = umbra;
+            boolean noReal  = !umbra;
+
             boolean segue = lerBool(props, "segue", false) || lerBool(props, "segueJogador", false);
             boolean ligada = lerBool(props, "ligada", true) || lerBool(props, "ativo", true);
             float direcao = lerNumero(props, "direcao", 0f);
@@ -224,13 +234,26 @@ public class GerenciadorLuzes {
 
     // Define o ambiente de iluminacao
     public void setAmbienteUmbra(boolean umbra) {
+        // A luz do jogador deve seguir estritamente o estado do mundo umbra,
+        // garantindo que ela seja desativada imediatamente no mundo real.
+        if (luzJogador != null) {
+            luzJogador.setActive(umbra);
+        }
+
         if (ambienteUmbraAtivo == umbra) return;
         ambienteUmbraAtivo = umbra;
 
         if (umbra) {
+            // Ambiente umbra escuro e com tom avermelhado de perigo
             rayHandler.setAmbientLight(0.05f, 0.02f, 0.02f, 0.15f);
+
+            // Define o tamanho reduzido da luz do jogador no Umbra
+            if (luzJogador != null) {
+                luzJogador.setDistance(75f);
+            }
         } else {
-            rayHandler.setAmbientLight(0.4f, 0.4f, 0.45f, 0.6f);
+            // Ambiente do mundo real visivel e claro na dose certa
+            rayHandler.setAmbientLight(0.55f, 0.55f, 0.58f, 0.75f);
         }
     }
 

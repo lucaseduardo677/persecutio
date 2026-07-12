@@ -35,16 +35,41 @@ public class GerenciadorRenderizacao {
         pm.dispose();
     }
 
-    // Desenha NPCs visiveis no mundo atual
+    // Desenha NPCs visiveis aplicando o mesmo culling dos comodos ativos
     public void desenharNpcs(ContextoRender ctx, GerenciadorColisao sistemaColisao,
-                             GerenciadorComodos.Comodo comodoAtual, boolean umbra) {
-        if (comodoAtual == null || !"recepcao".equals(comodoAtual.nomeGrupo)) return;
+                             GerenciadorComodos gerComodos, GerenciadorComodos.Comodo comodoAtual, boolean umbra) {
+
+        List<GerenciadorComodos.Comodo> cullAtivo = gerComodos.getCullAtivo(comodoAtual);
 
         for (EntidadeMapa npc : sistemaColisao.getNpcs(umbra).values()) {
-            ctx.batch.draw(npc.textura,
-                Math.round(npc.area.x + ctx.cameraX),
-                Math.round(npc.area.y + ctx.cameraY),
-                npc.area.width, npc.area.height);
+            boolean desenhar = false;
+
+            if (cullAtivo.isEmpty()) {
+                // Se o jogador nao estiver em nenhum comodo, desenha todos por seguranca
+                desenhar = true;
+            } else {
+                // Encontra qual comodo este NPC ocupa com base no centro de sua hitbox
+                float cx = npc.area.x + npc.area.width / 2f;
+                float cy = npc.area.y + npc.area.height / 2f;
+                GerenciadorComodos.Comodo comodoNpc = gerComodos.achar(cx, cy);
+
+                if (comodoNpc != null) {
+                    // Desenha o NPC apenas se o comodo dele estiver na lista de comodos ativos
+                    for (GerenciadorComodos.Comodo c : cullAtivo) {
+                        if (c == comodoNpc) {
+                            desenhar = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (desenhar) {
+                ctx.batch.draw(npc.textura,
+                    Math.round(npc.area.x + ctx.cameraX),
+                    Math.round(npc.area.y + ctx.cameraY),
+                    npc.area.width, npc.area.height);
+            }
         }
     }
 

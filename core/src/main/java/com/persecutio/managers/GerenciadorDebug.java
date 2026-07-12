@@ -29,6 +29,10 @@ public class GerenciadorDebug {
     // Cor do jogador no debug
     private static final Color COR_JOGADOR    = Color.valueOf("#ff2626");
 
+    // Novas cores para o puzzle da Missão 2
+    private static final Color COR_PEDRA      = Color.ORANGE;
+    private static final Color COR_OBJETIVO   = Color.PINK;
+
     // Folga do alcance de interacao
     private static final float FOLGA_PORTA = 24f;
 
@@ -65,7 +69,7 @@ public class GerenciadorDebug {
         }
     }
 
-    // Desenha hitboxes na tela
+    // Desenha hitboxes na tela, incluindo as pedras e objetivos da Missao 2
     public void desenharHitboxes(TelaJogo jogo, float cameraX, float cameraY) {
         shapes.begin(ShapeType.Line);
 
@@ -82,13 +86,25 @@ public class GerenciadorDebug {
             shapes.rect(npc.area.x + cameraX, npc.area.y + cameraY, npc.area.width, npc.area.height);
 
         shapes.setColor(COR_PORTA);
-        for (GerenciadorColisao.ObjetoColisao p : jogo.sistemaColisao.getHitboxPortasCompletas())
+        for (GerenciadorPortas.Porta p : jogo.gerPortas.getPortas())
             shapes.rect(p.area.x + cameraX, p.area.y + cameraY, p.area.width, p.area.height);
 
         shapes.setColor(COR_OBJETO);
         for (GerenciadorColisao.ObjetoColisao obj : jogo.sistemaColisao.getObjetosColisaoCompletos()) {
             if (obj.isAtivo(jogo.mundoUmbra))
                 shapes.rect(obj.area.x + cameraX, obj.area.y + cameraY, obj.area.width, obj.area.height);
+        }
+
+        // Desenha as pedras empurráveis da Missão 2 no debug
+        shapes.setColor(COR_PEDRA);
+        for (GerenciadorColisao.ObjetoColisao pedra : jogo.sistemaColisao.getMapaPedras().values()) {
+            shapes.rect(pedra.area.x + cameraX, pedra.area.y + cameraY, pedra.area.width, pedra.area.height);
+        }
+
+        // Desenha as marcas de objetivos das pedras no debug
+        shapes.setColor(COR_OBJETIVO);
+        for (Rectangle obj : jogo.sistemaColisao.getMapaObjetivos().values()) {
+            shapes.rect(obj.x + cameraX, obj.y + cameraY, obj.width, obj.height);
         }
 
         shapes.setColor(COR_ALCANCE);

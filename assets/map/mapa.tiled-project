@@ -30,6 +30,41 @@
             ]
         },
         {
+            "color": "#ffa4002c",
+            "drawFill": true,
+            "id": 10,
+            "members": [
+                {
+                    "name": "condicao",
+                    "type": "string",
+                    "value": ""
+                },
+                {
+                    "name": "real",
+                    "type": "bool",
+                    "value": false
+                },
+                {
+                    "name": "umbra",
+                    "type": "bool",
+                    "value": false
+                }
+            ],
+            "name": "interativos",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
             "color": "#ffffea00",
             "drawFill": true,
             "id": 9,

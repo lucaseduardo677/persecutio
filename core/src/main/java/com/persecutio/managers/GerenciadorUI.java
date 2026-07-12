@@ -18,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.persecutio.entities.Jogador;
 
@@ -37,10 +38,13 @@ public class GerenciadorUI {
     public static final int UI_FADE    = 5;
     public static final int UI_DIALOGO = 6;
 
-    // Fases do fade
+    // Fases do fade de tela
     private enum FaseFade { INATIVO, ESCURECENDO, ESCURO, VIDEO, AGUARDANDO, CLAREANDO }
 
-    // Estado atual da UI
+    // Estados de exibição da mensagem de missão centralizada
+    private enum EstadoMissao { ENTRADA, VISIVEL, SAIDA, CONCLUIDA }
+
+    // State atual da UI
     private int     estadoUi       = UI_JOGO;
     // Flag para mostrar mensagem de area liberada
     private boolean mostrarLiberada = false;
@@ -49,25 +53,21 @@ public class GerenciadorUI {
     private float timerNpc   = -1f;
     // Timer da mensagem verde
     private float timerVerde = -1f;
-    // Timer da missao exibida no centro da tela
-    private float timerMissaoCentro = -1f;
 
-    // Opacidade do tutorial
-    private float opacidade = 1.0f;
-    // Flag para mostrar a missao no centro apos o tutorial
-    private boolean mostrarMissaoCentro = false;
-    // Flag para manter a missao fixa no topo da tela
-    private boolean mostrarMissaoTopo = false;
-    // Flag para agendar a missao inicial uma unica vez
-    private boolean missaoInicialAgendada = false;
+    // Estados e variáveis para controle de fade da missão
+    private EstadoMissao estadoMissao = EstadoMissao.ENTRADA;
+    private float timerMissao = 0f;
+    private float alphaMissao = 0f;
+    private static final float TEMPO_FADE_MISSAO = 1.5f;
+    private static final float TEMPO_VISIVEL_MISSAO = 3.0f;
 
     // Referencia ao progresso para acompanhar mudancas de missao
     private GerenciadorProgresso progresso;
     // Missao atualmente exibida na UI
     private int missaoExibida = 1;
     // Texto da missao e objetivo em exibicao
-    private String tituloMissaoAtual = "Missao 1 — Primeiros Passos";
-    private String objetivoMissaoAtual = "Objetivo inicial: Va ate a recepcao.";
+    private String tituloMissaoAtual = "Primeiros Passos";
+    private String objetivoMissaoAtual = "Va ate a recepcao.";
 
     // Flag se esta pausado
     private boolean pausado    = false;
@@ -87,8 +87,8 @@ public class GerenciadorUI {
     // Cache de texturas carregadas dinamicamente
     private final Map<String, Texture> cacheTexturas = new HashMap<>();
 
-    // Duracao do fade
-    private static final float T_FADE   = 0.6f;
+    // Duracao do fade (curto para transição rápida)
+    private static final float T_FADE   = 0.3f;
     // Tempo de espera entre fades
     private static final float T_ESPERA = 0.3f;
 
@@ -102,6 +102,9 @@ public class GerenciadorUI {
     // Acao a executar ao escurecer
     private Runnable aoEscurecer;
 
+    // Timer para ignorar inputs logo apos a transicao
+    private float timerInput = 0f;
+
     // Textura branca para overlays
     private Texture         texBranca;
     // Gerenciador de video
@@ -111,7 +114,7 @@ public class GerenciadorUI {
 
     // Coordenadas do mouse
     private final Vector2     mouse   = new Vector2();
-    // Medidor de texto
+    // Medidor de text
     private final GlyphLayout medidor = new GlyphLayout();
 
     // Ultimo prompt interativo exibido
@@ -159,27 +162,54 @@ public class GerenciadorUI {
         }
     }
 
-    // Atualiza os textos de missao conforme o estado atual
+    // Atualiza os textos de missao conforme o estado atual (sem prefixo numerico)
     private void atualizarTextoMissao() {
         if (progresso == null) return;
 
         int missaoAtual = Math.max(1, progresso.getMissao());
+        int fase = progresso.getFaseMissao();
         switch (missaoAtual) {
             case 1:
-                tituloMissaoAtual = "Missao 1 — Primeiros Passos";
-                objetivoMissaoAtual = "Objetivo inicial: Va ate a recepcao.";
+                tituloMissaoAtual = "Primeiros Passos";
+                if (fase == 0) {
+                    objetivoMissaoAtual = "Va ate a recepcao.";
+                } else if (fase == 1) {
+                    objetivoMissaoAtual = "Fale com a recepcionista.";
+                } else if (fase == 2) {
+                    objectiveMudaParaPílula(); // objetivo: Volte ao seu quarto e tome o remedio.
+                } else if (fase == 3) {
+                    objetivoMissaoAtual = "Saia do quarto.";
+                } else if (fase == 4) {
+                    objetivoMissaoAtual = "Descubra como abrir a porta.";
+                } else {
+                    objetivoMissaoAtual = "Leia o documento na recepcao.";
+                }
                 break;
             case 2:
-                tituloMissaoAtual = "Missao 2 — Relatorio de Incidente";
-                objetivoMissaoAtual = "Objetivo: Leia o relatorio na recepcao.";
+                tituloMissaoAtual = "Ecos do Jardim";
+                if (fase == 0) {
+                    objetivoMissaoAtual = "Tome seu remedio.";
+                } else if (fase == 1) {
+                    objetivoMissaoAtual = "Investigue a origem do som.";
+                } else if (fase == 2) {
+                    objetivoMissaoAtual = "Descubra como abrir a porta que leva aos escritorios.";
+                } else if (fase == 3) {
+                    objetivoMissaoAtual = "Verifique a porta do Jardim.";
+                } else {
+                    objetivoMissaoAtual = "Atravesse a porta do Jardim.";
+                }
                 break;
             default:
-                tituloMissaoAtual = "Missao " + missaoAtual;
-                objetivoMissaoAtual = "Objetivo em andamento.";
+                tituloMissaoAtual = "Objetivo Atual";
+                objetivoMissaoAtual = "Continue explorando.";
                 break;
         }
 
         missaoExibida = missaoAtual;
+    }
+
+    private void objectiveMudaParaPílula() {
+        objetivoMissaoAtual = "Volte ao seu quarto e tome o remedio.";
     }
 
     // Toca som de selecao
@@ -189,9 +219,22 @@ public class GerenciadorUI {
         }
     }
 
-    // Atualiza timers da UI
+    // Retorna se o jogador esta bloqueado de se mover ou interagir
+    public boolean isBloqueado() {
+        return estadoUi == UI_FADE || estadoUi == UI_NPC || estadoUi == UI_SENHA || estadoUi == UI_DIALOGO || estadoMissao != EstadoMissao.CONCLUIDA || timerInput > 0f || (progresso != null && progresso.getFaseMissao() == 6);
+    }
+
+    // Atualiza timers da UI e faz o controle de fluxo da exibicao de missao
     public void atualizarTimers(float delta) {
         if (audio != null) audio.atualizar(delta);
+
+        // Deduz tempo do bloqueio de input pos-transicao
+        if (timerInput > 0f) {
+            timerInput -= delta;
+            if (timerInput < 0f) {
+                timerInput = 0f;
+            }
+        }
 
         if (timerNpc > 0) {
             timerNpc -= delta;
@@ -227,7 +270,7 @@ public class GerenciadorUI {
                     if (video.isPreparado()) {
                         video.iniciar();
                         faseFade = FaseFade.VIDEO;
-                        if (audio != null) audio.iniciarFadeOut();
+                        if (audio != null) audio.iniciarFadeOut(T_FADE);
                     } else {
                         faseFade  = FaseFade.AGUARDANDO;
                         timerFade = 0f;
@@ -243,7 +286,7 @@ public class GerenciadorUI {
                 if (!videoAtivo) {
                     faseFade  = FaseFade.AGUARDANDO;
                     timerFade = 0f;
-                    if (audio != null) audio.iniciarFadeIn();
+                    if (audio != null) audio.iniciarFadeIn(T_FADE);
                 }
                 break;
 
@@ -259,7 +302,16 @@ public class GerenciadorUI {
                 if (timerFade >= T_FADE) {
                     alfaFade = 0f;
                     faseFade = FaseFade.INATIVO;
-                    estadoUi = UI_JOGO;
+
+                    // Mantem estado de dialogo se estiver ativo
+                    if (dialogo != null && dialogo.estaAtivo()) {
+                        estadoUi = UI_DIALOGO;
+                    } else {
+                        estadoUi = UI_JOGO;
+                    }
+
+                    // Inicia bloqueio total de 0.5 segundos logo apos o fade terminar
+                    timerInput = 0.5f;
                 }
                 break;
 
@@ -287,8 +339,21 @@ public class GerenciadorUI {
     public boolean isFadeAtivo() { return faseFade != FaseFade.INATIVO; }
 
     // Processa input do jogador
+    public boolean pusrInput(ExtendViewport viewport) {
+        return puxarInput(viewport);
+    }
+
     public boolean puxarInput(ExtendViewport viewport) {
-        if (estadoUi == UI_FADE) return true;
+        // Ignora totalmente se estiver em transicao ou sob bloqueio pos-transicao
+        if (estadoUi == UI_FADE || timerInput > 0f) return true;
+
+        // Se estiver aguardando acordar no final da Missao 1, consome input de movimento de forma estrita
+        if (progresso != null && progresso.getFaseMissao() == 6) {
+            if (Gdx.input.isKeyJustPressed(Keys.E) || Gdx.input.isKeyJustPressed(Keys.ENTER)) {
+                return false; // Permite que a TelaJogo leia a interacao para acordar
+            }
+            return true;
+        }
 
         if (Gdx.input.isKeyJustPressed(Keys.ESCAPE)) {
             if (estadoUi == UI_PORTA) {
@@ -418,29 +483,41 @@ public class GerenciadorUI {
         timerNpc = 3f;
     }
 
-    // Atualiza opacidade do tutorial e agenda a missao inicial
+    // Gerencia o fluxo da exibicao central da missao por fatias de tempo
     public void atualizarTutorial(boolean andando, float delta) {
         if (progresso != null && missaoExibida != progresso.getMissao()) {
             atualizarTextoMissao();
-            mostrarMissaoTopo = true;
+            // Reseta a maquina de estados para rodar o fade da nova missao
+            estadoMissao = EstadoMissao.ENTRADA;
+            timerMissao = 0f;
+            alphaMissao = 0f;
         }
 
-        if (andando && opacidade > 0f) {
-            opacidade = Math.max(0f, opacidade - 1.5f * delta);
-        }
-
-        if (!missaoInicialAgendada && opacidade <= 0f) {
-            missaoInicialAgendada = true;
-            timerMissaoCentro = 4f;
-        }
-
-        if (timerMissaoCentro >= 0f) {
-            mostrarMissaoCentro = true;
-            timerMissaoCentro -= delta;
-            if (timerMissaoCentro <= 0f) {
-                timerMissaoCentro = -1f;
-                mostrarMissaoCentro = false;
-                mostrarMissaoTopo = true;
+        if (estadoMissao != EstadoMissao.CONCLUIDA) {
+            timerMissao += delta;
+            switch (estadoMissao) {
+                case ENTRADA:
+                    alphaMissao = Math.min(1f, timerMissao / TEMPO_FADE_MISSAO);
+                    if (timerMissao >= TEMPO_FADE_MISSAO) {
+                        alphaMissao = 1f;
+                        estadoMissao = EstadoMissao.VISIVEL;
+                        timerMissao = 0f;
+                    }
+                    break;
+                case VISIVEL:
+                    alphaMissao = 1f;
+                    if (timerMissao >= TEMPO_VISIVEL_MISSAO) {
+                        estadoMissao = EstadoMissao.SAIDA;
+                        timerMissao = 0f;
+                    }
+                    break;
+                case SAIDA:
+                    alphaMissao = Math.max(0f, 1f - (timerMissao / TEMPO_FADE_MISSAO));
+                    if (timerMissao >= TEMPO_FADE_MISSAO) {
+                        alphaMissao = 0f;
+                        estadoMissao = EstadoMissao.CONCLUIDA;
+                    }
+                    break;
             }
         }
     }
@@ -454,7 +531,7 @@ public class GerenciadorUI {
     // Retorna se esta na tela de senha
     public boolean isSenha()      { return estadoUi == UI_SENHA; }
 
-    // Atualiza puzzle de senha
+    // slot para atualizar senha
     public void   atualizarSenha(float delta) {
         if (puzzle != null) { puzzle.atualizar(delta); if (!puzzle.isAberto()) estadoUi = UI_JOGO; }
     }
@@ -480,36 +557,44 @@ public class GerenciadorUI {
         ctx.batch.setColor(Color.WHITE);
     }
 
-    // Desenha texto centralizado na tela
+    // Desenha text centralizado na tela
     private void desenharCentralizado(ContextoRender ctx, BitmapFont fonte, String texto, float offsetY) {
         medidor.setText(fonte, texto);
         fonte.draw(ctx.batch, texto, ctx.centroX - medidor.width / 2f, ctx.centroY + offsetY);
     }
 
-    // Desenha tutorial na tela
+    // Desenha tutoriais e o HUD de missao usando estritamente a fonte_indicadores.ttf
     public void desenharTutorial(ContextoRender ctx) {
-        if (opacidade > 0f) {
-            ctx.fonteIndicadores.setColor(0.78f, 0.78f, 0.78f, opacidade);
-            desenharCentralizado(ctx, ctx.fonteIndicadores, "Use as setas ou W A S D para andar...", 120);
-            desenharCentralizado(ctx, ctx.fonteIndicadores, "Pressione [E] para investigar...", 150);
+        // Se a missao ainda nao concluiu a transicao centralizada, desenha com fade e tooltip de controles refinada
+        if (estadoMissao != EstadoMissao.CONCLUIDA) {
+            ctx.fonteIndicadores.setColor(1f, 1f, 1f, alphaMissao);
+            desenharCentralizado(ctx, ctx.fonteIndicadores, tituloMissaoAtual, 40f);
+            desenharCentralizado(ctx, ctx.fonteIndicadores, objetivoMissaoAtual, 15f);
+
+            // Exibe a tooltip de controles logo abaixo de forma polida e refinada apenas se for o inicio do jogo (Missao 1)
+            if (missaoExibida == 1) {
+                ctx.fonteIndicadores.setColor(0.72f, 0.72f, 0.72f, alphaMissao);
+                desenharCentralizado(ctx, ctx.fonteIndicadores, "[WASD / Setas] Mover  •  [E] Interagir  •  [TAB] Ver Objetivos", -20f);
+            }
             ctx.fonteIndicadores.setColor(Color.WHITE);
             return;
         }
 
-        if (mostrarMissaoCentro) {
+        // Exibe o HUD no canto superior esquerdo de forma temporaria apenas ao pressionar TAB
+        if (Gdx.input.isKeyPressed(Keys.TAB)) {
             ctx.fonteIndicadores.setColor(Color.WHITE);
-            desenharCentralizado(ctx, ctx.fonteIndicadores, tituloMissaoAtual, 0f);
-            desenharCentralizado(ctx, ctx.fonteDialogos, objetivoMissaoAtual, -24f);
-            return;
+            ctx.fonteIndicadores.draw(ctx.batch, tituloMissaoAtual, 10f, ctx.vAltura - 18f);
+            ctx.fonteIndicadores.setColor(0.72f, 0.72f, 0.72f, 1f);
+            ctx.fonteIndicadores.draw(ctx.batch, objetivoMissaoAtual, 10f, ctx.vAltura - 40f);
+            ctx.fonteIndicadores.setColor(Color.WHITE);
         }
 
-        if (!mostrarMissaoTopo) return;
-
-        ctx.fonteIndicadores.setColor(Color.WHITE);
-        ctx.fonteIndicadores.draw(ctx.batch, tituloMissaoAtual, 10f, ctx.vAltura - 18f);
-        ctx.fonteDialogos.setColor(0.92f, 0.92f, 0.92f, 1f);
-        ctx.fonteDialogos.draw(ctx.batch, objetivoMissaoAtual, 10f, ctx.vAltura - 44f);
-        ctx.fonteDialogos.setColor(Color.WHITE);
+        // Se o jogador possuir a cartela de pilulas no mundo real, desenha a tooltip meio apagada no canto inferior esquerdo
+        if (progresso != null && !progresso.isUmbra() && progresso.hasCartela()) {
+            ctx.fonteIndicadores.setColor(0.5f, 0.5f, 0.5f, 0.6f);
+            ctx.fonteIndicadores.draw(ctx.batch, "Aperte [P] para tomar a pilula", 15f, 25f);
+            ctx.fonteIndicadores.setColor(Color.WHITE);
+        }
     }
 
     // Desenha tela de NPC
@@ -525,128 +610,166 @@ public class GerenciadorUI {
 
         ctx.batch.draw(imgEspelho, 0, 0, ctx.vLargura, ctx.vAltura);
 
-        ctx.fonteDialogos.setColor(Color.WHITE);
-        desenharCentralizado(ctx, ctx.fonteDialogos, "Pressione [ESC] ou [E] para fechar", -80);
+        ctx.fonteIndicadores.setColor(Color.WHITE);
+        desenharCentralizado(ctx, ctx.fonteIndicadores, "Pressione [ESC] ou [E] para fechar", -80);
     }
 
-    // Desenha tela da porta
-    public void desenharPorta(ContextoRender ctx,
-                              Texture p0, Texture p1, Texture p2, Texture p3, int partes) {
+    // Desenha tela da porta trancada por senha (requisito de pecas removido)
+    public void desenharPorta(ContextoRender ctx, Texture p0) {
         desenharEscuro(ctx);
 
-        Texture img = partes >= 2 ? p2 : partes == 1 ? p1 : p0;
-        ctx.batch.draw(img, ctx.centroX - 200, ctx.centroY - 200, 400, 400);
+        ctx.batch.draw(p0, ctx.centroX - 200, ctx.centroY - 200, 400, 400);
 
-        if (partes >= 2) {
-            ctx.fonteDialogos.setColor(Color.GREEN);
-            desenharCentralizado(ctx, ctx.fonteDialogos, "AREA LIBERADA NO MUNDO UMBRA", -220);
-        } else {
-            ctx.fonteDialogos.setColor(Color.WHITE);
-            desenharCentralizado(ctx, ctx.fonteDialogos, "Faltam pecas (" + partes + "/2)", -220);
-        }
-        ctx.fonteDialogos.setColor(Color.WHITE);
-        desenharCentralizado(ctx, ctx.fonteDialogos, "Pressione [ESC] ou [E] para fechar", -260);
+        ctx.fonteIndicadores.setColor(Color.RED);
+        desenharCentralizado(ctx, ctx.fonteIndicadores, "PORTA TRANCADA", -220);
+
+        ctx.fonteIndicadores.setColor(Color.WHITE);
+        desenharCentralizado(ctx, ctx.fonteIndicadores, "Encontre a senha de 4 digitos na gaveta do quarto.", -240);
+        desenharCentralizado(ctx, ctx.fonteIndicadores, "Pressione [ESC] ou [E] para fechar", -270);
     }
 
-    // Desenha caixa de dialogo
-        public void desenharDialogo(ContextoRender ctx) {
-            if (dialogo == null || !dialogo.estaAtivo()) return;
+    // Desenha gradiente vertical no rodape para os dialogos sem foto
+    private void desenharGradiente(ContextoRender ctx, float altura) {
+        float[] vertices = new float[20];
+        Color rCor = Color.valueOf("#0D0D0D");
 
-            // Fundo preenchido modular vindo do dialogo
-            Color corBg   = dialogo.getCorFundo();
-            float alphaBg = dialogo.getOpacidade();
+        // Cores empacotadas para o gradiente vertical (baixo opaco para cima transparente)
+        float corBaixo = new Color(rCor.r, rCor.g, rCor.b, 1.0f).toFloatBits();
+        float corCima  = new Color(rCor.r, rCor.g, rCor.b, 0.0f).toFloatBits();
 
-            Gdx.gl.glEnable(GL20.GL_BLEND);
-            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-            ctx.batch.setColor(corBg.r, corBg.g, corBg.b, alphaBg);
+        // Bottom-left (baixo esquerda)
+        vertices[0] = 0f;
+        vertices[1] = 0f;
+        vertices[2] = corBaixo;
+        vertices[3] = 0f;
+        vertices[4] = 0f;
+
+        // Top-left (cima esquerda)
+        vertices[5] = 0f;
+        vertices[6] = altura;
+        vertices[7] = corCima;
+        vertices[8] = 0f;
+        vertices[9] = 1f;
+
+        // Top-right (cima direita)
+        vertices[10] = ctx.vLargura;
+        vertices[11] = altura;
+        vertices[12] = corCima;
+        vertices[13] = 1f;
+        vertices[14] = 1f;
+
+        // Bottom-right (baixo direita)
+        vertices[15] = ctx.vLargura;
+        vertices[16] = 0f;
+        vertices[17] = corBaixo;
+        vertices[18] = 1f;
+        vertices[19] = 0f;
+
+        ctx.batch.draw(texBranca, vertices, 0, 20);
+    }
+
+    // Desenha caixa de dialogo aplicando as predefinicoes de fundo e retrato automaticamente
+    public void desenharDialogo(ContextoRender ctx) {
+        if (dialogo == null || !dialogo.estaAtivo()) return;
+
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        String path = dialogo.getRetrato();
+        boolean temFoto = path != null && !path.isEmpty();
+
+        if (temFoto) {
+            // Predefinicao A: Fundo com a cor #0D0D0D solida na tela inteira
+            ctx.batch.setColor(Color.valueOf("#0D0D0D"));
             ctx.batch.draw(texBranca, 0, 0, ctx.vLargura, ctx.vAltura);
             ctx.batch.setColor(Color.WHITE);
 
             // Resolve textura usando o cache dinâmico de caminhos
-            String path = dialogo.getRetrato();
-            Texture texRetrato = null;
-
-            if (path != null && !path.isEmpty()) {
-                texRetrato = cacheTexturas.get(path);
-                if (texRetrato == null) {
-                    if (Gdx.files.internal(path).exists()) {
-                        texRetrato = new Texture(Gdx.files.internal(path));
-                        texRetrato.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-                        cacheTexturas.put(path, texRetrato);
-                    }
-                }
-            }
-
-            // Caso a textura seja nula, desenha caixa branca
+            Texture texRetrato = cacheTexturas.get(path);
             if (texRetrato == null) {
-                texRetrato = texBranca;
-            }
-
-            // Limites maximos da caixa de retrato
-            float maxLarg = 220f;
-            float maxAlt  = 220f;
-
-            // Calcula proporcao para nao distorcer a imagem
-            float proporcao = (float) texRetrato.getWidth() / texRetrato.getHeight();
-            float largRetrato = maxLarg;
-            float altRetrato  = maxAlt;
-
-            if (proporcao > 1f) {
-                altRetrato = maxLarg / proporcao;
-            } else {
-                largRetrato = maxAlt * proporcao;
-            }
-
-            // Calcula posicoes de desenho centralizadas
-            float posXRetrato = ctx.centroX - (largRetrato / 2f);
-            float posYRetrato = ctx.centroY - 30f;
-
-            ctx.batch.draw(texRetrato, posXRetrato, posYRetrato, largRetrato, altRetrato);
-
-            // Posicao base do texto colada na borda inferior da tela, deslocada 25px para cima
-            float baseX = ctx.centroX;
-            float baseY = ctx.vAltura  * 0.25f;
-            float nomeY = baseY + 30f;
-
-            String falante = dialogo.getFalante();
-            String texto   = dialogo.getTexto();
-
-            if (!falante.isEmpty()) {
-                String textoNome = falante + ": ";
-                ctx.fonteNomes.setColor(Color.ORANGE);
-                medidor.setText(ctx.fonteNomes, textoNome);
-                float nomeX = baseX - (medidor.width / 2f);
-                ctx.fonteNomes.draw(ctx.batch, textoNome, nomeX, nomeY);
-                ctx.fonteNomes.setColor(Color.WHITE);
-            }
-
-            ctx.fonteDialogos.setColor(Color.WHITE);
-            medidor.setText(ctx.fonteDialogos, texto);
-            float textoX = baseX - (medidor.width / 2f);
-            ctx.fonteDialogos.draw(ctx.batch, texto, textoX, baseY);
-
-            // Lista de escolhas
-            List<String> escolhas = dialogo.getEscolhas();
-            float linhaY = baseY - 35f;
-
-            if (escolhas.isEmpty()) {
-                ctx.fonteIndicadores.setColor(Color.GRAY);
-                medidor.setText(ctx.fonteIndicadores, "> [E] Continuar");
-                ctx.fonteIndicadores.draw(ctx.batch, "> [E] Continuar", baseX - (medidor.width / 2f), linhaY);
-                ctx.fonteIndicadores.setColor(Color.WHITE);
-            } else {
-                for (int i = 0; i < escolhas.size(); i++) {
-                    String prefixo = (i == escolhaDialogo) ? "> " : "  ";
-                    ctx.fonteDialogos.setColor((i == escolhaDialogo) ? Color.YELLOW : Color.WHITE);
-                    medidor.setText(ctx.fonteDialogos, prefixo + escolhas.get(i));
-                    ctx.fonteDialogos.draw(ctx.batch, prefixo + escolhas.get(i), baseX - (medidor.width / 2f), linhaY);
-                    linhaY -= 25f;
+                if (Gdx.files.internal(path).exists()) {
+                    texRetrato = new Texture(Gdx.files.internal(path));
+                    texRetrato.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+                    cacheTexturas.put(path, texRetrato);
                 }
-                ctx.fonteDialogos.setColor(Color.WHITE);
             }
+
+            if (texRetrato != null) {
+                // Limites maximos da caixa de retrato
+                float maxLarg = 220f;
+                float maxAlt  = 220f;
+
+                // Calcula proporcao para nao distorcer a imagem
+                float proporcao = (float) texRetrato.getWidth() / texRetrato.getHeight();
+                float largRetrato = maxLarg;
+                float altRetrato  = maxAlt;
+
+                if (proporcao > 1f) {
+                    altRetrato = maxLarg / proporcao;
+                } else {
+                    largRetrato = maxAlt * proporcao;
+                }
+
+                // Calcula posicoes de desenho centralizadas
+                float posXRetrato = ctx.centroX - (largRetrato / 2f);
+                float posYRetrato = ctx.centroY - 30f;
+
+                ctx.batch.draw(texRetrato, posXRetrato, posYRetrato, largRetrato, altRetrato);
+            }
+        } else {
+            // Predefinicao B: Fundo com apenas um gradiente de #0D0D0D ate transparente englobando apenas a area do dialogo
+            float alturaDialogo = ctx.vAltura * 0.42f; // cobre de forma suave a area do texto e opcoes
+            desenharGradiente(ctx, alturaDialogo);
         }
 
-    // Desenha fade e video
+        // Posicao base do texto colada na borda inferior da tela, deslocada 25px para cima
+        float baseX = ctx.centroX;
+        float baseY = ctx.vAltura  * 0.25f;
+        float nomeY = baseY + 30f;
+
+        String falante = dialogo.getFalante();
+        String texto   = dialogo.getTexto();
+
+        // Oculta o nome de Maria (a protagonista) para dar efeito de reflexão/pensamento interno
+        if (!falante.isEmpty() && !"maria".equalsIgnoreCase(falante)) {
+            String textoNome = falante + ": ";
+            ctx.fonteNomes.setColor(Color.ORANGE);
+            medidor.setText(ctx.fonteNomes, textoNome);
+            float nomeX = baseX - (medidor.width / 2f);
+            ctx.fonteNomes.draw(ctx.batch, textoNome, nomeX, nomeY);
+            ctx.fonteNomes.setColor(Color.WHITE);
+        }
+
+        ctx.fonteDialogos.setColor(Color.WHITE);
+
+        // Divide e quebra as linhas de dialogo de forma automatica para caber em qualquer resolucao de tela de forma centrada
+        float largTexto = ctx.vLargura - 100f;
+        medidor.setText(ctx.fonteDialogos, texto, Color.WHITE, largTexto, Align.center, true);
+        float textoX = baseX - (largTexto / 2f);
+        ctx.fonteDialogos.draw(ctx.batch, medidor, textoX, baseY);
+
+        // Lista de escolhas
+        List<String> escolhas = dialogo.getEscolhas();
+        float javaY = baseY - 35f;
+
+        if (escolhas.isEmpty()) {
+            ctx.fonteIndicadores.setColor(Color.GRAY);
+            medidor.setText(ctx.fonteIndicadores, "> [E] Continuar");
+            ctx.fonteIndicadores.draw(ctx.batch, "> [E] Continuar", baseX - (medidor.width / 2f), javaY);
+            ctx.fonteIndicadores.setColor(Color.WHITE);
+        } else {
+            for (int i = 0; i < escolhas.size(); i++) {
+                String prefixo = (i == escolhaDialogo) ? "> " : "  ";
+                ctx.fonteDialogos.setColor((i == escolhaDialogo) ? Color.YELLOW : Color.WHITE);
+                medidor.setText(ctx.fonteDialogos, prefixo + escolhas.get(i));
+                ctx.fonteDialogos.draw(ctx.batch, prefixo + escolhas.get(i), baseX - (medidor.width / 2f), javaY);
+                javaY -= 25f;
+            }
+            ctx.fonteDialogos.setColor(Color.WHITE);
+        }
+    }
+
+    // Desenha fade e video de transicao
     public void desenharFadeEVideo(ContextoRender ctx) {
         if (faseFade == FaseFade.INATIVO) return;
 
@@ -682,7 +805,7 @@ public class GerenciadorUI {
         ctx.batch.end();
     }
 
-    // Desenha avisos e prompts interativos
+    // Desenha avisos e prompts interativos utilizando fonte_indicadores.ttf
     public void desenharAvisos(ContextoRender ctx, GerenciadorColisao sistemaColisao,
                                Jogador jogador, boolean mundoUmbra, boolean destrancada,
                                String aviso, boolean falouComEnfermeira) {
@@ -695,18 +818,29 @@ public class GerenciadorUI {
         String prompt = null;
 
         if (!mundoUmbra) {
-            if (sobreArea(rectTemp, sistemaColisao.getArea("pilula",      false))) {
-                if (!falouComEnfermeira)
-                    prompt = "Fale com a Enfermeira na recepcao primeiro";
-                else
-                    prompt = "Aperte [E] para tomar a Pilula";
-            } else if (sobreArea(rectTemp, sistemaColisao.getArea("paciente",  false))
-                  || sobreArea(rectTemp, sistemaColisao.getArea("npcRecepcao", false)))
-                prompt = "Aperte [E] para falar com o Paciente";
-            else if (sobreArea(rectTemp, sistemaColisao.getArea("enfermeira",false)))
-                prompt = "Aperte [E] para falar com a Enfermeira";
-            else if (sobreArea(rectTemp, sistemaColisao.getArea("documento", false)))
-                prompt = "Aperte [E] para ler o Papel";
+            // Verifica se esta encarando alguma pedra para empurrar (Missão 2, Fase 2) no mundo real
+            if (progresso.getMissao() == 2 && progresso.getFaseMissao() == 2) {
+                GerenciadorColisao.ObjetoColisao pedra = sistemaColisao.acharPedraEncarada(jogador, mundoUmbra);
+                if (pedra != null) {
+                    prompt = "Aperte [E] para Empurrar";
+                }
+            }
+
+            if (prompt == null) {
+                if (sobreArea(rectTemp, sistemaColisao.getArea("pilula",      false))) {
+                    // A prompt da pílula só aparece na tela após falar com a enfermeira
+                    if (falouComEnfermeira) {
+                        prompt = "Aperte [E] para tomar a Pilula";
+                    }
+                } else if (sobreArea(rectTemp, sistemaColisao.getArea("enfermeira",false))
+                      || sobreArea(rectTemp, sistemaColisao.getArea("npcRecepcao", false))) {
+                    // A enfermeira e a recepcionista sao tratadas de forma unificada como Enfermeira
+                    prompt = "Aperte [E] para falar com a Enfermeira";
+                } else if (sobreArea(rectTemp, sistemaColisao.getArea("documento", false))
+                      || sobreArea(rectTemp, sistemaColisao.getArea("documento1", false))) {
+                    prompt = "Aperte [E] para ler o Papel";
+                }
+            }
         } else {
             if (sobreArea(rectTemp, sistemaColisao.getArea("cama",    true)))
                 prompt = "Aperte [E] para Acordar";
@@ -716,6 +850,20 @@ public class GerenciadorUI {
                 prompt = "Aperte [E] para olhar no Espelho";
             else if (sobreArea(rectTemp, sistemaColisao.getArea("gaveta",  true)))
                 prompt = "Aperte [E] para abrir a Gaveta";
+            else if (sobreArea(rectTemp, sistemaColisao.getArea("documento",  true))
+                  || sobreArea(rectTemp, sistemaColisao.getArea("documento1",  true)))
+                prompt = "Aperte [E] para ler o Documento";
+
+            // Prompt do documento opcional de jardim no Umbra (Fase 3 ou superior)
+            if (prompt == null && progresso.getFaseMissao() >= 3) {
+                Rectangle bancoArea = sistemaColisao.getArea("banco", true);
+                if (bancoArea == null) {
+                    bancoArea = sistemaColisao.getArea("banco_jardim", true);
+                }
+                if (sobreArea(rectTemp, bancoArea)) {
+                    prompt = "Aperte [E] para ler o Documento Opcional";
+                }
+            }
         }
 
         if (prompt != null) {
@@ -728,16 +876,15 @@ public class GerenciadorUI {
         if (!aviso.isEmpty()) {
             if (aviso.contains(": ")) {
                 String[] p = aviso.split(": ", 2);
-                ctx.fonteNomes.setColor(Color.ORANGE);
-                desenharCentralizado(ctx, ctx.fonteNomes, p[0], 80);
-                ctx.fonteDialogos.setColor(Color.YELLOW);
-                desenharCentralizado(ctx, ctx.fonteDialogos, p[1], 50);
-                ctx.fonteNomes.setColor(Color.WHITE);
+                ctx.fonteIndicadores.setColor(Color.ORANGE);
+                desenharCentralizado(ctx, ctx.fonteIndicadores, p[0], 80);
+                ctx.fonteIndicadores.setColor(Color.YELLOW);
+                desenharCentralizado(ctx, ctx.fonteIndicadores, p[1], 50);
+                ctx.fonteIndicadores.setColor(Color.WHITE);
             } else {
-                ctx.fonteDialogos.setColor(Color.WHITE);
-                desenharCentralizado(ctx, ctx.fonteDialogos, aviso, 60);
+                ctx.fonteIndicadores.setColor(Color.WHITE);
+                desenharCentralizado(ctx, ctx.fonteIndicadores, aviso, 60);
             }
-            ctx.fonteDialogos.setColor(Color.WHITE);
         }
     }
 
@@ -772,11 +919,11 @@ public class GerenciadorUI {
         ctx.fonteIndicadores.setColor(Color.WHITE);
     }
 
-    // Desenha menu de pausa
+    // Desenha menu de pausa usando fonte_indicadores.ttf
     public void desenharPausa(ContextoRender ctx) {
-        ctx.fonteMenu.setColor(Color.WHITE);
-        desenharCentralizado(ctx, ctx.fonteMenu, opcaoPausa == 0 ? "> VOLTAR" : "  VOLTAR", 60);
-        desenharCentralizado(ctx, ctx.fonteMenu, opcaoPausa == 1 ? "> SAIR"   : "  SAIR",    0);
+        ctx.fonteIndicadores.setColor(Color.WHITE);
+        desenharCentralizado(ctx, ctx.fonteIndicadores, opcaoPausa == 0 ? "> VOLTAR" : "  VOLTAR", 40);
+        desenharCentralizado(ctx, ctx.fonteIndicadores, opcaoPausa == 1 ? "> SAIR"   : "  SAIR",    0);
     }
 
     // Verifica se hitbox esta sobre uma area
@@ -845,7 +992,7 @@ public class GerenciadorUI {
         private Texture cursorTex, selecaoTex, backTex;
 
         // Inicializa recursos do puzzle
-        public void inicializar(BitmapFont fonte, ExtendViewport vp) {
+        public void inicializar(BitmapFont font, ExtendViewport vp) {
             stage = new Stage(new ExtendViewport(
                 Math.round(vp.getWorldWidth()), Math.round(vp.getWorldHeight())));
 
@@ -862,13 +1009,13 @@ public class GerenciadorUI {
             backTex = new Texture(bp); bp.dispose();
 
             TextFieldStyle ts = new TextFieldStyle();
-            ts.font       = fonte;
+            ts.font       = font;
             ts.fontColor  = Color.WHITE;
             ts.cursor     = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(cursorTex));
             ts.selection  = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(selecaoTex));
             ts.background = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(backTex));
 
-            LabelStyle ls = new LabelStyle(); ls.font = fonte; ls.fontColor = Color.WHITE;
+            LabelStyle ls = new LabelStyle(); ls.font = font; ls.fontColor = Color.WHITE;
 
             campoSenha    = new TextField("", ts);
             campoSenha.setMaxLength(TAMANHO_SENHA);
@@ -958,13 +1105,13 @@ public class GerenciadorUI {
         }
     }
 
-    // Configuracao de retrato
+    // Configuração de retrato
     public static class ConfigRetrato {
         // Cor do fundo
         public final Color   corFundo;
         // Opacidade do fundo
         public final float   opacidade;
-        // Textura do retrato
+        // Texture do retrato
         public final Texture imagem;
 
         // Construtor da configuracao

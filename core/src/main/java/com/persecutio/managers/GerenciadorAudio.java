@@ -17,11 +17,15 @@ public class GerenciadorAudio {
     // Volume padrao dos efeitos
     private static final float VOLUME_EFEITOS_PADRAO = 0.7f;
 
-    // Musica ambiente do jogo
+    // Musicas armazenadas
     private Music ambiente;
-    // Musica ambiente do mundo umbra
     private Music ambienteUmbra;
-    // Um boolean para trocar os sons ambientes
+    private Music musicaDois;
+
+    // Musica que esta tocando agora
+    private Music musicaAtual;
+
+    // Um booleano para trocar os sons ambientes
     private boolean tocandoUmbra = false;
     // Musica do menu
     private Music musicaMenu;
@@ -60,7 +64,7 @@ public class GerenciadorAudio {
         if (Gdx.files.internal("audio/musica_menu.ogg").exists()) {
             musicaMenu = Gdx.audio.newMusic(Gdx.files.internal("audio/musica_menu.ogg"));
             musicaMenu.setLooping(true);
-            musicaMenu.setVolume(0f); // Comeca silenciado para o fade in
+            musicaMenu.setVolume(0f);
         }
         if (Gdx.files.internal("audio/selecao.ogg").exists()) {
             somSelecao = Gdx.audio.newSound(Gdx.files.internal("audio/selecao.ogg"));
@@ -75,15 +79,18 @@ public class GerenciadorAudio {
         if (Gdx.files.internal("audio/ambiente.ogg").exists()) {
             ambiente = Gdx.audio.newMusic(Gdx.files.internal("audio/ambiente.ogg"));
             ambiente.setLooping(true);
-            ambiente.setVolume(volumeMusica);
         }
         if (Gdx.files.internal("audio/ambienteUmbra.ogg").exists()) {
-        	ambienteUmbra = Gdx.audio.newMusic(Gdx.files.internal("audio/ambienteUmbra.ogg"));
-        	ambienteUmbra.setLooping(true);
-        	ambienteUmbra.setVolume(volumeMusica);
-        	}
-        //Inicia o som ambiente de acordo com o save atual
-        atualizarAmbiente(false);
+            ambienteUmbra = Gdx.audio.newMusic(Gdx.files.internal("audio/ambienteUmbra.ogg"));
+            ambienteUmbra.setLooping(true);
+        }
+        if (Gdx.files.internal("audio/missao2.ogg").exists()) {
+            musicaDois = Gdx.audio.newMusic(Gdx.files.internal("audio/missao2.ogg"));
+            musicaDois.setLooping(true);
+        }
+
+        atualizarAmbiente(false, 1);
+
         if (Gdx.files.internal("audio/porta.ogg").exists()) {
             somPorta = Gdx.audio.newSound(Gdx.files.internal("audio/porta.ogg"));
         }
@@ -92,45 +99,28 @@ public class GerenciadorAudio {
         }
     }
 
-    // Atualiza o som ambiente de acordo com o mapa atual
-    public void atualizarAmbiente(boolean mundoUmbra) {
-
-        if (mundoUmbra == tocandoUmbra) {
-            return;
-        }
-
-        tocandoUmbra = mundoUmbra;
+    // Atualiza o som ambiente de acordo com o mapa e a missao atual
+    public void atualizarAmbiente(boolean mundoUmbra, int missaoAtual) {
+        Music desejada = ambiente;
 
         if (mundoUmbra) {
-
-            if (ambiente != null) {
-                ambiente.stop();
-            }
-
-            if (ambienteUmbra != null) {
-                ambienteUmbra.setVolume(volumeMusica);
-                ambienteUmbra.play();
-            }
-
-        } else {
-
-            if (ambienteUmbra != null) {
-                ambienteUmbra.stop();
-            }
-
-            if (ambiente != null) {
-                ambiente.setVolume(volumeMusica);
-                ambiente.play();
-            }
-
+            desejada = (missaoAtual == 2 && musicaDois != null) ? musicaDois : ambienteUmbra;
         }
+
+        if (musicaAtual != desejada) {
+            if (musicaAtual != null) musicaAtual.stop();
+            musicaAtual = desejada;
+            if (musicaAtual != null) {
+                musicaAtual.setVolume(volumeMusica);
+                musicaAtual.play();
+            }
+        }
+        tocandoUmbra = mundoUmbra;
     }
-    
+
     // Para a musica do menu
     public void pararMusicaMenu() {
-        if (musicaMenu != null) {
-            musicaMenu.stop();
-        }
+        if (musicaMenu != null) musicaMenu.stop();
     }
 
     // Toca som de selecao
@@ -168,12 +158,11 @@ public class GerenciadorAudio {
     // Atualiza fades de volume
     public void atualizar(float delta) {
         if (fazendoFadeOut) {
-            // Calcula velocidade com base no tempo de duracao
             float velocidade = volumeMusica / tempoFadeOut;
             volumeFade = Math.max(0f, volumeFade - velocidade * delta);
 
-            if (ambiente != null && ambiente.isPlaying()) {
-                ambiente.setVolume(volumeFade);
+            if (musicaAtual != null && musicaAtual.isPlaying()) {
+                musicaAtual.setVolume(volumeFade);
             }
             if (musicaMenu != null && musicaMenu.isPlaying()) {
                 musicaMenu.setVolume(volumeFade);
@@ -181,17 +170,16 @@ public class GerenciadorAudio {
 
             if (volumeFade <= 0f) {
                 fazendoFadeOut = false;
-                if (ambiente != null) ambiente.pause();
+                if (musicaAtual != null) musicaAtual.pause();
                 if (musicaMenu != null) musicaMenu.stop();
             }
         }
         if (fazendoFadeIn) {
-            // Calcula velocidade com base no tempo de duracao
             float velocidade = volumeMusica / tempoFadeIn;
             volumeFade = Math.min(volumeMusica, volumeFade + velocidade * delta);
 
-            if (ambiente != null && ambiente.isPlaying()) {
-                ambiente.setVolume(volumeFade);
+            if (musicaAtual != null && musicaAtual.isPlaying()) {
+                musicaAtual.setVolume(volumeFade);
             }
             if (musicaMenu != null && musicaMenu.isPlaying()) {
                 musicaMenu.setVolume(volumeFade);
@@ -203,32 +191,6 @@ public class GerenciadorAudio {
         }
     }
 
-    // Inicia fade-out com tempo padrao de 1 segundo
-    public void iniciarFadeOut() {
-        iniciarFadeOut(1.0f);
-    }
-
-    // Inicia fade-out com tempo personalizado
-    public void iniciarFadeOut(float segundos) {
-        fazendoFadeOut = true;
-        fazendoFadeIn  = false;
-        tempoFadeOut   = segundos > 0 ? segundos : 0.01f;
-
-        if (musicaMenu != null && musicaMenu.isPlaying()) {
-            volumeFade = musicaMenu.getVolume();
-        } else if (ambiente != null && ambiente.isPlaying()) {
-            volumeFade = ambiente.getVolume();
-        } else {
-            volumeFade = volumeMusica;
-        }
-    }
-
-    // Inicia fade in com tempo padrao de 1 segundo
-    public void iniciarFadeIn() {
-        iniciarFadeIn(1.0f);
-    }
-
-    // Inicia fade in da musica com tempo personalizado
     public void iniciarFadeIn(float segundos) {
         fazendoFadeIn  = true;
         fazendoFadeOut = false;
@@ -237,15 +199,25 @@ public class GerenciadorAudio {
 
         if (musicaMenu != null) {
             musicaMenu.setVolume(0f);
-            if (!musicaMenu.isPlaying()) {
-                musicaMenu.play();
-            }
+            if (!musicaMenu.isPlaying()) musicaMenu.play();
         }
-        if (ambiente != null) {
-            ambiente.setVolume(0f);
-            if (!ambiente.isPlaying()) {
-                ambiente.play();
-            }
+        if (musicaAtual != null) {
+            musicaAtual.setVolume(0f);
+            if (!musicaAtual.isPlaying()) musicaAtual.play();
+        }
+    }
+
+    public void iniciarFadeOut(float segundos) {
+        fazendoFadeOut = true;
+        fazendoFadeIn  = false;
+        tempoFadeOut   = segundos > 0 ? segundos : 0.01f;
+
+        if (musicaMenu != null && musicaMenu.isPlaying()) {
+            volumeFade = musicaMenu.getVolume();
+        } else if (musicaAtual != null && musicaAtual.isPlaying()) {
+            volumeFade = musicaAtual.getVolume();
+        } else {
+            volumeFade = volumeMusica;
         }
     }
 
@@ -265,19 +237,12 @@ public class GerenciadorAudio {
 
     // Aplica volumes atuais aos sons
     private void aplicarVolume() {
-    	if (ambiente != null && !fazendoFadeOut && !fazendoFadeIn) {
-    	    ambiente.setVolume(volumeMusica);
-    	}
-
-    	if (ambienteUmbra != null) {
-    	    ambienteUmbra.setVolume(volumeMusica);
-    	}
+        if (musicaAtual != null && !fazendoFadeOut && !fazendoFadeIn) {
+            musicaAtual.setVolume(volumeMusica);
+        }
     }
 
-    // Retorna volume da musica
     public float getVolumeMusica()  { return volumeMusica; }
-
-    // Retorna volume dos efeitos
     public float getVolumeEfeitos() { return volumeEfeitos; }
 
     // Processa teclas de ajuste de volume
@@ -293,11 +258,12 @@ public class GerenciadorAudio {
     // Libera todos os recursos de audio
     public void dispose() {
         if (ambiente    != null) ambiente.dispose();
+        if (ambienteUmbra != null) ambienteUmbra.dispose();
+        if (musicaDois  != null) musicaDois.dispose();
         if (musicaMenu  != null) musicaMenu.dispose();
         if (somPorta    != null) somPorta.dispose();
         if (somSelecao  != null) somSelecao.dispose();
         if (somConfirmar != null) somConfirmar.dispose();
         if (somPasso    != null) somPasso.dispose();
-        if (ambienteUmbra != null) ambienteUmbra.dispose();
     }
 }

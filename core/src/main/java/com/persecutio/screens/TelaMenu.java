@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.video.VideoPlayer;
 import com.badlogic.gdx.video.VideoPlayerCreator;
@@ -76,6 +77,11 @@ public class TelaMenu implements Screen {
     private static final float DURACAO_FADE_VIDEO = 0.6f;
     private static final String CAMINHO_VIDEO = "video/intro.webm";
 
+    // Controle do prompt de pular
+    private boolean promptAtivo = false;
+    private float timerPrompt = 0f;
+    private final GlyphLayout medidor = new GlyphLayout();
+
     // Coordenadas do mouse para hover nas opcoes
     private final Vector2 coordenadasMouse = new Vector2();
 
@@ -122,6 +128,7 @@ public class TelaMenu implements Screen {
         fadePosVideoAtivo = false;
         timerFadeVideo = 0f;
         opcaoAnterior = 0;
+        promptAtivo = false;
     }
 
     // Loop principal de atualizacao e desenho
@@ -257,11 +264,36 @@ public class TelaMenu implements Screen {
         }
     }
 
-    // Renderiza o video de introducao com fades
+    // Renderiza o video de introducao com fades e suporte a skip
     private void renderVideoIntro(float delta) {
         float larguraMundo = jogo.viewport.getWorldWidth();
         float alturaMundo  = jogo.viewport.getWorldHeight();
         SpriteBatch batch = jogo.batch;
+
+        // Atualiza timer do prompt de pular
+        if (promptAtivo) {
+            timerPrompt -= delta;
+            if (timerPrompt <= 0f) {
+                promptAtivo = false;
+            }
+        }
+
+        // Detecta interacao para pular
+        if (!fadePosVideoAtivo && (Gdx.input.isKeyJustPressed(Keys.ANY_KEY) || Gdx.input.justTouched())) {
+            if (!promptAtivo) {
+                // Primeira interacao: exibe o prompt informativo
+                promptAtivo = true;
+                timerPrompt = 3f;
+            } else {
+                // Segunda interacao: valida confirmacao para pular
+                if (Gdx.input.isKeyJustPressed(Keys.SPACE) || Gdx.input.isKeyJustPressed(Keys.ENTER) || Gdx.input.justTouched()) {
+                    pularIntro();
+                } else {
+                    // Mantem o prompt ativo se pressionar qualquer outra tecla
+                    timerPrompt = 3f;
+                }
+            }
+        }
 
         // Fade pre video
         if (fadePreVideoAtivo) {
@@ -293,6 +325,8 @@ public class TelaMenu implements Screen {
             batch.draw(texBranca, 0, 0, larguraMundo, alturaMundo);
             batch.setColor(Color.WHITE);
             batch.end();
+
+            desenharPrompt(batch, larguraMundo);
             return;
         }
 
@@ -352,6 +386,39 @@ public class TelaMenu implements Screen {
                 fadePosVideoAtivo = true;
                 timerFadeVideo = 0f;
             }
+        }
+
+        desenharPrompt(batch, larguraMundo);
+    }
+
+    // Para a reproducao atual e inicia a transicao de saida
+    private void pularIntro() {
+        promptAtivo = false;
+        fadePosVideoAtivo = true;
+        timerFadeVideo = 0f;
+        if (playerVideo != null) {
+            try { playerVideo.stop(); } catch (Exception ignored) {}
+        }
+    }
+
+    // Desenha a instrucao visual no canto inferior direito
+    private void desenharPrompt(SpriteBatch batch, float larguraMundo) {
+        if (promptAtivo) {
+            batch.begin();
+            batch.setColor(0f, 0f, 0f, 0.6f);
+            String textoPular = "Pressione [ESPACO] para pular";
+            medidor.setText(jogo.fonteIndicadores, textoPular);
+            float margem = 20f;
+            float px = larguraMundo - medidor.width - margem;
+            float py = margem + medidor.height;
+
+            // Retangulo de fundo para facilitar a leitura
+            batch.draw(texBranca, px - 10f, py - medidor.height - 5f, medidor.width + 20f, medidor.height + 10f);
+            batch.setColor(Color.WHITE);
+
+            jogo.fonteIndicadores.setColor(Color.WHITE);
+            jogo.fonteIndicadores.draw(batch, textoPular, px, py);
+            batch.end();
         }
     }
 
