@@ -19,6 +19,10 @@ public class GerenciadorAudio {
 
     // Musica ambiente do jogo
     private Music ambiente;
+    // Musica ambiente do mundo umbra
+    private Music ambienteUmbra;
+    // Um boolean para trocar os sons ambientes
+    private boolean tocandoUmbra = false;
     // Musica do menu
     private Music musicaMenu;
     // Som de abrir porta
@@ -72,8 +76,14 @@ public class GerenciadorAudio {
             ambiente = Gdx.audio.newMusic(Gdx.files.internal("audio/ambiente.ogg"));
             ambiente.setLooping(true);
             ambiente.setVolume(volumeMusica);
-            ambiente.play();
         }
+        if (Gdx.files.internal("audio/ambienteUmbra.ogg").exists()) {
+        	ambienteUmbra = Gdx.audio.newMusic(Gdx.files.internal("audio/ambienteUmbra.ogg"));
+        	ambienteUmbra.setLooping(true);
+        	ambienteUmbra.setVolume(volumeMusica);
+        	}
+        //Inicia o som ambiente de acordo com o save atual
+        atualizarAmbiente(false);
         if (Gdx.files.internal("audio/porta.ogg").exists()) {
             somPorta = Gdx.audio.newSound(Gdx.files.internal("audio/porta.ogg"));
         }
@@ -82,6 +92,40 @@ public class GerenciadorAudio {
         }
     }
 
+    // Atualiza o som ambiente de acordo com o mapa atual
+    public void atualizarAmbiente(boolean mundoUmbra) {
+
+        if (mundoUmbra == tocandoUmbra) {
+            return;
+        }
+
+        tocandoUmbra = mundoUmbra;
+
+        if (mundoUmbra) {
+
+            if (ambiente != null) {
+                ambiente.stop();
+            }
+
+            if (ambienteUmbra != null) {
+                ambienteUmbra.setVolume(volumeMusica);
+                ambienteUmbra.play();
+            }
+
+        } else {
+
+            if (ambienteUmbra != null) {
+                ambienteUmbra.stop();
+            }
+
+            if (ambiente != null) {
+                ambiente.setVolume(volumeMusica);
+                ambiente.play();
+            }
+
+        }
+    }
+    
     // Para a musica do menu
     public void pararMusicaMenu() {
         if (musicaMenu != null) {
@@ -221,13 +265,13 @@ public class GerenciadorAudio {
 
     // Aplica volumes atuais aos sons
     private void aplicarVolume() {
-        if (musicaMenu != null) musicaMenu.setVolume(volumeMusica);
-        if (ambiente != null && !fazendoFadeOut && !fazendoFadeIn) {
-            ambiente.setVolume(volumeMusica);
-        }
-        if (somPasso != null && passosTocando) {
-            somPasso.setVolume(idPasso, volumeEfeitos * 0.5f);
-        }
+    	if (ambiente != null && !fazendoFadeOut && !fazendoFadeIn) {
+    	    ambiente.setVolume(volumeMusica);
+    	}
+
+    	if (ambienteUmbra != null) {
+    	    ambienteUmbra.setVolume(volumeMusica);
+    	}
     }
 
     // Retorna volume da musica
@@ -254,5 +298,6 @@ public class GerenciadorAudio {
         if (somSelecao  != null) somSelecao.dispose();
         if (somConfirmar != null) somConfirmar.dispose();
         if (somPasso    != null) somPasso.dispose();
+        if (ambienteUmbra != null) ambienteUmbra.dispose();
     }
 }
