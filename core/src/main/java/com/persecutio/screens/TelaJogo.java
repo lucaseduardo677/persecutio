@@ -79,6 +79,7 @@ public class TelaJogo implements Screen {
     public boolean mundoUmbra            = false;
     // Indica se a porta do Umbra foi destrancada
     public boolean portaUmbraDestrancada = false;
+
     // Flag para mostrar hitboxes de debug
     private boolean mostrarHitboxes = false;
     // Flag se o jogador esta andando
@@ -175,11 +176,15 @@ public class TelaJogo implements Screen {
 
         sistemaColisao = new GerenciadorColisao(mapaTiled, escala, "map/mapa.tiled-project");
         gerComodos     = new GerenciadorComodos(mapaTiled, escala);
-        gerPortas      = new GerenciadorPortas(mapaTiled, escala, sistemaColisao.getDefaults());
+
+
+        gerPortas      = new GerenciadorPortas(mapaTiledReal, mapaTiledUmbra, escala,
+                                               sistemaColisao.getDefaults());
         sistemaDebug   = new GerenciadorDebug();
         progresso      = new GerenciadorProgresso(sistemaColisao, gerPortas);
         interfaceJogo  = new GerenciadorUI();
         interfaceJogo.inicializar(jogo.fonteDialogos, jogo.viewport, sistemaAudio);
+        interfaceJogo.setProgresso(progresso);
 
         gerDialogo = new GerenciadorDialogo();
         interfaceJogo.setDialogo(gerDialogo);
@@ -260,9 +265,6 @@ public class TelaJogo implements Screen {
         mundoUmbra            = umbra;
         portaUmbraDestrancada = destrancada;
 
-        
-        sistemaAudio.atualizarAmbiente(mundoUmbra);
-        
         atualizarMapaParaMundo(umbra);
         gerLuzes.setAmbienteUmbra(mundoUmbra);
 
@@ -279,7 +281,7 @@ public class TelaJogo implements Screen {
 
         batch.begin();
 
-        renderizador.desenharNpcs(ctx, sistemaColisao, umbra);
+        renderizador.desenharNpcs(ctx, sistemaColisao, comodoAtual, umbra);
 
         jogador.desenhar(batch,
             Math.round(ctx.mundoParaTelaX(jogador.mundoX)),
@@ -333,7 +335,8 @@ public class TelaJogo implements Screen {
             return;
         }
 
-        interfaceJogo.desenharAvisos(ctx, sistemaColisao, jogador, umbra, destrancada, progresso.getAviso());
+        interfaceJogo.desenharAvisos(ctx, sistemaColisao, jogador, umbra, destrancada,
+            progresso.getAviso(), progresso.isFalouComEnfermeira());
         interfaceJogo.desenharPromptPorta(ctx, gerPortas, sistemaColisao, jogador, umbra);
         interfaceJogo.desenharLiberada(ctx);
         interfaceJogo.desenharDialogo(ctx);
@@ -438,7 +441,7 @@ public class TelaJogo implements Screen {
         switch (nome) {
             case "dar_peca":
                 progresso.marcarPecaNpc();
-                progresso.adicionarParte();
+                interfaceJogo.iniciarCinematica();
                 sistemaAudio.tocarConfirmar();
                 break;
             default:

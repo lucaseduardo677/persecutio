@@ -52,12 +52,12 @@ public class GerenciadorDebug {
 
         if (Gdx.input.isKeyJustPressed(Keys.P)) {
             progresso.adicionarParte();
-            progresso.setAviso("[DEBUG] Partes: " + progresso.getPartes() + "/3");
+            progresso.setAviso("[DEBUG] Partes: " + progresso.getPartes() + "/2");
         }
 
         if (Gdx.input.isKeyJustPressed(Keys.D)) {
-            progresso.forcarPartes(3);
-            progresso.setAviso("[DEBUG] Forcado 3/3 partes");
+            progresso.forcarPartes(2);
+            progresso.setAviso("[DEBUG] Forcado 2/2 partes");
         }
 
         if (Gdx.input.isKeyJustPressed(Keys.I)) {
@@ -122,7 +122,7 @@ public class GerenciadorDebug {
         GerenciadorProgresso prog = jogo.progresso;
         ctx.fonteIndicadores.setColor(Color.WHITE);
         ctx.fonteIndicadores.draw(ctx.batch,
-            "Partes: " + prog.getPartes() + "/3   Missao: " + prog.getMissao(), x, y); y -= dy;
+            "Partes: " + prog.getPartes() + "/2   Missao: " + prog.getMissao(), x, y); y -= dy;
 
         GerenciadorPortas.Porta porta = portaNoAlcance(jogo);
         y -= 4f;
@@ -139,7 +139,7 @@ public class GerenciadorDebug {
         }
 
         ctx.fonteIndicadores.setColor(Color.valueOf("#8c8c8c"));
-        ctx.fonteIndicadores.draw(ctx.batch, "Ctrl+U umbra  Ctrl+P +parte  Ctrl+D 3partes  Ctrl+I noclip", x, y);
+        ctx.fonteIndicadores.draw(ctx.batch, "Ctrl+U umbra  Ctrl+P +parte  Ctrl+D 2partes  Ctrl+I noclip", x, y);
 
         ctx.fonteIndicadores.setColor(Color.WHITE);
     }

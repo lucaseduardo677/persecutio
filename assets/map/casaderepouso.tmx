@@ -1100,6 +1100,13 @@
    </properties>
   </object>
 
+  <object id="803" name="gaveta" type="objeto" x="22" y="495" width="24" height="18">
+   <properties>
+    <property name="real" type="bool" value="false"/>
+    <property name="umbra" type="bool" value="true"/>
+   </properties>
+  </object>
+
   <object id="800" name="espelho" type="objeto" x="164" y="332" width="20" height="22">
    
    <properties>

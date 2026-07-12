@@ -37,6 +37,8 @@ public class GerenciadorProgresso {
     private boolean pecaGaveta   = false;
     // Flag se pegou peca do NPC
     private boolean pecaNpc      = false;
+    // Flag se ja falou com a enfermeira na recepcao
+    private boolean falouComEnfermeira = false;
     // Flag se leu o documento
     private boolean leuDocumento = false;
 
@@ -95,12 +97,6 @@ public class GerenciadorProgresso {
 
     // Interacoes no mundo Real
     private void interagirReal(Rectangle hitboxInteracao) {
-        GerenciadorColisao.ObjetoColisao pilula = colisao.getInterativo("pilula", false);
-        if (pilula != null && hitboxInteracao.overlaps(pilula.area)) {
-            mundoUmbra = true;
-            return;
-        }
-
         EntidadeMapa paciente = colisao.getNpc("paciente", false);
         if (paciente == null) paciente = colisao.getNpc("npcRecepcao", false);
         if (paciente != null && hitboxInteracao.overlaps(paciente.area)) {
@@ -110,7 +106,18 @@ public class GerenciadorProgresso {
 
         EntidadeMapa enfermeira = colisao.getNpc("enfermeira", false);
         if (enfermeira != null && hitboxInteracao.overlaps(enfermeira.area)) {
+            falouComEnfermeira = true;
             dialogoAlvo = "enfermeira";
+            return;
+        }
+
+        GerenciadorColisao.ObjetoColisao pilula = colisao.getInterativo("pilula", false);
+        if (pilula != null && hitboxInteracao.overlaps(pilula.area)) {
+            if (!falouComEnfermeira) {
+                aviso = "A enfermeira da recepcao ainda nao autorizou a pílula.";
+                return;
+            }
+            mundoUmbra = true;
             return;
         }
 
@@ -229,7 +236,7 @@ public class GerenciadorProgresso {
 
     // Adiciona uma parte coletada
     public void adicionarParte() {
-        if (partes < 3) partes++;
+        if (partes < 2) partes++;
     }
 
     // Marca que a peca do NPC foi entregue
@@ -246,7 +253,7 @@ public class GerenciadorProgresso {
 
     // Forca quantidade de partes
     public void forcarPartes(int valor) {
-        partes = Math.min(3, Math.max(0, valor));
+        partes = Math.min(2, Math.max(0, valor));
     }
 
     // Retorna se esta no mundo Umbra
@@ -269,6 +276,9 @@ public class GerenciadorProgresso {
 
     // Retorna se pegou peca do NPC
     public boolean isPecaNpc()     { return pecaNpc; }
+
+    // Retorna se ja falou com a enfermeira na recepcao
+    public boolean isFalouComEnfermeira() { return falouComEnfermeira; }
 
     // Retorna se sabe a palavra magica
     public boolean isSabePalavra() { return sabePalavra; }

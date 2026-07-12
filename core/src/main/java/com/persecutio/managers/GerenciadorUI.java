@@ -49,9 +49,25 @@ public class GerenciadorUI {
     private float timerNpc   = -1f;
     // Timer da mensagem verde
     private float timerVerde = -1f;
+    // Timer da missao exibida no centro da tela
+    private float timerMissaoCentro = -1f;
 
     // Opacidade do tutorial
     private float opacidade = 1.0f;
+    // Flag para mostrar a missao no centro apos o tutorial
+    private boolean mostrarMissaoCentro = false;
+    // Flag para manter a missao fixa no topo da tela
+    private boolean mostrarMissaoTopo = false;
+    // Flag para agendar a missao inicial uma unica vez
+    private boolean missaoInicialAgendada = false;
+
+    // Referencia ao progresso para acompanhar mudancas de missao
+    private GerenciadorProgresso progresso;
+    // Missao atualmente exibida na UI
+    private int missaoExibida = 1;
+    // Texto da missao e objetivo em exibicao
+    private String tituloMissaoAtual = "Missao 1 — Primeiros Passos";
+    private String objetivoMissaoAtual = "Objetivo inicial: Va ate a recepcao.";
 
     // Flag se esta pausado
     private boolean pausado    = false;
@@ -132,6 +148,38 @@ public class GerenciadorUI {
     // Define o gerenciador de dialogo
     public void setDialogo(GerenciadorDialogo dialogoRef) {
         dialogo = dialogoRef;
+    }
+
+    // Define o gerenciador de progresso para sincronizar a missao exibida
+    public void setProgresso(GerenciadorProgresso progressoRef) {
+        progresso = progressoRef;
+        if (progresso != null) {
+            missaoExibida = Math.max(1, progresso.getMissao());
+            atualizarTextoMissao();
+        }
+    }
+
+    // Atualiza os textos de missao conforme o estado atual
+    private void atualizarTextoMissao() {
+        if (progresso == null) return;
+
+        int missaoAtual = Math.max(1, progresso.getMissao());
+        switch (missaoAtual) {
+            case 1:
+                tituloMissaoAtual = "Missao 1 — Primeiros Passos";
+                objetivoMissaoAtual = "Objetivo inicial: Va ate a recepcao.";
+                break;
+            case 2:
+                tituloMissaoAtual = "Missao 2 — Relatorio de Incidente";
+                objetivoMissaoAtual = "Objetivo: Leia o relatorio na recepcao.";
+                break;
+            default:
+                tituloMissaoAtual = "Missao " + missaoAtual;
+                objetivoMissaoAtual = "Objetivo em andamento.";
+                break;
+        }
+
+        missaoExibida = missaoAtual;
     }
 
     // Toca som de selecao
@@ -370,10 +418,31 @@ public class GerenciadorUI {
         timerNpc = 3f;
     }
 
-    // Atualiza opacidade do tutorial
+    // Atualiza opacidade do tutorial e agenda a missao inicial
     public void atualizarTutorial(boolean andando, float delta) {
-        if (andando && opacidade > 0f)
+        if (progresso != null && missaoExibida != progresso.getMissao()) {
+            atualizarTextoMissao();
+            mostrarMissaoTopo = true;
+        }
+
+        if (andando && opacidade > 0f) {
             opacidade = Math.max(0f, opacidade - 1.5f * delta);
+        }
+
+        if (!missaoInicialAgendada && opacidade <= 0f) {
+            missaoInicialAgendada = true;
+            timerMissaoCentro = 4f;
+        }
+
+        if (timerMissaoCentro >= 0f) {
+            mostrarMissaoCentro = true;
+            timerMissaoCentro -= delta;
+            if (timerMissaoCentro <= 0f) {
+                timerMissaoCentro = -1f;
+                mostrarMissaoCentro = false;
+                mostrarMissaoTopo = true;
+            }
+        }
     }
 
     // Ajusta interface ao redimensionar
@@ -419,11 +488,28 @@ public class GerenciadorUI {
 
     // Desenha tutorial na tela
     public void desenharTutorial(ContextoRender ctx) {
-        if (opacidade <= 0f) return;
-        ctx.fonteIndicadores.setColor(0.78f, 0.78f, 0.78f, opacidade);
-        desenharCentralizado(ctx, ctx.fonteIndicadores, "Use as setas ou W A S D para andar...", 120);
-        desenharCentralizado(ctx, ctx.fonteIndicadores, "Pressione [E] para investigar...", 150);
+        if (opacidade > 0f) {
+            ctx.fonteIndicadores.setColor(0.78f, 0.78f, 0.78f, opacidade);
+            desenharCentralizado(ctx, ctx.fonteIndicadores, "Use as setas ou W A S D para andar...", 120);
+            desenharCentralizado(ctx, ctx.fonteIndicadores, "Pressione [E] para investigar...", 150);
+            ctx.fonteIndicadores.setColor(Color.WHITE);
+            return;
+        }
+
+        if (mostrarMissaoCentro) {
+            ctx.fonteIndicadores.setColor(Color.WHITE);
+            desenharCentralizado(ctx, ctx.fonteIndicadores, tituloMissaoAtual, 0f);
+            desenharCentralizado(ctx, ctx.fonteDialogos, objetivoMissaoAtual, -24f);
+            return;
+        }
+
+        if (!mostrarMissaoTopo) return;
+
         ctx.fonteIndicadores.setColor(Color.WHITE);
+        ctx.fonteIndicadores.draw(ctx.batch, tituloMissaoAtual, 10f, ctx.vAltura - 18f);
+        ctx.fonteDialogos.setColor(0.92f, 0.92f, 0.92f, 1f);
+        ctx.fonteDialogos.draw(ctx.batch, objetivoMissaoAtual, 10f, ctx.vAltura - 44f);
+        ctx.fonteDialogos.setColor(Color.WHITE);
     }
 
     // Desenha tela de NPC
@@ -448,15 +534,15 @@ public class GerenciadorUI {
                               Texture p0, Texture p1, Texture p2, Texture p3, int partes) {
         desenharEscuro(ctx);
 
-        Texture img = partes == 3 ? p3 : partes == 2 ? p2 : partes == 1 ? p1 : p0;
+        Texture img = partes >= 2 ? p2 : partes == 1 ? p1 : p0;
         ctx.batch.draw(img, ctx.centroX - 200, ctx.centroY - 200, 400, 400);
 
-        if (partes == 3) {
+        if (partes >= 2) {
             ctx.fonteDialogos.setColor(Color.GREEN);
             desenharCentralizado(ctx, ctx.fonteDialogos, "AREA LIBERADA NO MUNDO UMBRA", -220);
         } else {
             ctx.fonteDialogos.setColor(Color.WHITE);
-            desenharCentralizado(ctx, ctx.fonteDialogos, "Faltam pecas (" + partes + "/3)", -220);
+            desenharCentralizado(ctx, ctx.fonteDialogos, "Faltam pecas (" + partes + "/2)", -220);
         }
         ctx.fonteDialogos.setColor(Color.WHITE);
         desenharCentralizado(ctx, ctx.fonteDialogos, "Pressione [ESC] ou [E] para fechar", -260);
@@ -598,7 +684,8 @@ public class GerenciadorUI {
 
     // Desenha avisos e prompts interativos
     public void desenharAvisos(ContextoRender ctx, GerenciadorColisao sistemaColisao,
-                               Jogador jogador, boolean mundoUmbra, boolean destrancada, String aviso) {
+                               Jogador jogador, boolean mundoUmbra, boolean destrancada,
+                               String aviso, boolean falouComEnfermeira) {
         ctx.fonteIndicadores.setColor(Color.WHITE);
 
         rectTemp.set(
@@ -608,9 +695,12 @@ public class GerenciadorUI {
         String prompt = null;
 
         if (!mundoUmbra) {
-            if (sobreArea(rectTemp, sistemaColisao.getArea("pilula",      false)))
-                prompt = "Aperte [E] para tomar a Pilula";
-            else if (sobreArea(rectTemp, sistemaColisao.getArea("paciente",  false))
+            if (sobreArea(rectTemp, sistemaColisao.getArea("pilula",      false))) {
+                if (!falouComEnfermeira)
+                    prompt = "Fale com a Enfermeira na recepcao primeiro";
+                else
+                    prompt = "Aperte [E] para tomar a Pilula";
+            } else if (sobreArea(rectTemp, sistemaColisao.getArea("paciente",  false))
                   || sobreArea(rectTemp, sistemaColisao.getArea("npcRecepcao", false)))
                 prompt = "Aperte [E] para falar com o Paciente";
             else if (sobreArea(rectTemp, sistemaColisao.getArea("enfermeira",false)))
