@@ -36,7 +36,10 @@ public class GerenciadorRenderizacao {
     }
 
     // Desenha NPCs visiveis no mundo atual
-    public void desenharNpcs(ContextoRender ctx, GerenciadorColisao sistemaColisao, boolean umbra) {
+    public void desenharNpcs(ContextoRender ctx, GerenciadorColisao sistemaColisao,
+                             GerenciadorComodos.Comodo comodoAtual, boolean umbra) {
+        if (comodoAtual == null || !"recepcao".equals(comodoAtual.nomeGrupo)) return;
+
         for (EntidadeMapa npc : sistemaColisao.getNpcs(umbra).values()) {
             ctx.batch.draw(npc.textura,
                 Math.round(npc.area.x + ctx.cameraX),

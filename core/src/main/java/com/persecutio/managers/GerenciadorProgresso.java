@@ -102,6 +102,7 @@ public class GerenciadorProgresso {
         }
 
         EntidadeMapa paciente = colisao.getNpc("paciente", false);
+        if (paciente == null) paciente = colisao.getNpc("npcRecepcao", false);
         if (paciente != null && hitboxInteracao.overlaps(paciente.area)) {
             dialogoAlvo = pecaNpc ? "paciente_feito" : sabePalavra ? "paciente_sabe" : "paciente_pergunta";
             return;

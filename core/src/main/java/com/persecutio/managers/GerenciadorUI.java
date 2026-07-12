@@ -517,26 +517,27 @@ public class GerenciadorUI {
 
             ctx.batch.draw(texRetrato, posXRetrato, posYRetrato, largRetrato, altRetrato);
 
-            // Posicao base do texto
-            float baseX = ctx.vLargura * 0.25f;
+            // Posicao base do texto colada na borda inferior da tela, deslocada 25px para cima
+            float baseX = ctx.centroX;
             float baseY = ctx.vAltura  * 0.25f;
+            float nomeY = baseY + 30f;
 
             String falante = dialogo.getFalante();
             String texto   = dialogo.getTexto();
-            float avancoX  = baseX;
 
             if (!falante.isEmpty()) {
                 String textoNome = falante + ": ";
                 ctx.fonteNomes.setColor(Color.ORANGE);
-                ctx.fonteNomes.draw(ctx.batch, textoNome, avancoX, baseY);
-                ctx.fonteNomes.setColor(Color.WHITE);
-
                 medidor.setText(ctx.fonteNomes, textoNome);
-                avancoX += medidor.width;
+                float nomeX = baseX - (medidor.width / 2f);
+                ctx.fonteNomes.draw(ctx.batch, textoNome, nomeX, nomeY);
+                ctx.fonteNomes.setColor(Color.WHITE);
             }
 
             ctx.fonteDialogos.setColor(Color.WHITE);
-            ctx.fonteDialogos.draw(ctx.batch, texto, avancoX, baseY);
+            medidor.setText(ctx.fonteDialogos, texto);
+            float textoX = baseX - (medidor.width / 2f);
+            ctx.fonteDialogos.draw(ctx.batch, texto, textoX, baseY);
 
             // Lista de escolhas
             List<String> escolhas = dialogo.getEscolhas();
@@ -544,13 +545,15 @@ public class GerenciadorUI {
 
             if (escolhas.isEmpty()) {
                 ctx.fonteIndicadores.setColor(Color.GRAY);
-                ctx.fonteIndicadores.draw(ctx.batch, "> [E] Continuar", baseX, linhaY);
+                medidor.setText(ctx.fonteIndicadores, "> [E] Continuar");
+                ctx.fonteIndicadores.draw(ctx.batch, "> [E] Continuar", baseX - (medidor.width / 2f), linhaY);
                 ctx.fonteIndicadores.setColor(Color.WHITE);
             } else {
                 for (int i = 0; i < escolhas.size(); i++) {
                     String prefixo = (i == escolhaDialogo) ? "> " : "  ";
                     ctx.fonteDialogos.setColor((i == escolhaDialogo) ? Color.YELLOW : Color.WHITE);
-                    ctx.fonteDialogos.draw(ctx.batch, prefixo + escolhas.get(i), baseX, linhaY);
+                    medidor.setText(ctx.fonteDialogos, prefixo + escolhas.get(i));
+                    ctx.fonteDialogos.draw(ctx.batch, prefixo + escolhas.get(i), baseX - (medidor.width / 2f), linhaY);
                     linhaY -= 25f;
                 }
                 ctx.fonteDialogos.setColor(Color.WHITE);
@@ -607,7 +610,8 @@ public class GerenciadorUI {
         if (!mundoUmbra) {
             if (sobreArea(rectTemp, sistemaColisao.getArea("pilula",      false)))
                 prompt = "Aperte [E] para tomar a Pilula";
-            else if (sobreArea(rectTemp, sistemaColisao.getArea("paciente",  false)))
+            else if (sobreArea(rectTemp, sistemaColisao.getArea("paciente",  false))
+                  || sobreArea(rectTemp, sistemaColisao.getArea("npcRecepcao", false)))
                 prompt = "Aperte [E] para falar com o Paciente";
             else if (sobreArea(rectTemp, sistemaColisao.getArea("enfermeira",false)))
                 prompt = "Aperte [E] para falar com a Enfermeira";

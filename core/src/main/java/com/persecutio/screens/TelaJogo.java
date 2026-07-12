@@ -176,7 +176,10 @@ public class TelaJogo implements Screen {
 
         sistemaColisao = new GerenciadorColisao(mapaTiled, escala, "map/mapa.tiled-project");
         gerComodos     = new GerenciadorComodos(mapaTiled, escala);
-        gerPortas      = new GerenciadorPortas(mapaTiled, escala, sistemaColisao.getDefaults());
+
+
+        gerPortas      = new GerenciadorPortas(mapaTiledReal, mapaTiledUmbra, escala,
+                                               sistemaColisao.getDefaults());
         sistemaDebug   = new GerenciadorDebug();
         progresso      = new GerenciadorProgresso(sistemaColisao, gerPortas);
         interfaceJogo  = new GerenciadorUI();
@@ -277,7 +280,7 @@ public class TelaJogo implements Screen {
 
         batch.begin();
 
-        renderizador.desenharNpcs(ctx, sistemaColisao, umbra);
+        renderizador.desenharNpcs(ctx, sistemaColisao, comodoAtual, umbra);
 
         jogador.desenhar(batch,
             Math.round(ctx.mundoParaTelaX(jogador.mundoX)),

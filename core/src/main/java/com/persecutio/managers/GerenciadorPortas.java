@@ -20,7 +20,9 @@ public class GerenciadorPortas {
     // Folga de alcance para interagir com porta
     private static final float FOLGA = 24f;
 
-    // Lista de portas carregadas
+    // Lista de portas carregadas para cada mundo
+    private final List<Porta> portasReal = new ArrayList<>();
+    private final List<Porta> portasUmbra = new ArrayList<>();
     private final List<Porta> portas = new ArrayList<>();
     // Escala de conversao
     private final float escala;
@@ -29,10 +31,20 @@ public class GerenciadorPortas {
     private final Rectangle rectAlcance = new Rectangle();
 
     // Construtor do gerenciador de portas
-    public GerenciadorPortas(TiledMap mapa, float escala,
+    public GerenciadorPortas(TiledMap mapaReal, TiledMap mapaUmbra, float escala,
                              Map<String, Map<String, Object>> defaults) {
         this.escala = escala;
         CoordenadasTiled.setEscala(escala);
+
+        carregarPortas(mapaReal, portasReal, defaults);
+        carregarPortas(mapaUmbra, portasUmbra, defaults);
+        portas.addAll(portasReal);
+        portas.addAll(portasUmbra);
+    }
+
+    private void carregarPortas(TiledMap mapa, List<Porta> lista,
+                                Map<String, Map<String, Object>> defaults) {
+        if (mapa == null) return;
 
         // Carrega destinos da camada Destinos
         Map<String, Rectangle> destinos = new HashMap<>();
@@ -93,7 +105,7 @@ public class GerenciadorPortas {
 
             String  video        = lerProp(props, "video");
             boolean usarFade     = lerBool(props, defaults, classOrig, "fade",         true);
-            boolean noUmbra      = lerBool(props, defaults, classOrig, "umbra",        false);
+            boolean noUmbra      = lerBool(props, defaults, classOrig, "umbra",        true);
             boolean noReal       = lerBool(props, defaults, classOrig, "real",         true);
             boolean trancado     = lerBool(props, defaults, classOrig, "trancado",     false);
             boolean destrancavel = lerBool(props, defaults, classOrig, "destrancavel", false);
@@ -105,7 +117,7 @@ public class GerenciadorPortas {
             if (nome == null || nome.isEmpty()) nome = lerProp(props, "nome");
             if (nome == null || nome.isEmpty()) nome = label;
 
-            portas.add(new Porta(
+            lista.add(new Porta(
                 CoordenadasTiled.paraMundo(r), nome, label, spawn, areaDestino,
                 video, usarFade, noUmbra, noReal, trancado, destrancavel, condicao
             ));
@@ -120,7 +132,9 @@ public class GerenciadorPortas {
             jogador.hitbox.width  + FOLGA * 2f,
             jogador.hitbox.height + FOLGA * 2f
         );
-        for (Porta p : portas) {
+
+        List<Porta> lista = umbra ? portasUmbra : portasReal;
+        for (Porta p : lista) {
             if (!p.isAtivo(umbra)) continue;
             if (rectAlcance.overlaps(p.area)) return p;
         }
