@@ -74,9 +74,11 @@ public class GerenciadorColisao {
         public final boolean   trancado;
         public final boolean   destrancavel;
         public final String    condicao;
+        public TextureRegion textura = null;
+        public float rotacao = 0f;
 
         public ObjetoColisao(Rectangle area, String nome, MapProperties props,
-                             Map<String, Map<String, Object>> defaults) {
+                             Map<String, Map<String, Object>> defaults, boolean isUmbraMap) {
             this.area = area;
             this.nome = (nome != null && !nome.isEmpty()) ? nome :
                         ((props.get("name") != null) ? props.get("name").toString() :
@@ -87,10 +89,13 @@ public class GerenciadorColisao {
 
             Object u = props.get("umbra");
             Object r = props.get("real");
-            this.noUmbra = (u != null) ? Boolean.parseBoolean(u.toString())
-                                       : getDefault(defaults, classe, "umbra", true);
-            this.noReal  = (r != null) ? Boolean.parseBoolean(r.toString())
-                                       : getDefault(defaults, classe, "real",  true);
+
+            boolean defaultUmbra = getDefault(defaults, classe, "umbra", false);
+            boolean defaultReal  = getDefault(defaults, classe, "real", false);
+
+            // A forca da deducao: Se a propriedade nao estiver marcada mas o objeto veio daquele mapa especifico, ele DEVE existir nele.
+            this.noUmbra = (u != null) ? Boolean.parseBoolean(u.toString()) : (isUmbraMap || defaultUmbra);
+            this.noReal  = (r != null) ? Boolean.parseBoolean(r.toString()) : (!isUmbraMap || defaultReal);
 
             Object t = props.get("trancado");
             this.trancado = (t != null) ? Boolean.parseBoolean(t.toString())
@@ -114,6 +119,7 @@ public class GerenciadorColisao {
     private final List<ObjetoColisao> objetos;
     private final Map<String, ObjetoColisao> interativos;
     private final Map<String, EntidadeMapa> npcs;
+    private final List<ObjetoColisao> objetosDesenhaveis;
 
     // Colecoes de pedras e objetivos lidos do Tiled
     private final Map<String, ObjetoColisao> mapaPedras    = new HashMap<>();
@@ -141,7 +147,7 @@ public class GerenciadorColisao {
 
     public boolean isColisoesDesativadas() { return colisoesDesativadas; }
 
-    public GerenciadorColisao(TiledMap mapa, float escala, String caminhoProjeto) {
+    public GerenciadorColisao(TiledMap mapaReal, TiledMap mapaUmbra, float escala, String caminhoProjeto) {
         CoordenadasTiled.setEscala(escala);
         defaults     = lerDefaults(caminhoProjeto);
 
@@ -150,20 +156,26 @@ public class GerenciadorColisao {
         objetos      = new ArrayList<>();
         interativos  = new HashMap<>();
         npcs         = new HashMap<>();
+        objetosDesenhaveis = new ArrayList<>();
 
-        carregarParedes(mapa, "Colisoes", paredes);
-        carregarInterativos(mapa, "Interativos");
-        carregarInterativos(mapa, "Objetos");
-        carregarNpcs(mapa, "NPCs");
-        carregarParedes(mapa, "Portas", hitboxPortas);
+        if (mapaReal != null) {
+            carregarParedes(mapaReal, "Colisoes", paredes, false);
+            carregarInterativos(mapaReal, "Interativos", false);
+            carregarInterativos(mapaReal, "Objetos", false);
+            carregarNpcs(mapaReal, "NPCs", false);
+            carregarParedes(mapaReal, "Portas", hitboxPortas, false);
+        }
+
+        if (mapaUmbra != null) {
+            // Carrega a camada de interativos do mundo Umbra de forma independente
+            carregarInterativos(mapaUmbra, "Interativos", true);
+        }
     }
 
-    // Define a referencia de progresso para a avaliacao de condicoes
     public void setProgresso(GerenciadorProgresso progresso) {
         this.progresso = progresso;
     }
 
-    // Verifica se o objeto atende a condicao de existencia
     public boolean isObjetoAtivo(ObjetoColisao obj, boolean umbra) {
         if (!obj.isAtivo(umbra)) return false;
         if (obj.condicao == null || obj.condicao.trim().isEmpty()) return true;
@@ -171,7 +183,6 @@ public class GerenciadorColisao {
         return avaliarCondicao(obj.condicao, progresso.getMissao(), progresso.getPartes(), progresso.getDocumentos());
     }
 
-    // Motor de avaliacao de expressoes logicas
     private boolean avaliarCondicao(String condicao, int missao, int partes, int documentos) {
         if (condicao == null || condicao.trim().isEmpty()) return true;
         String c = condicao.trim().replace(" ", "").toLowerCase();
@@ -240,10 +251,18 @@ public class GerenciadorColisao {
             }
         }
 
-        if (chave == null || chave.trim().isEmpty())
-            chave = objeto.getProperties().get("class", String.class);
-        if (chave == null || chave.trim().isEmpty())
-            chave = objeto.getProperties().get("type",  String.class);
+        if (chave == null || chave.trim().isEmpty()) {
+            String classe = objeto.getProperties().get("class", String.class);
+            if (classe != null && !classe.trim().isEmpty() && !"objeto".equalsIgnoreCase(classe)) {
+                chave = classe;
+            }
+        }
+        if (chave == null || chave.trim().isEmpty()) {
+            String tipo = objeto.getProperties().get("type", String.class);
+            if (tipo != null && !tipo.trim().isEmpty() && !"objeto".equalsIgnoreCase(tipo)) {
+                chave = tipo;
+            }
+        }
 
         return chave != null ? chave.trim().toLowerCase() : "";
     }
@@ -254,13 +273,21 @@ public class GerenciadorColisao {
 
     private String lerClasse(MapObject objeto) {
         MapProperties props = objeto.getProperties();
-        String classe = props.get("type") != null ? props.get("type").toString() :
-                        props.get("class") != null ? props.get("class").toString() : "";
-        return classe.trim().toLowerCase();
+        String classOrig = props.get("type") != null ? props.get("type").toString() :
+                           props.get("class") != null ? props.get("class").toString() : "";
+        return classOrig.trim().toLowerCase();
     }
 
-    // Carrega paredes e obstaculos estaticos do mapa
-    private void carregarParedes(TiledMap mapa, String camadaNome, List<ObjetoColisao> lista) {
+    // Leitura segura de floats para o parser de dimensoes de Gid do Tiled
+    private float obterFloat(MapProperties props, String chave, float padrao) {
+        Object val = props.get(chave);
+        if (val instanceof Number) {
+            return ((Number) val).floatValue();
+        }
+        return padrao;
+    }
+
+    private void carregarParedes(TiledMap mapa, String camadaNome, List<ObjetoColisao> lista, boolean isUmbraMap) {
         MapLayer camada = mapa.getLayers().get(camadaNome);
         if (camada == null) return;
         for (MapObject objeto : camada.getObjects()) {
@@ -268,42 +295,79 @@ public class GerenciadorColisao {
             Rectangle r     = ((RectangleMapObject) objeto).getRectangle();
             String    chave = lerChave(objeto);
             lista.add(new ObjetoColisao(CoordenadasTiled.paraMundo(r), chave,
-                                        objeto.getProperties(), defaults));
+                                        objeto.getProperties(), defaults, isUmbraMap));
         }
     }
 
-    private void carregarInterativos(TiledMap mapa, String camadaNome) {
+    private void carregarInterativos(TiledMap mapa, String camadaNome, boolean isUmbraMap) {
         MapLayer camada = mapa.getLayers().get(camadaNome);
         if (camada == null) return;
+
         for (MapObject objeto : camada.getObjects()) {
-            if (!(objeto instanceof RectangleMapObject)) continue;
+            Rectangle r = null;
+            TextureRegion tex = null;
+            float rot = 0f;
+
+            if (objeto instanceof RectangleMapObject) {
+                r = ((RectangleMapObject) objeto).getRectangle();
+            } else if (objeto instanceof TiledMapTileMapObject) {
+                TiledMapTileMapObject tmt = (TiledMapTileMapObject) objeto;
+                float w = obterFloat(tmt.getProperties(), "width", tmt.getTile().getTextureRegion().getRegionWidth() * tmt.getScaleX());
+                float h = obterFloat(tmt.getProperties(), "height", tmt.getTile().getTextureRegion().getRegionHeight() * tmt.getScaleY());
+                r = new Rectangle(tmt.getX(), tmt.getY(), w, h);
+                tex = tmt.getTextureRegion();
+                rot = tmt.getRotation();
+            }
+            if (r == null) continue;
+
             String chave = lerChave(objeto);
-
             String classeReal = lerClasse(objeto);
-            Rectangle r = ((RectangleMapObject) objeto).getRectangle();
-            ObjetoColisao obj = new ObjetoColisao(CoordenadasTiled.paraMundo(r), chave,
-                                                  objeto.getProperties(), defaults);
 
-            if ("objeto".equals(classeReal) || "interativos".equals(classeReal) || "interativo".equals(classeReal)) {
+            ObjetoColisao obj = new ObjetoColisao(CoordenadasTiled.paraMundo(r), chave,
+                                                  objeto.getProperties(), defaults, isUmbraMap);
+            obj.textura = tex;
+            obj.rotacao = rot;
+
+            if (tex != null) {
+                objetosDesenhaveis.add(obj);
+            }
+
+            // Apenas objetos estáticos puros são adicionados à colisão física sólida
+            if ("objeto".equals(classeReal)) {
                 objetos.add(obj);
-            } else if (chave.startsWith("pedra")) {
-                // Alinha as coordenadas iniciais da pedra para o tile mais proximo
+            }
+
+            if (chave.startsWith("pedra")) {
                 ajustarAoTile(obj.area);
                 mapaPedras.put(chave, obj);
             } else if (chave.startsWith("objetivo")) {
-                Rectangle rMundo = CoordenadasTiled.paraMundo(r);
-                // Alinha as coordenadas iniciais do objetivo para o tile mais proximo
+                Rectangle rMundo = new Rectangle(obj.area);
                 ajustarAoTile(rMundo);
                 mapaObjetivos.put(chave, rMundo);
             }
 
             if (!chave.isEmpty()) {
-                interativos.put(chave, obj);
+                // Ajusta colisões de nomes duplicados no Tiled: se já existe um objeto com a mesma
+                // chave, preserva o objeto principal e armazena o extra com sufixo.
+                if (interativos.containsKey(chave)) {
+                    ObjetoColisao existente = interativos.get(chave);
+                    Integer idProp = objeto.getProperties().get("id", Integer.class);
+                    String sufixo = chave + "_" + (idProp != null ? idProp : obj.hashCode());
+
+                    if (existente.textura == null && obj.textura != null) {
+                        interativos.put(sufixo, existente);
+                        interativos.put(chave, obj);
+                    } else {
+                        interativos.put(sufixo, obj);
+                    }
+                } else {
+                    interativos.put(chave, obj);
+                }
             }
         }
     }
 
-    private void carregarNpcs(TiledMap mapa, String camadaNome) {
+    private void carregarNpcs(TiledMap mapa, String camadaNome, boolean isUmbraMap) {
         MapLayer camada = mapa.getLayers().get(camadaNome);
         if (camada == null) return;
         for (MapObject objeto : camada.getObjects()) {
@@ -324,20 +388,19 @@ public class GerenciadorColisao {
                 new Rectangle(x, y, largura, altura),
                 textura,
                 objeto.getProperties(),
-                false));
+                isUmbraMap));
         }
     }
 
-    // Alinha a hitbox de um objeto/objetivo ao grid de tiles mais proximo de forma matematica
+    // Alinha unicamente os obstaculos pesados (puzzle de pedras) ao Grid
     private void ajustarAoTile(Rectangle r) {
         float tamanhoTile = 32f * 1.375f; // 44f
         r.x = Math.round(r.x / tamanhoTile) * tamanhoTile;
         r.y = Math.round(r.y / tamanhoTile) * tamanhoTile;
     }
 
-    // Retorna a pedra que o jogador esta encarando no mundo real para interacao
     public ObjetoColisao acharPedraEncarada(Jogador jogador, boolean umbra) {
-        if (umbra) return null; // Só no mundo real as pedras sao empurradas
+        if (umbra) return null; // So no mundo real as pedras sao empurradas
 
         Rectangle rectInteracao = new Rectangle(jogador.hitbox);
         float folga = 16f;
@@ -355,7 +418,6 @@ public class GerenciadorColisao {
         return null;
     }
 
-    // Empurra a pedra em 1 tile na direcao que o jogador esta virado se o caminho estiver livre
     public boolean empurrarPedra(Jogador jogador, ObjetoColisao pedra, boolean umbra) {
         int dir = jogador.getDirecao();
         float tamanhoTile = 32f * 1.375f; // 44f
@@ -367,7 +429,6 @@ public class GerenciadorColisao {
         else if (dir == Jogador.DIRECAO_CIMA)     novoY += tamanhoTile;
         else if (dir == Jogador.DIRECAO_BAIXO)    novoY -= tamanhoTile;
 
-        // Verifica colisao no destino, ignorando a si mesma
         if (verificarPosicao(novoX, novoY, pedra.area.width, pedra.area.height, umbra, pedra)) {
             pedra.area.setPosition(novoX, novoY);
             return true;
@@ -375,7 +436,6 @@ public class GerenciadorColisao {
         return false;
     }
 
-    // Verifica se as 3 pedras estao overlapped com seus respectivos objetivos
     public boolean puzzleResolvido() {
         for (int i = 1; i <= 3; i++) {
             ObjetoColisao pedra = mapaPedras.get("pedra" + i);
@@ -390,7 +450,6 @@ public class GerenciadorColisao {
         return verificarPosicao(proximoX, proximoY, largura, altura, umbra, null);
     }
 
-    // Verificacao considerando obstaculos e permitindo ignorar um objeto proprio (para empurrar blocos sem auto-colisao)
     public boolean verificarPosicao(float proximoX, float proximoY, float largura, float altura, boolean umbra, ObjetoColisao ignorar) {
         if (colisoesDesativadas) return true;
 
@@ -421,13 +480,40 @@ public class GerenciadorColisao {
         return true;
     }
 
+    private ObjetoColisao buscarInterativo(String chave, boolean umbra) {
+        ObjetoColisao o = interativos.get(chave);
+        if (o != null && isObjetoAtivo(o, umbra)) return o;
+
+        String prefixo = chave + "_";
+        for (Map.Entry<String, ObjetoColisao> entry : interativos.entrySet()) {
+            if (entry.getKey().startsWith(prefixo)) {
+                ObjetoColisao candidato = entry.getValue();
+                if (candidato != null && isObjetoAtivo(candidato, umbra)) {
+                    return candidato;
+                }
+            }
+        }
+
+        // Fallback for keys that use a longer identifier but share the same base name,
+        // such as documento1a or documento1_extra. This helps map objects named with
+        // variants of the base interaction key.
+        for (Map.Entry<String, ObjetoColisao> entry : interativos.entrySet()) {
+            String key = entry.getKey();
+            if (!key.equals(chave) && key.startsWith(chave)) {
+                ObjetoColisao candidato = entry.getValue();
+                if (candidato != null && isObjetoAtivo(candidato, umbra)) {
+                    return candidato;
+                }
+            }
+        }
+        return null;
+    }
+
     public Rectangle getArea(String nome, boolean umbra) {
         String chave = nome.toLowerCase();
 
-        if (interativos.containsKey(chave)) {
-            ObjetoColisao o = interativos.get(chave);
-            return (o != null && isObjetoAtivo(o, umbra)) ? o.area : null;
-        }
+        ObjetoColisao o = buscarInterativo(chave, umbra);
+        if (o != null) return o.area;
 
         if (npcs.containsKey(chave)) {
             EntidadeMapa n = npcs.get(chave);
@@ -438,9 +524,8 @@ public class GerenciadorColisao {
     }
 
     public ObjetoColisao getInterativo(String nome, boolean umbra) {
-        String        chave = nome.toLowerCase();
-        ObjetoColisao o     = interativos.get(chave);
-        return (o != null && isObjetoAtivo(o, umbra)) ? o : null;
+        String chave = nome.toLowerCase();
+        return buscarInterativo(chave, umbra);
     }
 
     public EntidadeMapa getNpc(String nome, boolean umbra) {
@@ -539,4 +624,6 @@ public class GerenciadorColisao {
     public boolean isDestrancado(String nome) {
         return nome != null && !nome.isEmpty() && destrancados.contains(nome.toLowerCase());
     }
+
+    public List<ObjetoColisao> getObjetosDesenhaveis() { return objetosDesenhaveis; }
 }

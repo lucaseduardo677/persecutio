@@ -11,6 +11,8 @@ public class GerenciadorDialogo {
     private RepoDialogos repositorio;
     // No atual
     private RepoDialogos.NoDialogo noAtual;
+    // Voz animalese das falas
+    private GerenciadorVoz voz;
 
     // Falante da linha
     private String falante = "";
@@ -36,6 +38,11 @@ public class GerenciadorDialogo {
     // Instancia o gerenciador
     public GerenciadorDialogo() {
         repositorio = new RepoDialogos();
+    }
+
+    // Define o gerenciador de voz usado para falar as falas
+    public void setVoz(GerenciadorVoz vozRef) {
+        voz = vozRef;
     }
 
     // Inicia um no
@@ -70,6 +77,8 @@ public class GerenciadorDialogo {
                 efeitos.add(fala.efeito);
             }
 
+            if (voz != null) voz.falar(falante, texto);
+
             if (idxAtual == noAtual.falas.size() - 1) {
                 if (noAtual.escolhas != null && !noAtual.escolhas.isEmpty()) {
                     for (RepoDialogos.Escolha e : noAtual.escolhas) {
@@ -97,6 +106,7 @@ public class GerenciadorDialogo {
         ativo   = false;
         noAtual = null;
         escolhas.clear();
+        if (voz != null) voz.parar();
     }
 
     // Coleta efeitos gerados
@@ -117,6 +127,13 @@ public class GerenciadorDialogo {
 
     // Obtem o texto
     public String getTexto()     { return texto; }
+
+    // Obtem o texto revelado ate agora, em sincronia com a fala animalese
+    public String getTextoVisivel() {
+        if (voz == null) return texto;
+        int letras = Math.min(texto.length(), voz.obterLetraAtual());
+        return texto.substring(0, letras);
+    }
 
     // Obtem as escolhas
     public List<String> getEscolhas() { return escolhas; }

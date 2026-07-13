@@ -118,6 +118,7 @@ public class RepoDialogos {
             )
         ));
 
+        // Diálogos de tentativa de passagem do corredor
         dicNos.put("enfermeira_desculpa", new NoDialogo(
             Arrays.asList(
                 new Fala("Enfermeira", "Apenas va deitar.", null, null, corBase, 0.60f)
@@ -130,17 +131,20 @@ public class RepoDialogos {
             new Fala("Maria", "...acho que esta vindo da ala leste da casa.")
         )));
 
+        // Reação ao encontrar a porta emperrada no Jardim
         dicNos.put("porta_emperrada", new NoDialogo(Arrays.asList(
             new Fala("Maria", "Esta emperrada..."),
             new Fala("Maria", "Talvez exista alguma forma de destranca-la.")
         )));
 
+        // Som de gatilho mecânico de feedback para o puzzle das pedras
         dicNos.put("porta_clique", new NoDialogo(Arrays.asList(
             new Fala("Maria", "...Escutei um clique.")
         )));
 
+        // Documento opcional do banco do Jardim
         dicNos.put("doc_jardim", new NoDialogo(Arrays.asList(
-            new Fala("Maria", "Um documento rasgado... relata pacientes ouvindo musicas antigas que nao existem.")
+            new Fala("Narrador", "Um documento rasgado... relata pacientes ouvindo musicas antigas que nao existem.")
         )));
 
         // Diálogos da primeira sessão de perguntas com o Dr. Elimar Gonzalez (GDD Páginas 7-9)
@@ -275,7 +279,7 @@ public class RepoDialogos {
             new Fala("Dr. Elimar", "Imagine que alguem a trancou em um quarto quando voce era incapaz de escapar. Dentro dele existe apenas uma cama, uma janela fechada... e um unico poster preso a parede.", null, imgElimar, corBase, 1.0f),
             new Fala("Dr. Elimar", "Como voce nunca viu nada alem daquele quarto, acaba acreditando que aquele e todo o seu mundo. Com o tempo, deixa ate de questionar por que esta ali.", null, imgElimar, corBase, 1.0f),
             new Fala("Dr. Elimar", "Mas um dia, por curiosidade ou necessidade, voce afasta o poster e encontra um pequeno buraco escondido na parede.", null, imgElimar, corBase, 1.0f),
-            new Fala("Dr. Elimar", "Voce olha de perto atraves dele... e, pela primeira vez, percebe que existe um mundo inteiro do outro lado.", null, imgElimar, corBase, 1.0f),
+            new Fala("Dr. Elimar", "Voce olha de perto de perto atraves dele... e, pela primeira vez, percebe que existe um mundo inteiro do outro lado.", null, imgElimar, corBase, 1.0f),
             new Fala("Dr. Elimar", "So que, antes que consiga sair, alguem a puxa de volta, fecha o buraco e coloca o poster exatamente onde ele estava.", null, imgElimar, corBase, 1.0f),
             new Fala("Dr. Elimar", "O buraco continua ali. O mundo alem dele tambem. Mas, aos poucos, voce esquece que eles existem.", null, imgElimar, corBase, 1.0f),
             new Fala("Dr. Elimar", "Nao porque eles desapareceram...", null, imgElimar, corBase, 1.0f),
@@ -300,6 +304,24 @@ public class RepoDialogos {
         dicNos.put("maria_pega_pilulas", new NoDialogo(Arrays.asList(
             new Fala("Maria", "A enfermeira deixou a cartela inteira na mesa de cabeceira..."),
             new Fala("Maria", "Nao quero ter que voltar toda vez que precisar de um comprimido. E melhor levar a cartela inteira comigo.", "tomar_pilula_missao2")
+        )));
+
+        // Leitura sutil e narrativa do prontuário da paciente 103 no Mundo Umbra
+        dicNos.put("documento1_umbra", new NoDialogo(Arrays.asList(
+            new Fala("Narrador", "(O papel em cima do balcao, que antes parecia um borrao sem nexo... agora esta nitido aos meus olhos.)"),
+            new Fala("Narrador", "Documento Clinico - Acesso Restrito. Casa de Repouso Elimar Gonzalez. Paciente 103..."),
+            new Fala("Narrador", "A paciente apresenta perda de memoria seletiva associada a episodios graves de violencia em ambiente domestico..."),
+            new Fala("Narrador", "Demonstra incapacidade de recordar vinculos familiares ou de reconhecer determinados espacos residenciais..."),
+            new Fala("Narrador", "Considerando o trauma, o cerebro da paciente parece ter desenvolvido um bloqueio de memoria parcial como mecanismo de autopreservacao..."),
+            new Fala("Maria", "(Paciente 103... Por que a leitura destas linhas me causa um arrepio tao profundo? Esse prontuario... parece ser sobre mim.)", "ler_prontuario_umbra")
+        )));
+
+        // Leitura do prontuário no mundo real (GDD/Fluxo do Jogo)
+        dicNos.put("documento1_real", new NoDialogo(Arrays.asList(
+            new Fala("Narrador", "CONTEUDO DO PAPEL: Relatorio de Incidente..."),
+            new Fala("Narrador", "A paciente Maria Clara demonstrou surtos de panico extremos durante as sessoes com o Dr. Gonzalez..."),
+            new Fala("Narrador", "[Missao 1 Concluida!]"),
+            new Fala("Maria", "(Isso... isso confirma as minhas suspeitas. Eu preciso continuar investigando...)")
         )));
     }
 }

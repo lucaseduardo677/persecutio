@@ -31,6 +31,7 @@ import com.persecutio.managers.GerenciadorPortas;
 import com.persecutio.managers.GerenciadorProgresso;
 import com.persecutio.managers.GerenciadorRenderizacao;
 import com.persecutio.managers.GerenciadorUI;
+import com.persecutio.managers.GerenciadorVoz;
 
 // Tela principal do jogo durante a gameplay
 public class TelaJogo implements Screen {
@@ -50,6 +51,8 @@ public class TelaJogo implements Screen {
     private GerenciadorUI              interfaceJogo;
     // Dialogos do jogo
     private GerenciadorDialogo         gerDialogo;
+    // Voz animalese das falas
+    private GerenciadorVoz             gerVoz;
     // Renderizador do mapa
     private GerenciadorRenderizacao    renderizador;
     // Gerenciador de comodos
@@ -98,6 +101,8 @@ public class TelaJogo implements Screen {
     private Texture imgPorta0, imgPorta1, imgPorta2, imgPorta3;
     // Textura do reflexo do espelho
     private Texture imgEspelho;
+    // Textura do papel de prontuario de emergencia
+    private Texture imgDocumento;
 
     // Duracao do fade inicial em segundos (interligado com tempo de bloqueio)
     private static final float DURACAO_FADE = 1.0f;
@@ -112,10 +117,13 @@ public class TelaJogo implements Screen {
     private float inicialX;
     private float inicialY;
 
+    // Chave do documento atualmente sob leitura de imagem
+    private String docChave = null;
+
     // Contexto compartilhado de renderizacao
     private final ContextoRender ctx = new ContextoRender();
 
-    // Construtor da tela do jogo
+    // Construtor do jogo
     public TelaJogo(PersecutioGame jogo) {
         this.jogo = jogo;
     }
@@ -152,12 +160,13 @@ public class TelaJogo implements Screen {
     // Inicializa recursos ao entrar na tela
     @Override
     public void show() {
-        spriteSheet = carregarTextura("img/personagem.png");
-        imgPorta0   = carregarTextura("img/parte1.png");
-        imgPorta1   = carregarTextura("img/parte2.png");
-        imgPorta2   = carregarTextura("img/parte3.png");
-        imgPorta3   = carregarTextura("img/parte4.png");
-        imgEspelho  = carregarTextura("img/reflexo-espelho.png");
+        spriteSheet  = carregarTextura("img/personagem.png");
+        imgPorta0    = carregarTextura("img/parte1.png");
+        imgPorta1    = carregarTextura("img/parte2.png");
+        imgPorta2    = carregarTextura("img/parte3.png");
+        imgPorta3    = carregarTextura("img/parte4.png");
+        imgEspelho   = carregarTextura("img/reflexo-espelho.png");
+        imgDocumento = carregarTextura("img/documento1.jpg");
 
         Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pm.setColor(Color.BLACK);
@@ -165,7 +174,7 @@ public class TelaJogo implements Screen {
         texBranca = new Texture(pm);
         pm.dispose();
 
-        for (Texture t : new Texture[]{ spriteSheet, imgPorta0, imgPorta1, imgPorta2, imgPorta3, imgEspelho })
+        for (Texture t : new Texture[]{ spriteSheet, imgPorta0, imgPorta1, imgPorta2, imgPorta3, imgEspelho, imgDocumento })
             t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
         sistemaAudio = jogo.audio;
@@ -178,10 +187,10 @@ public class TelaJogo implements Screen {
         mapaTiledReal  = new TmxMapLoader().load("map/casaderepouso.tmx", pmLoader);
         mapaTiledUmbra = new TmxMapLoader().load("map/casaderepousoumbra.tmx", pmLoader);
         mapaTiled      = mapaTiledReal;
-        mapaAtualUmbra = false;
         float escala   = 1.375f;
 
-        sistemaColisao = new GerenciadorColisao(mapaTiled, escala, "map/mapa.tiled-project");
+        // Agora enviamos ambos os mapas para o Gerenciador de Colisão para que ele carregue as camadas extras do Umbra
+        sistemaColisao = new GerenciadorColisao(mapaTiledReal, mapaTiledUmbra, escala, "map/mapa.tiled-project");
         gerComodos     = new GerenciadorComodos(mapaTiled, escala);
 
         gerPortas      = new GerenciadorPortas(mapaTiledReal, mapaTiledUmbra, escala,
@@ -199,6 +208,9 @@ public class TelaJogo implements Screen {
 
         gerDialogo = new GerenciadorDialogo();
         interfaceJogo.setDialogo(gerDialogo);
+
+        gerVoz = new GerenciadorVoz();
+        gerDialogo.setVoz(gerVoz);
 
         renderizador   = new GerenciadorRenderizacao(escala);
         rendererTiled  = new OrthogonalTiledMapRenderer(mapaTiled, escala, jogo.batch);
@@ -238,11 +250,11 @@ public class TelaJogo implements Screen {
             HitboxConfig cfg = HitboxConfig.padrao();
             float cx = spawnRect.x + spawnRect.width / 2f;
             float cy = spawnRect.y + spawnRect.height / 2f;
-            inicialX = cx - cfg.offsetX() - cfg.larguraHitbox() / 2f;
-            inicialY = cy - cfg.offsetY() - cfg.alturaHitbox() / 2f;
+            this.inicialX = cx - cfg.offsetX() - cfg.larguraHitbox() / 2f;
+            this.inicialY = cy - cfg.offsetY() - cfg.alturaHitbox() / 2f;
         }
 
-        jogador        = new Jogador(inicialX, inicialY, spriteSheet);
+        jogador        = new Jogador(this.inicialX, this.inicialY, spriteSheet);
         hitboxJogador  = jogador.hitbox;
 
         gerLuzes.inicializar(jogador.mundoX, jogador.mundoY);
@@ -250,9 +262,10 @@ public class TelaJogo implements Screen {
         timerFade  = 0f;
         fadeAtivo  = true;
         falanteTocado = false;
+        docChave = null;
     }
 
-    // Loop principal de renderizacao
+    // Loop principal de atualizacao e desenho
     @Override
     public void render(float delta) {
         if (fadeAtivo) {
@@ -293,11 +306,6 @@ public class TelaJogo implements Screen {
             progresso.salvarPosicaoJardim(jogador.mundoX, jogador.mundoY);
         }
 
-        // Atualiza objetivo da recepcao de forma automatica ao entrar nela pela primeira vez
-        if (progresso.getMissao() == 1 && progresso.getFaseMissao() == 0 && comodoAtual != null && "recepcao".equals(comodoAtual.nomeGrupo)) {
-            progresso.setFaseMissao(1); // "Fale com a recepcionista."
-        }
-
         if (comodoAtual != null && comodoAtual.cameraEstatica)
             ctx.atualizar(jogo, jogador.mundoX, jogador.mundoY, comodoAtual);
         else
@@ -306,6 +314,9 @@ public class TelaJogo implements Screen {
         renderizador.renderizarMapa(ctx, rendererTiled, gerComodos, comodoAtual, umbra);
 
         batch.begin();
+
+        // DESENHAR OBJETOS INTERATIVOS TILE E ESTÁTICOS COM TEXTURA
+        renderizador.desenharObjetos(ctx, sistemaColisao, gerComodos, comodoAtual, umbra);
 
         renderizador.desenharNpcs(ctx, sistemaColisao, gerComodos, comodoAtual, umbra);
 
@@ -340,6 +351,13 @@ public class TelaJogo implements Screen {
         }
         if (interfaceJogo.isEspelho()) {
             interfaceJogo.desenharEspelho(ctx, imgEspelho);
+            batch.end();
+            interfaceJogo.desenharFadeEVideo(ctx);
+            desenharFade(ctx);
+            return;
+        }
+        if (interfaceJogo.getEstado() == GerenciadorUI.UI_DOCUMENTO) {
+            interfaceJogo.desenharDocumento(ctx, imgDocumento);
             batch.end();
             interfaceJogo.desenharFadeEVideo(ctx);
             desenharFade(ctx);
@@ -416,7 +434,7 @@ public class TelaJogo implements Screen {
         else                               interfaceJogo.senhaErro();
     }
 
-    // Processa entrada do jogador a cada frame (totalmente travado e interligado com o fade inicial)
+    // Processa entrada do jogador a cada frame (bloqueado durante o fade inicial)
     private void tratarInput(float delta) {
         for (String efe : gerDialogo.pegarEfeitos()) processarEfeito(efe);
 
@@ -424,11 +442,20 @@ public class TelaJogo implements Screen {
 
         if (interfaceJogo.isSenha()) return;
 
-        // Impede qualquer input e congela o sprite totalmente enquanto o fade inicial do jogo estiver rolando (tempo de travamento interligado)
+        // Impede qualquer input e congela o sprite totalmente enquanto o fade inicial do jogo estiver rolando
         if (fadeAtivo) {
             andando = false;
             interfaceJogo.atualizarTutorial(andando, delta);
             return;
+        }
+
+        // Se o documento acabou de ser fechado pelo jogador, dispara a caixa de diálogo correspondente
+        if (interfaceJogo.consumirFechado()) {
+            if (docChave != null && !docChave.isEmpty()) {
+                gerDialogo.iniciar(docChave);
+                interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+                docChave = null;
+            }
         }
 
         // Aciona a chamada do alto-falante de forma automatica assim que a missao inicial sumir da tela do jogador
@@ -438,20 +465,22 @@ public class TelaJogo implements Screen {
             interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
         }
 
-        // Transicao do final de Missao 1: ao terminar o dialogo com o Dr. Elimar Gonzalez, acorda Maria em seu quarto original de spawn
+        // Transicao do final de Missao 1: ao terminar a leitura do prontuario sutil, acorda Maria apenas se pressionar E ou Enter
         if (!interfaceJogo.isDialogo() && progresso.getMissao() == 1 && progresso.getFaseMissao() == 6) {
-            interfaceJogo.iniciarFadeSimples(() -> {
-                // Conclui Missao 1 e reseta os estados da pílula/porta
-                progresso.concluirMissao1(inicialX, inicialY);
+            if (Gdx.input.isKeyJustPressed(Keys.E) || Gdx.input.isKeyJustPressed(Keys.ENTER)) {
+                interfaceJogo.iniciarFadeSimples(() -> {
+                    // Conclui Missao 1 e reseta os estados da pílula/porta
+                    progresso.concluirMissao1(inicialX, inicialY);
 
-                // Recria o jogador no local de spawn inicial para herdar orientacao para baixo padrao
-                jogador = new Jogador(inicialX, inicialY, spriteSheet);
-                hitboxJogador = jogador.hitbox;
+                    // Recria o jogador no local de spawn inicial para herdar orientacao para baixo padrao
+                    jogador = new Jogador(inicialX, inicialY, spriteSheet);
+                    hitboxJogador = jogador.hitbox;
 
-                // Dispara monólogo sutil da Missão 2
-                gerDialogo.iniciar("maria_acorda_missao2");
-                interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
-            });
+                    // Dispara monólogo sutil da Missão 2
+                    gerDialogo.iniciar("maria_acorda_missao2");
+                    interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+                });
+            }
             return;
         }
 
@@ -525,6 +554,9 @@ public class TelaJogo implements Screen {
     // Processa um efeito de jogo disparado por uma tag do ink
     private void processarEfeito(String nome) {
         switch (nome) {
+            case "ler_prontuario_umbra":
+                progresso.lerDocumentoUmbra();
+                break;
             case "dar_peca":
                 progresso.marcarPecaNpc();
                 interfaceJogo.iniciarCinematica();
@@ -545,7 +577,7 @@ public class TelaJogo implements Screen {
 
     // Trata interacao do jogador com portas e objetos (Mecanica de empurrar integrada)
     private void tratarInteracao() {
-        // 1. Verifica empurrao de pedras no mundo real (Missao 2, Fase 2)
+        // 1. Verifica empurrao de pedras no mundo real (Missão 2, Fase 2) no mundo real
         if (!mundoUmbra && progresso.getMissao() == 2 && progresso.getFaseMissao() == 2) {
             GerenciadorColisao.ObjetoColisao pedra = sistemaColisao.acharPedraEncarada(jogador, mundoUmbra);
             if (pedra != null) {
@@ -632,6 +664,14 @@ public class TelaJogo implements Screen {
             return;
         }
 
+        // Se houver leitura de imagem de documento pendente, inicia a UI_DOCUMENTO e o som
+        if (progresso.consumirDocPendente()) {
+            sistemaAudio.tocarDocumento();
+            interfaceJogo.mudarEstado(GerenciadorUI.UI_DOCUMENTO);
+            docChave = progresso.getDocChave();
+            return;
+        }
+
         String no = progresso.pegarDialogo();
         if (no != null) {
             gerDialogo.iniciar(no);
@@ -643,11 +683,6 @@ public class TelaJogo implements Screen {
         if (progresso.isGaveta())     interfaceJogo.mudarEstado(GerenciadorUI.UI_SENHA);
     }
 
-    // Retorna se a porta proxima está destrancada
-    private boolean proximaEstaDestrancada(GerenciadorPortas.Porta porta) {
-        return !porta.trancado || sistemaColisao.isDestrancado(porta.nome);
-    }
-
     // Libera todos os recursos da tela
     @Override
     public void dispose() {
@@ -657,8 +692,10 @@ public class TelaJogo implements Screen {
         imgPorta2.dispose();
         imgPorta3.dispose();
         imgEspelho.dispose();
+        imgDocumento.dispose();
         texBranca.dispose();
         sistemaAudio.dispose();
+        if (gerVoz != null) gerVoz.dispose();
         sistemaDebug.dispose();
         interfaceJogo.dispose();
         renderizador.dispose();

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="80" height="44" tilewidth="32" tileheight="32" infinite="0" nextlayerid="35" nextobjectid="731">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="80" height="44" tilewidth="32" tileheight="32" infinite="0" nextlayerid="36" nextobjectid="735">
  <tileset firstgid="1" name="InteriorTilesLITE" tilewidth="32" tileheight="32" tilecount="224" columns="16">
   <image source="tilemaps/InteriorTilesLITE.png" width="512" height="448"/>
  </tileset>
@@ -675,7 +675,7 @@
  </layer>
  <objectgroup id="21" name="Colisoes" class="parede">
   <object id="4" type="parede" x="0.5" y="321.5" width="31.5" height="733.5"/>
-  <object id="7" type="parede" x="4" y="322.667" width="982.667" height="28"/>
+  <object id="7" type="parede" x="4" y="322.667" width="982.667" height="28.6667"/>
   <object id="10" type="parede" x="320.5" y="323" width="30.5" height="315.5"/>
   <object id="11" type="parede" x="959.989" y="289.5" width="31.9486" height="351"/>
   <object id="15" type="parede" x="3" y="608" width="252.978" height="32"/>
@@ -1086,7 +1086,7 @@
   <object id="717" type="objeto" x="1620.61" y="1125.96" width="5.3913" height="3.04348"/>
   <object id="718" type="objeto" x="1669.82" y="1078.18" width="21.2727" height="36.3636"/>
   <object id="719" type="objeto" x="1509.45" y="1078.55" width="21.6364" height="36.3636"/>
-  <object id="802" name="pilula" type="objeto" x="78" y="350" width="18" height="18">
+  <object id="802" name="pilula" type="objeto" x="64.3636" y="350" width="31.6364" height="16.9091">
    <properties>
     <property name="real" type="bool" value="true"/>
     <property name="umbra" type="bool" value="true"/>

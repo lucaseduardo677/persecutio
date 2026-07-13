@@ -35,6 +35,51 @@ public class GerenciadorRenderizacao {
         pm.dispose();
     }
 
+    // Desenha objetos de tile que possuam textura mapeada e estejam ativos, rotacionando em sua origem correspondente (0,0) do Tiled
+    public void desenharObjetos(ContextoRender ctx, GerenciadorColisao sistemaColisao,
+                                GerenciadorComodos gerComodos, GerenciadorComodos.Comodo comodoAtual, boolean umbra) {
+        List<GerenciadorComodos.Comodo> cullAtivo = gerComodos.getCullAtivo(comodoAtual);
+
+        for (GerenciadorColisao.ObjetoColisao obj : sistemaColisao.getObjetosDesenhaveis()) {
+            if (!sistemaColisao.isObjetoAtivo(obj, umbra)) continue;
+
+            boolean desenhar = false;
+            if (cullAtivo.isEmpty()) {
+                desenhar = true;
+            } else {
+                float cx = obj.area.x + obj.area.width / 2f;
+                float cy = obj.area.y + obj.area.height / 2f;
+                GerenciadorComodos.Comodo comodoObj = gerComodos.achar(cx, cy);
+
+                if (comodoObj != null) {
+                    for (GerenciadorComodos.Comodo c : cullAtivo) {
+                        if (c == comodoObj) {
+                            desenhar = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (desenhar) {
+                // Modificado: a origem (0, 0) simula perfeitamente a rotação sobre o pivot inferior esquerdo que o Tiled usa
+                if (obj.rotacao != 0f) {
+                    ctx.batch.draw(obj.textura,
+                        Math.round(obj.area.x + ctx.cameraX),
+                        Math.round(obj.area.y + ctx.cameraY),
+                        0f, 0f,
+                        obj.area.width, obj.area.height,
+                        1f, 1f, -obj.rotacao);
+                } else {
+                    ctx.batch.draw(obj.textura,
+                        Math.round(obj.area.x + ctx.cameraX),
+                        Math.round(obj.area.y + ctx.cameraY),
+                        obj.area.width, obj.area.height);
+                }
+            }
+        }
+    }
+
     // Desenha NPCs visiveis aplicando o mesmo culling dos comodos ativos
     public void desenharNpcs(ContextoRender ctx, GerenciadorColisao sistemaColisao,
                              GerenciadorComodos gerComodos, GerenciadorComodos.Comodo comodoAtual, boolean umbra) {

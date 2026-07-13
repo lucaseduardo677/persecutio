@@ -1,5 +1,6 @@
 package com.persecutio.managers;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.persecutio.entities.EntidadeMapa;
@@ -62,11 +63,15 @@ public class GerenciadorProgresso {
     // No de dialogo a iniciar (blade-ink)
     private String  dialogoAlvo  = null;
 
+    // Flag de leitura agendada de imagem de documento
+    private boolean docPendente = false;
+    private String  docChave     = "";
+
     // Flag se esta em cinematica
     private boolean cinematica   = false;
-    // Flag se abriu o espelho
+    // Flag se acionou espelho
     private boolean abriuEspelho = false;
-    // Flag se abriu a gaveta
+    // Flag se acionou gaveta
     private boolean abriuGaveta  = false;
 
     // Retangulo temporario
@@ -104,6 +109,21 @@ public class GerenciadorProgresso {
         eventoDocumento = false;
         return r;
     }
+
+    // Agenda a abertura visual do documento
+    public void lerDocumento(String chave) {
+        docPendente = true;
+        docChave    = chave;
+    }
+
+    // Consome e limpa a flag de exibição de documento
+    public boolean consumirDocPendente() {
+        boolean r = docPendente;
+        docPendente = false;
+        return r;
+    }
+
+    public String getDocChave() { return docChave; }
 
     // Retorna se o jogador ja possui a cartela de pilulas
     public boolean hasCartela() { return temCartela; }
@@ -229,18 +249,26 @@ public class GerenciadorProgresso {
             return;
         }
 
-        GerenciadorColisao.ObjetoColisao doc = colisao.getInterativo("documento1", false);
-        if (doc == null) doc = colisao.getInterativo("documento", false);
+        // Reconhecimento universal dos documentos por chaves prefixadas
+        GerenciadorColisao.ObjetoColisao docEncontrado = null;
+        for (GerenciadorColisao.ObjetoColisao d : colisao.getInterativosCompletos(false).values()) {
+            String nomeBase = d.nome.toLowerCase();
+            if (nomeBase.startsWith("documento") || nomeBase.startsWith("planfeto") || nomeBase.startsWith("objeto")) {
+                if (hitboxInteracao.overlaps(d.area)) {
+                    docEncontrado = d;
+                    break;
+                }
+            }
+        }
 
-        if (doc != null && hitboxInteracao.overlaps(doc.area)) {
+        if (docEncontrado != null) {
             if (!destrancada) {
                 aviso = "As letras estao borradas, parecem dancar. Nao consigo ler...";
             } else if (!leuDocumento) {
                 leuDocumento = true;
                 documentos++;
-                missao = 2;
                 faseMissao = 0; // Inicia a Missao 2 na fase 0
-                aviso  = "CONTEUDO DO PAPEL: Relatorio de Incidente...\n[Missao 1 Concluida!]";
+                lerDocumento("documento1_real"); // Agora agenda a leitura da folha gráfica
             } else {
                 aviso = "Voce ja leu este documento.";
             }
@@ -286,12 +314,21 @@ public class GerenciadorProgresso {
         }
 
         // Leitura do prontuario da paciente 103 na recepcao de Umbra (finaliza Missao 1)
-        GerenciadorColisao.ObjetoColisao doc = colisao.getInterativo("documento1", true);
-        if (doc == null) doc = colisao.getInterativo("documento", true);
+        GerenciadorColisao.ObjetoColisao docEncontrado = null;
+        for (GerenciadorColisao.ObjetoColisao d : colisao.getInterativosCompletos(true).values()) {
+            String nomeBase = d.nome.toLowerCase();
+            if (nomeBase.startsWith("documento") || nomeBase.startsWith("planfeto") || nomeBase.startsWith("objeto")) {
+                if (hitboxInteracao.overlaps(d.area)) {
+                    docEncontrado = d;
+                    break;
+                }
+            }
+        }
 
-        if (doc != null && hitboxInteracao.overlaps(doc.area)) {
-            if (missao == 1 && faseMissao == 5) {
-                eventoDocumento = true; // Sinaliza fim da Missao 1 para TelaJogo
+        if (docEncontrado != null) {
+            Gdx.app.log("GerenciadorProgresso", "Documento Umbra detectado: " + docEncontrado.nome + " (missao=" + missao + ", faseMissao=" + faseMissao + ")");
+            if (missao == 1 && faseMissao >= 5) {
+                lerDocumento("documento1_umbra"); // Agenda a leitura do prontuário com arte gráfica
                 return;
             }
         }
@@ -349,35 +386,7 @@ public class GerenciadorProgresso {
         aviso = "";
     }
 
-    // Avalia condicao para destrancar porta
-    private boolean avaliarCondicao(String condicao) {
-        if (condicao == null || condicao.trim().isEmpty()) return true;
-        String c = condicao.trim();
-
-        if (c.contains("==")) {
-            String[] p = c.split("==", 2);
-            String key = p[0].trim();
-            String val = p[1].trim();
-            try {
-                switch (key) {
-                    case "partes":     return partes     >= Integer.parseInt(val);
-                    case "missao":     return missao     >= Integer.parseInt(val);
-                    case "documentos": return documentos >= Integer.parseInt(val);
-                    default: return false;
-                }
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    // Verifica se pode destrancar uma porta (requisito de pecas removido, exige apenas a senha)
-    public boolean pordeDestrancar(GerenciadorPortas.Porta porta) {
-        return podeDestrancar(porta);
-    }
-
+    // Verifica se pode destrancar uma porta (Corrigida a assinatura tipada para Porta)
     public boolean podeDestrancar(GerenciadorPortas.Porta porta) {
         if (!porta.trancado)     return true;
         if (!porta.destrancavel) return false;

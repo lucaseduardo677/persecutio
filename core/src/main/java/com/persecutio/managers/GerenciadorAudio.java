@@ -31,6 +31,8 @@ public class GerenciadorAudio {
     private Music musicaMenu;
     // Som de abrir porta
     private Sound somPorta;
+    // Som de abrir e fechar documentos gráficos
+    private Sound somDocumento;
     // Som de selecao de opcao
     private Sound somSelecao;
     // Som de confirmacao
@@ -94,6 +96,9 @@ public class GerenciadorAudio {
         if (Gdx.files.internal("audio/porta.ogg").exists()) {
             somPorta = Gdx.audio.newSound(Gdx.files.internal("audio/porta.ogg"));
         }
+        if (Gdx.files.internal("audio/documento.ogg").exists()) {
+            somDocumento = Gdx.audio.newSound(Gdx.files.internal("audio/documento.ogg"));
+        }
         if (Gdx.files.internal("audio/passos.ogg").exists()) {
             somPasso = Gdx.audio.newSound(Gdx.files.internal("audio/passos.ogg"));
         }
@@ -136,6 +141,11 @@ public class GerenciadorAudio {
     // Toca som de abrir porta
     public void tocarSomPorta() {
         if (somPorta != null) somPorta.play(volumeEfeitos);
+    }
+
+    // Toca som de folhear documento gráfico
+    public void tocarDocumento() {
+        if (somDocumento != null) somDocumento.play(volumeEfeitos);
     }
 
     // Inicia loop de passos
@@ -262,6 +272,7 @@ public class GerenciadorAudio {
         if (musicaDois  != null) musicaDois.dispose();
         if (musicaMenu  != null) musicaMenu.dispose();
         if (somPorta    != null) somPorta.dispose();
+        if (somDocumento != null) somDocumento.dispose();
         if (somSelecao  != null) somSelecao.dispose();
         if (somConfirmar != null) somConfirmar.dispose();
         if (somPasso    != null) somPasso.dispose();
