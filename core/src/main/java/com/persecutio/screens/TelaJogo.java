@@ -456,17 +456,8 @@ public class TelaJogo implements Screen {
             return;
         }
 
-        if (!mundoUmbra && progresso.temCartela() && Gdx.input.isKeyJustPressed(Keys.P)) {
-            interfaceJogo.fadeSimples(() -> {
-                progresso.alternarUmbra();
-
-                if (progresso.jardimSalvo()) {
-                    com.badlogic.gdx.math.Vector2 pos = progresso.posicaoJardim();
-                    jogador.teleportar(pos.x, pos.y);
-                }
-            });
-            return;
-        }
+        // Removed direct debug shortcut (P) that toggled Umbra when holding cartela.
+        // World transitions should be driven by game events via GerenciadorProgresso.
 
         if (interfaceJogo.puxarInput(jogo.viewport)) {
             andando = false;

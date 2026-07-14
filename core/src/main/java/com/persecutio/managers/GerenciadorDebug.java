@@ -71,9 +71,57 @@ public class GerenciadorDebug {
             shapes.rect(r.x + cameraX, r.y + cameraY, r.width, r.height);
 
         shapes.setColor(COR_INTERATIVO);
-        // Group interativos by base key and merge only overlapping rectangles into clusters
+        // Merge and draw interativos, objetos and pedras by type, but only merge overlapping boxes
+        drawMergedByKey(jogo.sistemaColisao.getInterativos(), cameraX, cameraY);
+
+        shapes.setColor(COR_OBJETO);
+        // objetos: convert to map by name to reuse merging logic
+        java.util.Map<String, Rectangle> objetosMap = new java.util.HashMap<>();
+        for (GerenciadorColisao.ObjetoColisao obj : jogo.sistemaColisao.obterObjetos()) {
+            if (!jogo.sistemaColisao.checarAtivo(obj)) continue;
+            objetosMap.putIfAbsent(obj.nome != null ? obj.nome : java.util.UUID.randomUUID().toString(), new Rectangle(obj.area));
+        }
+        drawMergedByKey(objetosMap, cameraX, cameraY);
+
+        shapes.setColor(COR_PEDRA);
+        java.util.Map<String, Rectangle> pedrasMap = new java.util.HashMap<>();
+        for (java.util.Map.Entry<String, GerenciadorColisao.ObjetoColisao> pe : jogo.sistemaColisao.mapaPedras().entrySet()) {
+            pedrasMap.put(pe.getKey(), new Rectangle(pe.getValue().area));
+        }
+        drawMergedByKey(pedrasMap, cameraX, cameraY);
+
+        shapes.setColor(COR_NPC);
+        for (com.persecutio.entities.EntidadeMapa npc : jogo.sistemaColisao.getNpcs().values())
+            shapes.rect(npc.area.x + cameraX, npc.area.y + cameraY, npc.area.width, npc.area.height);
+
+        shapes.setColor(COR_PORTA);
+        for (GerenciadorPortas.Porta p : jogo.gerPortas.getPortas())
+            shapes.rect(p.area.x + cameraX, p.area.y + cameraY, p.area.width, p.area.height);
+
+        // Desenha as marcas de objetivos das pedras no debug (merge também)
+        shapes.setColor(COR_OBJETIVO);
+        java.util.Map<String, Rectangle> objetivos = new java.util.HashMap<>();
+        int idx = 0;
+        for (Rectangle obj : jogo.sistemaColisao.mapObjetivos().values()) {
+            objetivos.put("obj_" + (idx++), new Rectangle(obj));
+        }
+        drawMergedByKey(objetivos, cameraX, cameraY);
+
+        shapes.setColor(COR_ALCANCE);
+        Rectangle hj = jogo.hitboxJogador;
+        shapes.rect(hj.x - FOLGA_PORTA + cameraX, hj.y - FOLGA_PORTA + cameraY,
+                    hj.width + FOLGA_PORTA * 2f, hj.height + FOLGA_PORTA * 2f);
+
+        shapes.setColor(COR_JOGADOR);
+        shapes.rect(hj.x + cameraX, hj.y + cameraY, hj.width, hj.height);
+
+        shapes.end();
+    }
+
+    // Helper: merge overlapping rects by key prefix and draw them
+    private void drawMergedByKey(java.util.Map<String, Rectangle> source, float cameraX, float cameraY) {
         java.util.Map<String, java.util.List<Rectangle>> clustersByBase = new java.util.HashMap<>();
-        for (java.util.Map.Entry<String, Rectangle> e : jogo.sistemaColisao.getInterativos().entrySet()) {
+        for (java.util.Map.Entry<String, Rectangle> e : source.entrySet()) {
             String key = e.getKey();
             Rectangle r = e.getValue();
             if (key == null || r == null) continue;
@@ -92,49 +140,10 @@ public class GerenciadorDebug {
                     break;
                 }
             }
-            if (!added) {
-                clusters.add(new Rectangle(r));
-            }
+            if (!added) clusters.add(new Rectangle(r));
         }
-        for (java.util.List<Rectangle> clusters : clustersByBase.values()) {
+        for (java.util.List<Rectangle> clusters : clustersByBase.values())
             for (Rectangle c : clusters) shapes.rect(c.x + cameraX, c.y + cameraY, c.width, c.height);
-        }
-
-        shapes.setColor(COR_NPC);
-        for (com.persecutio.entities.EntidadeMapa npc : jogo.sistemaColisao.getNpcs().values())
-            shapes.rect(npc.area.x + cameraX, npc.area.y + cameraY, npc.area.width, npc.area.height);
-
-        shapes.setColor(COR_PORTA);
-        for (GerenciadorPortas.Porta p : jogo.gerPortas.getPortas())
-            shapes.rect(p.area.x + cameraX, p.area.y + cameraY, p.area.width, p.area.height);
-
-        shapes.setColor(COR_OBJETO);
-        for (GerenciadorColisao.ObjetoColisao obj : jogo.sistemaColisao.obterObjetos()) {
-            if (jogo.sistemaColisao.checarAtivo(obj))
-                shapes.rect(obj.area.x + cameraX, obj.area.y + cameraY, obj.area.width, obj.area.height);
-        }
-
-        // Desenha as pedras empurráveis da Missão 2 no debug
-        shapes.setColor(COR_PEDRA);
-        for (GerenciadorColisao.ObjetoColisao pedra : jogo.sistemaColisao.mapaPedras().values()) {
-            shapes.rect(pedra.area.x + cameraX, pedra.area.y + cameraY, pedra.area.width, pedra.area.height);
-        }
-
-        // Desenha as marcas de objetivos das pedras no debug
-        shapes.setColor(COR_OBJETIVO);
-        for (Rectangle obj : jogo.sistemaColisao.mapObjetivos().values()) {
-            shapes.rect(obj.x + cameraX, obj.y + cameraY, obj.width, obj.height);
-        }
-
-        shapes.setColor(COR_ALCANCE);
-        Rectangle hj = jogo.hitboxJogador;
-        shapes.rect(hj.x - FOLGA_PORTA + cameraX, hj.y - FOLGA_PORTA + cameraY,
-                    hj.width + FOLGA_PORTA * 2f, hj.height + FOLGA_PORTA * 2f);
-
-        shapes.setColor(COR_JOGADOR);
-        shapes.rect(hj.x + cameraX, hj.y + cameraY, hj.width, hj.height);
-
-        shapes.end();
     }
 
     // Desenha informacoes de debug na tela
@@ -179,7 +188,7 @@ public class GerenciadorDebug {
         }
 
         ctx.fonteIndicadores.setColor(Color.valueOf("#8c8c8c"));
-        ctx.fonteIndicadores.draw(ctx.batch, "Ctrl+U umbra  Ctrl+P alternar  Ctrl+D forcar  Ctrl+I noclip", x, y);
+        ctx.fonteIndicadores.draw(ctx.batch, "Ctrl+U umbra  Ctrl+I noclip", x, y);
 
         ctx.fonteIndicadores.setColor(Color.WHITE);
     }
