@@ -30,6 +30,8 @@ public class GerenciadorPortas {
     // Retangulo temporario para verificacao de alcance
     private final Rectangle rectAlcance = new Rectangle();
 
+    private GerenciadorProgresso progresso;
+
     // Construtor do gerenciador de portas
     public GerenciadorPortas(TiledMap mapaReal, TiledMap mapaUmbra, float escala,
                              Map<String, Map<String, Object>> defaults) {
@@ -40,6 +42,14 @@ public class GerenciadorPortas {
         carregarPortas(mapaUmbra, portasUmbra, defaults);
         portas.addAll(portasReal);
         portas.addAll(portasUmbra);
+    }
+
+    public void setProgresso(GerenciadorProgresso progresso) {
+        this.progresso = progresso;
+    }
+
+    private boolean isUmbra() {
+        return progresso != null && progresso.isUmbra();
     }
 
     private void carregarPortas(TiledMap mapa, List<Porta> lista,
@@ -124,8 +134,9 @@ public class GerenciadorPortas {
         }
     }
 
-    // Procura porta mais proxima do jogador
-    public Porta acharProxima(Jogador jogador, boolean umbra) {
+    // Procura porta mais proxima do jogador detectando o mundo
+    public Porta acharPorta(Jogador jogador) {
+        boolean umbra = isUmbra();
         rectAlcance.set(
             jogador.hitbox.x - FOLGA,
             jogador.hitbox.y - FOLGA,

@@ -37,11 +37,11 @@ public class GerenciadorRenderizacao {
 
     // Desenha objetos de tile que possuam textura mapeada e estejam ativos, rotacionando em sua origem correspondente (0,0) do Tiled
     public void desenharObjetos(ContextoRender ctx, GerenciadorColisao sistemaColisao,
-                                GerenciadorComodos gerComodos, GerenciadorComodos.Comodo comodoAtual, boolean umbra) {
+                                GerenciadorComodos gerComodos, GerenciadorComodos.Comodo comodoAtual) {
         List<GerenciadorComodos.Comodo> cullAtivo = gerComodos.getCullAtivo(comodoAtual);
 
-        for (GerenciadorColisao.ObjetoColisao obj : sistemaColisao.getObjetosDesenhaveis()) {
-            if (!sistemaColisao.isObjetoAtivo(obj, umbra)) continue;
+        for (GerenciadorColisao.ObjetoColisao obj : sistemaColisao.obterDesenhaveis()) {
+            if (!sistemaColisao.checarAtivo(obj)) continue;
 
             boolean desenhar = false;
             if (cullAtivo.isEmpty()) {
@@ -82,11 +82,11 @@ public class GerenciadorRenderizacao {
 
     // Desenha NPCs visiveis aplicando o mesmo culling dos comodos ativos
     public void desenharNpcs(ContextoRender ctx, GerenciadorColisao sistemaColisao,
-                             GerenciadorComodos gerComodos, GerenciadorComodos.Comodo comodoAtual, boolean umbra) {
+                             GerenciadorComodos gerComodos, GerenciadorComodos.Comodo comodoAtual) {
 
         List<GerenciadorComodos.Comodo> cullAtivo = gerComodos.getCullAtivo(comodoAtual);
 
-        for (EntidadeMapa npc : sistemaColisao.getNpcs(umbra).values()) {
+        for (EntidadeMapa npc : sistemaColisao.getNpcs().values()) {
             boolean desenhar = false;
 
             if (cullAtivo.isEmpty()) {
@@ -119,7 +119,7 @@ public class GerenciadorRenderizacao {
     }
 
     // Desenha reflexo espelhado do jogador
-    public void desenharCloneEspelho(ContextoRender ctx, Jogador jogador, Texture spriteSheet,
+    public void desenharClone(ContextoRender ctx, Jogador jogador, Texture spriteSheet,
                                      Rectangle areaReflexo) {
         if (areaReflexo == null || spriteSheet == null || jogador == null) return;
 
@@ -149,8 +149,9 @@ public class GerenciadorRenderizacao {
                                OrthogonalTiledMapRenderer rendererTiled,
                                GerenciadorComodos gerComodos,
                                GerenciadorComodos.Comodo comodoJogador,
-                               boolean umbra) {
+                               GerenciadorColisao sistemaColisao) {
 
+        boolean umbra = sistemaColisao.isUmbra();
         SpriteBatch batch = ctx.batch;
         List<GerenciadorComodos.Comodo> cullAtivo = gerComodos.getCullAtivo(comodoJogador);
 
@@ -174,7 +175,7 @@ public class GerenciadorRenderizacao {
 
             for (MapLayer layer : mapa.getLayers()) {
                 if (layer instanceof TiledMapTileLayer) {
-                    renderTileLayerComCull(batch, (TiledMapTileLayer) layer, cullAtivo, escala);
+                    renderizarCamada(batch, (TiledMapTileLayer) layer, cullAtivo, escala);
                 }
             }
 
@@ -182,7 +183,7 @@ public class GerenciadorRenderizacao {
                 batch.setColor(0.59f, 0f, 0f, 0.27f);
                 for (MapLayer layer : mapa.getLayers()) {
                     if (layer instanceof TiledMapTileLayer) {
-                        renderTileLayerComCull(batch, (TiledMapTileLayer) layer, cullAtivo, escala);
+                        renderizarCamada(batch, (TiledMapTileLayer) layer, cullAtivo, escala);
                     }
                 }
                 batch.setColor(Color.WHITE);
@@ -197,7 +198,7 @@ public class GerenciadorRenderizacao {
     }
 
     // Renderiza camada de tiles aplicando filtro de area
-    private void renderTileLayerComCull(SpriteBatch batch, TiledMapTileLayer layer,
+    private void renderizarCamada(SpriteBatch batch, TiledMapTileLayer layer,
                                         List<GerenciadorComodos.Comodo> cullAtivo, float escala) {
         final float tileWidth  = layer.getTileWidth()  * escala;
         final float tileHeight = layer.getTileHeight() * escala;

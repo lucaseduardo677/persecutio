@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
@@ -20,6 +19,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.persecutio.game.PersecutioGame;
 import com.persecutio.entities.HitboxConfig;
 import com.persecutio.entities.Jogador;
+import com.persecutio.entities.EntidadeMapa;
 import com.persecutio.managers.ContextoRender;
 import com.persecutio.managers.GerenciadorAudio;
 import com.persecutio.managers.GerenciadorColisao;
@@ -97,12 +97,8 @@ public class TelaJogo implements Screen {
     // Spritesheet do personagem
     private Texture spriteSheet;
 
-    // Texturas das partes da porta
-    private Texture imgPorta0, imgPorta1, imgPorta2, imgPorta3;
-    // Textura do reflexo do espelho
-    private Texture imgEspelho;
-    // Textura do papel de prontuario de emergencia
-    private Texture imgDocumento;
+    // Texturas da UI e overlays
+    private Texture imgPorta0, imgEspelho, imgDocumento;
 
     // Duracao do fade inicial em segundos (interligado com tempo de bloqueio)
     private static final float DURACAO_FADE = 1.0f;
@@ -162,9 +158,6 @@ public class TelaJogo implements Screen {
     public void show() {
         spriteSheet  = carregarTextura("img/personagem.png");
         imgPorta0    = carregarTextura("img/parte1.png");
-        imgPorta1    = carregarTextura("img/parte2.png");
-        imgPorta2    = carregarTextura("img/parte3.png");
-        imgPorta3    = carregarTextura("img/parte4.png");
         imgEspelho   = carregarTextura("img/reflexo-espelho.png");
         imgDocumento = carregarTextura("img/documento1.jpg");
 
@@ -174,7 +167,7 @@ public class TelaJogo implements Screen {
         texBranca = new Texture(pm);
         pm.dispose();
 
-        for (Texture t : new Texture[]{ spriteSheet, imgPorta0, imgPorta1, imgPorta2, imgPorta3, imgEspelho, imgDocumento })
+        for (Texture t : new Texture[]{ spriteSheet, imgPorta0, imgEspelho, imgDocumento })
             t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
         sistemaAudio = jogo.audio;
@@ -189,21 +182,19 @@ public class TelaJogo implements Screen {
         mapaTiled      = mapaTiledReal;
         float escala   = 1.375f;
 
-        // Agora enviamos ambos os mapas para o Gerenciador de Colisão para que ele carregue as camadas extras do Umbra
         sistemaColisao = new GerenciadorColisao(mapaTiledReal, mapaTiledUmbra, escala, "map/mapa.tiled-project");
         gerComodos     = new GerenciadorComodos(mapaTiled, escala);
 
         gerPortas      = new GerenciadorPortas(mapaTiledReal, mapaTiledUmbra, escala,
                                                sistemaColisao.getDefaults());
         sistemaDebug   = new GerenciadorDebug();
-        progresso      = new GerenciadorProgresso(sistemaColisao, gerPortas);
+        progresso      = new GerenciadorProgresso(sistemaColisao);
 
-        // Associa o progresso ao sistema de colisao para avaliar condicoes dinamicas
         sistemaColisao.setProgresso(progresso);
+        gerPortas.setProgresso(progresso);
 
         interfaceJogo  = new GerenciadorUI();
-        // Inicializa com fonte_indicadores.ttf para ser utilizada em todos os elementos de UI nao-dialogo
-        interfaceJogo.inicializar(jogo.fonteIndicadores, jogo.viewport, sistemaAudio);
+        interfaceJogo.iniciarAudio(jogo.fonteIndicadores, jogo.viewport, sistemaAudio);
         interfaceJogo.setProgresso(progresso);
 
         gerDialogo = new GerenciadorDialogo();
@@ -219,13 +210,12 @@ public class TelaJogo implements Screen {
         gerLuzes.setGerenciadorComodos(gerComodos);
         gerLuzes.carregarLuzesDoTiled(mapaTiledReal, false);
         gerLuzes.carregarLuzesDoTiled(mapaTiledUmbra, true);
-        gerLuzes.criarParedes(sistemaColisao.getParedesBox2D(), sistemaColisao.getPortasBox2D());
+        gerLuzes.criarParedes(sistemaColisao.paredesBox(), sistemaColisao.portasBox());
 
-        // Posicao inicial do jogador caso nao encontre spawnpoint
+        // Posicao inicial do jogador
         float inicialX = 75f * escala;
         float inicialY = (768f + 180f) * escala;
 
-        // Procura spawnpoint na camada Destinos
         Rectangle spawnRect = null;
         MapLayer camadaDestinos = mapaTiled.getLayers().get("Destinos");
         if (camadaDestinos != null) {
@@ -246,7 +236,6 @@ public class TelaJogo implements Screen {
         }
 
         if (spawnRect != null) {
-            // Centraliza a hitbox do jogador dentro do retangulo do spawnpoint
             HitboxConfig cfg = HitboxConfig.padrao();
             float cx = spawnRect.x + spawnRect.width / 2f;
             float cy = spawnRect.y + spawnRect.height / 2f;
@@ -291,19 +280,17 @@ public class TelaJogo implements Screen {
         mundoUmbra            = umbra;
         portaUmbraDestrancada = destrancada;
 
-        atualizarMapaParaMundo(umbra);
+        atualizarMapa(umbra);
         gerLuzes.setAmbienteUmbra(mundoUmbra);
 
-        // Atualiza o som ambiente do mundo atual
         sistemaAudio.atualizarAmbiente(mundoUmbra, progresso.getMissao());
 
         float hcX   = jogador.hitbox.x + jogador.hitbox.width  / 2f;
         float hcY   = jogador.hitbox.y + jogador.hitbox.height / 2f;
         comodoAtual = gerComodos.achar(hcX, hcY);
 
-        // Se estiver no mundo real e na Missão 2, salva a posição do Jardim para fast-travel
         if (comodoAtual != null && "jardimexterno".equals(comodoAtual.nomeGrupo)) {
-            progresso.salvarPosicaoJardim(jogador.mundoX, jogador.mundoY);
+            progresso.onSaveJardim(jogador.mundoX, jogador.mundoY);
         }
 
         if (comodoAtual != null && comodoAtual.cameraEstatica)
@@ -311,29 +298,27 @@ public class TelaJogo implements Screen {
         else
             ctx.atualizar(jogo, jogador.mundoX, jogador.mundoY);
 
-        renderizador.renderizarMapa(ctx, rendererTiled, gerComodos, comodoAtual, umbra);
+        renderizador.renderizarMapa(ctx, rendererTiled, gerComodos, comodoAtual, sistemaColisao);
 
         batch.begin();
 
-        // DESENHAR OBJETOS INTERATIVOS TILE E ESTÁTICOS COM TEXTURA
-        renderizador.desenharObjetos(ctx, sistemaColisao, gerComodos, comodoAtual, umbra);
+        renderizador.desenharObjetos(ctx, sistemaColisao, gerComodos, comodoAtual);
 
-        renderizador.desenharNpcs(ctx, sistemaColisao, gerComodos, comodoAtual, umbra);
+        renderizador.desenharNpcs(ctx, sistemaColisao, gerComodos, comodoAtual);
 
         jogador.desenhar(batch,
             Math.round(ctx.mundoParaTelaX(jogador.mundoX)),
             Math.round(ctx.mundoParaTelaY(jogador.mundoY)));
 
         if (comodoAtual != null && "quarto".equals(comodoAtual.nomeGrupo)) {
-            Rectangle areaReflexo = sistemaColisao.getReflexoArea(umbra);
+            Rectangle areaReflexo = sistemaColisao.areaReflexo();
             if (areaReflexo != null && jogador.hitbox.overlaps(areaReflexo)) {
-                renderizador.desenharCloneEspelho(ctx, jogador, spriteSheet, areaReflexo);
+                renderizador.desenharClone(ctx, jogador, spriteSheet, areaReflexo);
             }
         }
 
         batch.end();
 
-        // Posicao original de renderizacao do personagem
         gerLuzes.atualizarPosicaoJogador(jogador.mundoX, jogador.mundoY);
         gerLuzes.render(ctx, gerComodos, comodoAtual);
 
@@ -341,67 +326,62 @@ public class TelaJogo implements Screen {
 
         interfaceJogo.desenharTutorial(ctx);
 
-        if (interfaceJogo.isNpc()) {
-            interfaceJogo.desenharEscuro(ctx);
-            interfaceJogo.desenharNpc(ctx, imgPorta3);
-            batch.end();
-            interfaceJogo.desenharFadeEVideo(ctx);
-            desenharFade(ctx);
-            return;
-        }
         if (interfaceJogo.isEspelho()) {
             interfaceJogo.desenharEspelho(ctx, imgEspelho);
             batch.end();
-            interfaceJogo.desenharFadeEVideo(ctx);
+            interfaceJogo.desenharVideo(ctx);
             desenharFade(ctx);
             return;
         }
-        if (interfaceJogo.getEstado() == GerenciadorUI.UI_DOCUMENTO) {
+        if (interfaceJogo.obterEstado() == GerenciadorUI.UI_DOCUMENTO) {
             interfaceJogo.desenharDocumento(ctx, imgDocumento);
             batch.end();
-            interfaceJogo.desenharFadeEVideo(ctx);
+            interfaceJogo.desenharVideo(ctx);
             desenharFade(ctx);
             return;
         }
         if (interfaceJogo.isPorta()) {
             interfaceJogo.desenharPorta(ctx, imgPorta0);
             batch.end();
-            interfaceJogo.desenharFadeEVideo(ctx);
+            interfaceJogo.desenharVideo(ctx);
             desenharFade(ctx);
             return;
         }
         if (interfaceJogo.isSenha()) {
             interfaceJogo.desenharEscuro(ctx);
             batch.end();
-            interfaceJogo.desenharFadeEVideo(ctx);
+            interfaceJogo.desenharVideo(ctx);
             interfaceJogo.atualizarSenha(delta);
             processarSenha();
             desenharFade(ctx);
             return;
         }
 
-        interfaceJogo.desenharAvisos(ctx, sistemaColisao, jogador, umbra, destrancada,
-            progresso.getAviso(), progresso.isFalouComEnfermeira());
-        interfaceJogo.desenharPromptPorta(ctx, gerPortas, sistemaColisao, jogador, umbra);
+        interfaceJogo.desenharAvisos(ctx, sistemaColisao, jogador);
+        interfaceJogo.desenharPrompt(ctx, gerPortas, sistemaColisao, jogador);
         interfaceJogo.desenharLiberada(ctx);
         interfaceJogo.desenharDialogo(ctx);
         if (interfaceJogo.isPausado()) interfaceJogo.desenharPausa(ctx);
 
         batch.end();
 
-        interfaceJogo.desenharFadeEVideo(ctx);
+        interfaceJogo.desenharVideo(ctx);
 
         if (mostrarHitboxes) {
-            sistemaDebug.desenharHitboxes(this, ctx.cameraX, ctx.cameraY);
-            batch.begin();
-            sistemaDebug.desenharInfo(this, ctx);
-            batch.end();
+            shapesDebug(delta);
         }
 
         desenharFade(ctx);
     }
 
-    private void atualizarMapaParaMundo(boolean umbra) {
+    private void shapesDebug(float delta) {
+        sistemaDebug.desenharHitboxes(this, ctx.cameraX, ctx.cameraY);
+        jogo.batch.begin();
+        sistemaDebug.desenharInfo(this, ctx);
+        jogo.batch.end();
+    }
+
+    private void atualizarMapa(boolean umbra) {
         if (mapaAtualUmbra == umbra) return;
         mapaAtualUmbra = umbra;
         mapaTiled = umbra ? mapaTiledUmbra : mapaTiledReal;
@@ -430,11 +410,11 @@ public class TelaJogo implements Screen {
     private void processarSenha() {
         String senha = interfaceJogo.pegarSenha();
         if (senha == null) return;
-        if (progresso.validarSenha(senha)) interfaceJogo.senhaSucesso();
-        else                               interfaceJogo.senhaErro();
+        if (progresso.onPasswordEntered(senha)) interfaceJogo.senhaSucesso();
+        else                                    interfaceJogo.senhaErro();
     }
 
-    // Processa entrada do jogador a cada frame (bloqueado durante o fade inicial)
+    // Processa entrada do jogador a cada frame
     private void tratarInput(float delta) {
         for (String efe : gerDialogo.pegarEfeitos()) processarEfeito(efe);
 
@@ -442,14 +422,12 @@ public class TelaJogo implements Screen {
 
         if (interfaceJogo.isSenha()) return;
 
-        // Impede qualquer input e congela o sprite totalmente enquanto o fade inicial do jogo estiver rolando
         if (fadeAtivo) {
             andando = false;
             interfaceJogo.atualizarTutorial(andando, delta);
             return;
         }
 
-        // Se o documento acabou de ser fechado pelo jogador, dispara a caixa de diálogo correspondente
         if (interfaceJogo.consumirFechado()) {
             if (docChave != null && !docChave.isEmpty()) {
                 gerDialogo.iniciar(docChave);
@@ -458,25 +436,19 @@ public class TelaJogo implements Screen {
             }
         }
 
-        // Aciona a chamada do alto-falante de forma automatica assim que a missao inicial sumir da tela do jogador
-        if (progresso.getMissao() == 1 && progresso.getFaseMissao() == 0 && !interfaceJogo.isBloqueado() && !falanteTocado) {
+        if (progresso.getMissao() == 1 && progresso.obterFase() == 0 && !interfaceJogo.isBloqueado() && !falanteTocado) {
             falanteTocado = true;
             gerDialogo.iniciar("alto_falante");
             interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
         }
 
-        // Transicao do final de Missao 1: ao terminar a leitura do prontuario sutil, acorda Maria apenas se pressionar E ou Enter
-        if (!interfaceJogo.isDialogo() && progresso.getMissao() == 1 && progresso.getFaseMissao() == 6) {
+        if (!interfaceJogo.isDialogo() && progresso.getMissao() == 1 && progresso.obterFase() == 6) {
             if (Gdx.input.isKeyJustPressed(Keys.E) || Gdx.input.isKeyJustPressed(Keys.ENTER)) {
-                interfaceJogo.iniciarFadeSimples(() -> {
-                    // Conclui Missao 1 e reseta os estados da pílula/porta
-                    progresso.concluirMissao1(inicialX, inicialY);
-
-                    // Recria o jogador no local de spawn inicial para herdar orientacao para baixo padrao
+                interfaceJogo.fadeSimples(() -> {
+                    progresso.concluirPrimeira(inicialX, inicialY);
                     jogador = new Jogador(inicialX, inicialY, spriteSheet);
                     hitboxJogador = jogador.hitbox;
 
-                    // Dispara monólogo sutil da Missão 2
                     gerDialogo.iniciar("maria_acorda_missao2");
                     interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
                 });
@@ -484,21 +456,18 @@ public class TelaJogo implements Screen {
             return;
         }
 
-        // Tecla P para fast-travel do jardim na Missão 2 usando a cartela de pílulas no mundo real
-        if (!mundoUmbra && progresso.hasCartela() && Gdx.input.isKeyJustPressed(Keys.P)) {
-            interfaceJogo.iniciarFadeSimples(() -> {
-                progresso.alternarUmbra(); // Vai para o Umbra
+        if (!mundoUmbra && progresso.temCartela() && Gdx.input.isKeyJustPressed(Keys.P)) {
+            interfaceJogo.fadeSimples(() -> {
+                progresso.alternarUmbra();
 
-                // Se a posição do jardim foi salva, teleporta Maria para lá
-                if (progresso.isJardimSalvo()) {
-                    com.badlogic.gdx.math.Vector2 pos = progresso.getPosicaoJardim();
+                if (progresso.jardimSalvo()) {
+                    com.badlogic.gdx.math.Vector2 pos = progresso.posicaoJardim();
                     jogador.teleportar(pos.x, pos.y);
                 }
             });
             return;
         }
 
-        // Processa os inputs da UI (como escolhas de dialogo e pausa)
         if (interfaceJogo.puxarInput(jogo.viewport)) {
             andando = false;
             interfaceJogo.atualizarTutorial(andando, delta);
@@ -507,10 +476,9 @@ public class TelaJogo implements Screen {
 
         if (interfaceJogo.isFade())  return;
 
-        // Se a interface estiver em estado bloqueado (ex: exibindo missao ou dialogo), impede atualizacao e congela totalmente o sprite do jogador
         if (interfaceJogo.isBloqueado()) {
             andando = false;
-            progresso.verificarAfastamento(jogador);
+            progresso.checarLonge(jogador);
             interfaceJogo.atualizarTutorial(andando, delta);
             return;
         }
@@ -527,10 +495,10 @@ public class TelaJogo implements Screen {
         if (Gdx.input.isKeyJustPressed(Keys.E)) tratarInteracao();
 
         boolean estavaAndando = andando;
-        jogador.atualizar(delta, sistemaColisao, mundoUmbra);
+        jogador.atualizar(delta, sistemaColisao);
         andando = jogador.isAndando();
 
-        progresso.verificarAfastamento(jogador);
+        progresso.checarLonge(jogador);
 
         if  (andando && !estavaAndando) sistemaAudio.tocarPassos();
         else if (!andando && estavaAndando) sistemaAudio.pararPassos();
@@ -539,12 +507,12 @@ public class TelaJogo implements Screen {
     }
 
     // Teleporta o jogador centralizando a hitbox dentro do retangulo destino
-    private void teleportarJogadorParaDestino(Jogador jogador, GerenciadorPortas.Porta porta) {
+    private void moverJogador(Jogador jogador, GerenciadorPortas.Porta porta) {
         if (porta.areaDestino != null) {
             float cx = porta.areaDestino.x + porta.areaDestino.width / 2f;
             float cy = porta.areaDestino.y + porta.areaDestino.height / 2f;
-            float novoX = cx - jogador.hitboxOffsetX() - jogador.hitbox.width / 2f;
-            float novoY = cy - jogador.hitboxOffsetY() - jogador.hitbox.height / 2f;
+            float novoX = cx - jogador.obterOffsetX() - jogador.hitbox.width / 2f;
+            float novoY = cy - jogador.obterOffsetY() - jogador.hitbox.height / 2f;
             jogador.teleportar(novoX, novoY);
         } else {
             jogador.teleportar(porta.spawn.x, porta.spawn.y);
@@ -555,39 +523,32 @@ public class TelaJogo implements Screen {
     private void processarEfeito(String nome) {
         switch (nome) {
             case "ler_prontuario_umbra":
-                progresso.lerDocumentoUmbra();
-                break;
-            case "dar_peca":
-                progresso.marcarPecaNpc();
-                interfaceJogo.iniciarCinematica();
-                sistemaAudio.tocarConfirmar();
+                progresso.lerUmbra();
                 break;
             case "tomar_pilula_missao2":
-                // Efeito do diálogo de recolher as pílulas para viajar ao Umbra
-                interfaceJogo.iniciarFadeSimples(() -> {
+                interfaceJogo.fadeSimples(() -> {
                     progresso.pegarCartela();
                     gerDialogo.iniciar("maria_musica");
                     interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
                 });
                 break;
             default:
-                Gdx.app.log("TelaJogo", "efeito de dialogo desconhecido: " + nome);
+                Gdx.app.log("TelaJogo", "efeito desconhecido: " + nome);
         }
     }
 
     // Trata interacao do jogador com portas e objetos (Mecanica de empurrar integrada)
     private void tratarInteracao() {
-        // 1. Verifica empurrao de pedras no mundo real (Missão 2, Fase 2) no mundo real
-        if (!mundoUmbra && progresso.getMissao() == 2 && progresso.getFaseMissao() == 2) {
-            GerenciadorColisao.ObjetoColisao pedra = sistemaColisao.acharPedraEncarada(jogador, mundoUmbra);
+        if (!mundoUmbra && progresso.getMissao() == 2 && progresso.obterFase() == 2) {
+            GerenciadorColisao.ObjetoColisao pedra = sistemaColisao.acharPedra(jogador);
             if (pedra != null) {
-                if (sistemaColisao.empurrarPedra(jogador, pedra, mundoUmbra)) {
-                    sistemaAudio.tocarSomPorta(); // Toca o som ao arrastar a pedra
-
-                    // Se o puzzle das pedras foi resolvido, atualiza a missão e destranca o Jardim
-                    if (sistemaColisao.puzzleResolvido()) {
-                        progresso.resolverPuzzle();
-                        gerDialogo.iniciar("porta_clique");
+                if (sistemaColisao.empurrarPedra(jogador, pedra)) {
+                    sistemaAudio.tocarSomPorta();
+                    // Caso o movimento tenha resolvido o puzzle, o GerenciadorColisao
+                    // notificará o progresso via onPuzzleSolved(), que agenda o diálogo.
+                    String no = progresso.pegarDialogo();
+                    if (no != null) {
+                        gerDialogo.iniciar(no);
                         interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
                     }
                 }
@@ -595,27 +556,25 @@ public class TelaJogo implements Screen {
             }
         }
 
-        GerenciadorPortas.Porta porta = gerPortas.acharProxima(jogador, mundoUmbra);
+        GerenciadorPortas.Porta porta = gerPortas.acharPorta(jogador);
         if (porta != null) {
-            // Se estiver na Missão 2, fase 1 (investigando som), e interagir com a porta do jardim:
-            if (mundoUmbra && progresso.getMissao() == 2 && progresso.getFaseMissao() == 1) {
-                if (porta.nome.toLowerCase().contains("jardim") || porta.nome.toLowerCase().contains("escritorio")) {
-                    gerDialogo.iniciar("porta_emperrada");
-                    interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
-                    progresso.setFaseMissao(2); // Avanca para fase 2 (descobrir como abrir a porta)
-                    return;
-                }
-            }
-
-            // Se o puzzle ja foi resolvido (fase 3) e o jogador cruzar a porta do jardim, conclui a missao
-            if (mundoUmbra && progresso.getMissao() == 2 && progresso.getFaseMissao() == 3) {
-                if (porta.nome.toLowerCase().contains("jardim") || porta.nome.toLowerCase().contains("escritorio")) {
-                    sistemaAudio.tocarSomPorta();
-                    interfaceJogo.iniciarFade(porta.video, () -> {
-                        teleportarJogadorParaDestino(jogador, porta);
-                        progresso.concluirMissao2(); // Conclui Missao 2, muda missao para 3
-                    });
-                    return;
+            // Pergunta ao progresso se esta porta exige algum comportamento especial
+            GerenciadorProgresso.PortaResponse resp = progresso.onPortaInteract(porta);
+            if (resp != null) {
+                switch (resp.action) {
+                    case DIALOG:
+                        gerDialogo.iniciar(resp.dialogNode);
+                        interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+                        return;
+                    case FADE_MOVE_AND_CONCLUDE:
+                        sistemaAudio.tocarSomPorta();
+                        interfaceJogo.iniciarFade(resp.video, () -> {
+                            moverJogador(jogador, porta);
+                            progresso.concluirSegunda();
+                        });
+                        return;
+                    case CONTINUE:
+                        break;
                 }
             }
 
@@ -626,7 +585,7 @@ public class TelaJogo implements Screen {
                     sistemaColisao.destrancar(porta.nome);
                     sistemaAudio.tocarSomPorta();
                     interfaceJogo.iniciarFade(porta.video, () ->
-                        teleportarJogadorParaDestino(jogador, porta)
+                        moverJogador(jogador, porta)
                     );
                 } else {
                     interfaceJogo.mudarEstado(GerenciadorUI.UI_PORTA);
@@ -637,38 +596,99 @@ public class TelaJogo implements Screen {
             sistemaAudio.tocarSomPorta();
             if (porta.usarFade) {
                 interfaceJogo.iniciarFade(porta.video, () ->
-                    teleportarJogadorParaDestino(jogador, porta)
+                    moverJogador(jogador, porta)
                 );
             } else {
-                teleportarJogadorParaDestino(jogador, porta);
+                moverJogador(jogador, porta);
             }
             return;
         }
 
-        progresso.tratarInteracao(jogador);
+        // Nova abordagem: detecta diretamente qual NPC/objeto/documento foi ativado
+        Rectangle hitboxInteracao = progresso.hitboxFolga(jogador);
 
-        // Se houver transicao de pilula pendente de fade:
+        // NPCs (ex: enfermeira)
+        EntidadeMapa enfermeira = sistemaColisao.getNpc("enfermeira");
+        if (enfermeira != null && hitboxInteracao.overlaps(enfermeira.area)) {
+            progresso.onNpcInteract("enfermeira");
+        }
+
+        // Interativos: procura o primeiro objeto ativo sobreposto e dispara um evento
+        boolean interagiu = false;
+        for (GerenciadorColisao.ObjetoColisao obj : sistemaColisao.todosInterativos().values()) {
+            if (obj == null) continue;
+            if (!sistemaColisao.checarAtivo(obj)) continue;
+            if (!hitboxInteracao.overlaps(obj.area)) continue;
+
+            String nomeObj = obj.nome != null ? obj.nome.toLowerCase() : "";
+            // Docs têm prioridade: chaves prefixadas
+            if (nomeObj.startsWith("documento") || nomeObj.startsWith("planfeto") || nomeObj.startsWith("objeto")) {
+                progresso.onDocumentFound(obj.nome, obj.docId, mundoUmbra);
+                interagiu = true;
+                break;
+            }
+
+            // Caso genérico: passa a chave do objeto para o progresso
+            progresso.onObjectInteract(obj.nome);
+            interagiu = true;
+            break;
+        }
+
+        if (interagiu) {
+            // Consumir possíveis efeitos agendados pelo progresso
+            if (progresso.consumirPilula()) {
+                interfaceJogo.fadeSimples(() -> {
+                    progresso.alternarUmbra();
+                    progresso.mudarFase(1);
+                    gerDialogo.iniciar("maria_musica");
+                    interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+                });
+                return;
+            }
+
+            if (progresso.consumirDocumento()) {
+                progresso.lerUmbra();
+                return;
+            }
+
+            if (progresso.consumirPendente()) {
+                sistemaAudio.tocarDocumento();
+                interfaceJogo.mudarEstado(GerenciadorUI.UI_DOCUMENTO);
+                docChave = progresso.obterChave();
+                return;
+            }
+
+            String no = progresso.pegarDialogo();
+            if (no != null) {
+                gerDialogo.iniciar(no);
+                interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+                return;
+            }
+
+            if (progresso.isEspelho())    { interfaceJogo.mudarEstado(GerenciadorUI.UI_ESPELHO); return; }
+            if (progresso.isGaveta())     { interfaceJogo.mudarEstado(GerenciadorUI.UI_SENHA);    return; }
+        }
+
+        // Reage a eventos gerados pelo progresso
         if (progresso.consumirPilula()) {
-            interfaceJogo.iniciarFadeSimples(() -> {
-                progresso.alternarUmbra(); // Vai para o Umbra
-                progresso.setFaseMissao(1); // Atualiza fase para "Investigue a origem do som"
+            interfaceJogo.fadeSimples(() -> {
+                progresso.alternarUmbra();
+                progresso.mudarFase(1);
                 gerDialogo.iniciar("maria_musica");
                 interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
             });
             return;
         }
 
-        // Se houver transicao de documento ao final da Missao 1, inicia prompt de acordar
         if (progresso.consumirDocumento()) {
-            progresso.lerDocumentoUmbra();
+            progresso.lerUmbra();
             return;
         }
 
-        // Se houver leitura de imagem de documento pendente, inicia a UI_DOCUMENTO e o som
-        if (progresso.consumirDocPendente()) {
+        if (progresso.consumirPendente()) {
             sistemaAudio.tocarDocumento();
             interfaceJogo.mudarEstado(GerenciadorUI.UI_DOCUMENTO);
-            docChave = progresso.getDocChave();
+            docChave = progresso.obterChave();
             return;
         }
 
@@ -678,7 +698,6 @@ public class TelaJogo implements Screen {
             interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
         }
 
-        if (progresso.isCinematica()) interfaceJogo.iniciarCinematica();
         if (progresso.isEspelho())    interfaceJogo.mudarEstado(GerenciadorUI.UI_ESPELHO);
         if (progresso.isGaveta())     interfaceJogo.mudarEstado(GerenciadorUI.UI_SENHA);
     }
@@ -688,9 +707,6 @@ public class TelaJogo implements Screen {
     public void dispose() {
         spriteSheet.dispose();
         imgPorta0.dispose();
-        imgPorta1.dispose();
-        imgPorta2.dispose();
-        imgPorta3.dispose();
         imgEspelho.dispose();
         imgDocumento.dispose();
         texBranca.dispose();

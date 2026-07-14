@@ -44,7 +44,7 @@ public class GerenciadorDebug {
         shapes = new ShapeRenderer();
     }
 
-    // Processa atalhos de debug
+    // Processa atalhos de debug usando apenas o pool de flags
     public void tratarAtalhos(TelaJogo jogo) {
         boolean ctrl = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT)
                     || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
@@ -54,15 +54,8 @@ public class GerenciadorDebug {
 
         if (Gdx.input.isKeyJustPressed(Keys.U)) progresso.alternarUmbra();
 
-        if (Gdx.input.isKeyJustPressed(Keys.P)) {
-            progresso.adicionarParte();
-            progresso.setAviso("[DEBUG] Partes: " + progresso.getPartes() + "/2");
-        }
-
-        if (Gdx.input.isKeyJustPressed(Keys.D)) {
-            progresso.forcarPartes(2);
-            progresso.setAviso("[DEBUG] Forcado 2/2 partes");
-        }
+        // Removed debug shortcuts that directly set progression flags to avoid
+        // accidental game-state manipulation during development.
 
         if (Gdx.input.isKeyJustPressed(Keys.I)) {
             jogo.sistemaColisao.alternarColisoes();
@@ -74,15 +67,41 @@ public class GerenciadorDebug {
         shapes.begin(ShapeType.Line);
 
         shapes.setColor(COR_PAREDE);
-        for (Rectangle r : jogo.sistemaColisao.getParedes(jogo.mundoUmbra))
+        for (Rectangle r : jogo.sistemaColisao.getParedes())
             shapes.rect(r.x + cameraX, r.y + cameraY, r.width, r.height);
 
         shapes.setColor(COR_INTERATIVO);
-        for (Rectangle r : jogo.sistemaColisao.getInterativos(jogo.mundoUmbra).values())
-            shapes.rect(r.x + cameraX, r.y + cameraY, r.width, r.height);
+        // Group interativos by base key and merge only overlapping rectangles into clusters
+        java.util.Map<String, java.util.List<Rectangle>> clustersByBase = new java.util.HashMap<>();
+        for (java.util.Map.Entry<String, Rectangle> e : jogo.sistemaColisao.getInterativos().entrySet()) {
+            String key = e.getKey();
+            Rectangle r = e.getValue();
+            if (key == null || r == null) continue;
+            String base = key.split("_")[0];
+            java.util.List<Rectangle> clusters = clustersByBase.computeIfAbsent(base, k -> new java.util.ArrayList<>());
+
+            boolean added = false;
+            for (Rectangle c : clusters) {
+                if (c.overlaps(r)) {
+                    float minX = Math.min(c.x, r.x);
+                    float minY = Math.min(c.y, r.y);
+                    float maxX = Math.max(c.x + c.width, r.x + r.width);
+                    float maxY = Math.max(c.y + c.height, r.y + r.height);
+                    c.set(minX, minY, maxX - minX, maxY - minY);
+                    added = true;
+                    break;
+                }
+            }
+            if (!added) {
+                clusters.add(new Rectangle(r));
+            }
+        }
+        for (java.util.List<Rectangle> clusters : clustersByBase.values()) {
+            for (Rectangle c : clusters) shapes.rect(c.x + cameraX, c.y + cameraY, c.width, c.height);
+        }
 
         shapes.setColor(COR_NPC);
-        for (com.persecutio.entities.EntidadeMapa npc : jogo.sistemaColisao.getNpcs(jogo.mundoUmbra).values())
+        for (com.persecutio.entities.EntidadeMapa npc : jogo.sistemaColisao.getNpcs().values())
             shapes.rect(npc.area.x + cameraX, npc.area.y + cameraY, npc.area.width, npc.area.height);
 
         shapes.setColor(COR_PORTA);
@@ -90,20 +109,20 @@ public class GerenciadorDebug {
             shapes.rect(p.area.x + cameraX, p.area.y + cameraY, p.area.width, p.area.height);
 
         shapes.setColor(COR_OBJETO);
-        for (GerenciadorColisao.ObjetoColisao obj : jogo.sistemaColisao.getObjetosColisaoCompletos()) {
-            if (obj.isAtivo(jogo.mundoUmbra))
+        for (GerenciadorColisao.ObjetoColisao obj : jogo.sistemaColisao.obterObjetos()) {
+            if (jogo.sistemaColisao.checarAtivo(obj))
                 shapes.rect(obj.area.x + cameraX, obj.area.y + cameraY, obj.area.width, obj.area.height);
         }
 
         // Desenha as pedras empurráveis da Missão 2 no debug
         shapes.setColor(COR_PEDRA);
-        for (GerenciadorColisao.ObjetoColisao pedra : jogo.sistemaColisao.getMapaPedras().values()) {
+        for (GerenciadorColisao.ObjetoColisao pedra : jogo.sistemaColisao.mapaPedras().values()) {
             shapes.rect(pedra.area.x + cameraX, pedra.area.y + cameraY, pedra.area.width, pedra.area.height);
         }
 
         // Desenha as marcas de objetivos das pedras no debug
         shapes.setColor(COR_OBJETIVO);
-        for (Rectangle obj : jogo.sistemaColisao.getMapaObjetivos().values()) {
+        for (Rectangle obj : jogo.sistemaColisao.mapObjetivos().values()) {
             shapes.rect(obj.x + cameraX, obj.y + cameraY, obj.width, obj.height);
         }
 
@@ -137,10 +156,15 @@ public class GerenciadorDebug {
 
         GerenciadorProgresso prog = jogo.progresso;
         ctx.fonteIndicadores.setColor(Color.WHITE);
-        ctx.fonteIndicadores.draw(ctx.batch,
-            "Partes: " + prog.getPartes() + "/2   Missao: " + prog.getMissao(), x, y); y -= dy;
 
-        GerenciadorPortas.Porta porta = portaNoAlcance(jogo);
+        String txtFlags = String.join(", ", prog.obterFlags());
+        ctx.fonteIndicadores.draw(ctx.batch,
+            "Ativas: [" + (txtFlags.isEmpty() ? "nenhuma" : txtFlags) + "]", x, y); y -= dy;
+
+        ctx.fonteIndicadores.draw(ctx.batch,
+            "Missao: " + prog.getMissao() + " | Fase: " + prog.obterFase(), x, y); y -= dy;
+
+        GerenciadorPortas.Porta porta = acharPorta(jogo);
         y -= 4f;
         if (porta != null) {
             boolean aberta = !porta.trancado || jogo.sistemaColisao.isDestrancado(porta.nome);
@@ -155,13 +179,13 @@ public class GerenciadorDebug {
         }
 
         ctx.fonteIndicadores.setColor(Color.valueOf("#8c8c8c"));
-        ctx.fonteIndicadores.draw(ctx.batch, "Ctrl+U umbra  Ctrl+P +parte  Ctrl+D 2partes  Ctrl+I noclip", x, y);
+        ctx.fonteIndicadores.draw(ctx.batch, "Ctrl+U umbra  Ctrl+P alternar  Ctrl+D forcar  Ctrl+I noclip", x, y);
 
         ctx.fonteIndicadores.setColor(Color.WHITE);
     }
 
     // Procura porta mais proxima do jogador
-    private GerenciadorPortas.Porta portaNoAlcance(TelaJogo jogo) {
+    private GerenciadorPortas.Porta acharPorta(TelaJogo jogo) {
         Rectangle hj = jogo.hitboxJogador;
         rectAlcance.set(
             hj.x - FOLGA_PORTA, hj.y - FOLGA_PORTA,

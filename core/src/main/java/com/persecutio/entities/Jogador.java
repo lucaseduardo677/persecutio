@@ -61,8 +61,8 @@ public class Jogador {
         );
     }
 
-    // Atualiza movimento e animacao do jogador
-    public void atualizar(float delta, GerenciadorColisao sistemaColisao, boolean umbra) {
+    // Atualiza movimento e animacao do jogador delegando checagem
+    public void atualizar(float delta, GerenciadorColisao sistemaColisao) {
         hitbox.setPosition(mundoX + hitboxConfig.offsetX(), mundoY + hitboxConfig.offsetY());
 
         controladorInput.atualizar();
@@ -71,18 +71,18 @@ public class Jogador {
 
         if (direcao.x != 0f) {
             float novoX = mundoX + direcao.x * passo;
-            if (sistemaColisao.verificarPosicao(
+            if (sistemaColisao.checarPosicao(
                     novoX + hitboxConfig.offsetX(), mundoY + hitboxConfig.offsetY(),
-                    hitboxConfig.larguraHitbox(), hitboxConfig.alturaHitbox(), umbra)) {
+                    hitboxConfig.larguraHitbox(), hitboxConfig.alturaHitbox())) {
                 mundoX = novoX;
             }
         }
 
         if (direcao.y != 0f) {
             float novoY = mundoY + direcao.y * passo;
-            if (sistemaColisao.verificarPosicao(
+            if (sistemaColisao.checarPosicao(
                     mundoX + hitboxConfig.offsetX(), novoY + hitboxConfig.offsetY(),
-                    hitboxConfig.larguraHitbox(), hitboxConfig.alturaHitbox(), umbra)) {
+                    hitboxConfig.larguraHitbox(), hitboxConfig.alturaHitbox())) {
                 mundoY = novoY;
             }
         }
@@ -106,10 +106,10 @@ public class Jogador {
     }
 
     // Retorna offset X da hitbox
-    public float   hitboxOffsetX()  { return hitboxConfig.offsetX(); }
+    public float   obterOffsetX()   { return hitboxConfig.offsetX(); }
 
     // Retorna offset Y da hitbox
-    public float   hitboxOffsetY()  { return hitboxConfig.offsetY(); }
+    public float   obterOffsetY()   { return hitboxConfig.offsetY(); }
 
     // Retorna se esta andando
     public boolean isAndando()      { return andando; }

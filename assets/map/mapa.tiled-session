@@ -1,8 +1,8 @@
 {
-    "activeFile": "casaderepousoumbra.tmx",
+    "activeFile": "casaderepouso.tmx",
     "expandedProjectPaths": [
-        "tiles",
-        "."
+        ".",
+        "tiles"
     ],
     "fileStates": {
         "": {
@@ -71,11 +71,14 @@
             "expandedGroupLayers": [
                 29
             ],
-            "scale": 3,
-            "selectedLayer": -1,
+            "expandedObjectLayers": [
+                28
+            ],
+            "scale": 0.75,
+            "selectedLayer": 18,
             "viewCenter": {
-                "x": 861.8333333333333,
-                "y": 140.33333333333331
+                "x": 899.3333333333333,
+                "y": 410.6666666666667
             }
         },
         "casaderepouso.tmx#Content": {
@@ -144,14 +147,14 @@
         },
         "casaderepousoumbra.tmx": {
             "expandedObjectLayers": [
-                36,
-                24
+                28,
+                36
             ],
-            "scale": 2,
-            "selectedLayer": 19,
+            "scale": 1.5,
+            "selectedLayer": 21,
             "viewCenter": {
-                "x": 859.75,
-                "y": 144
+                "x": 992.9999999999999,
+                "y": 204
             }
         },
         "casaderepousoumbra.tmx#Content": {
@@ -229,8 +232,8 @@
     "project": "mapa.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "casaderepouso.tmx",
         "casaderepousoumbra.tmx",
+        "casaderepouso.tmx",
         "sprites/Sprites_NPCs.tsx",
         "tiles/mapa_quarto.tmx",
         "/home/lucas/Downloads/casaderepouso-1.tmx",

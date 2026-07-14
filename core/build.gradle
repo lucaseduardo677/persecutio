@@ -36,6 +36,11 @@ dependencies {
   }
 }
 
+dependencies {
+  testImplementation 'junit:junit:4.13.2'
+  testRuntimeOnly 'org.hamcrest:hamcrest:2.2'
+}
+
 jar {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

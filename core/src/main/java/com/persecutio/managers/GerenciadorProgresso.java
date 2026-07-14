@@ -6,7 +6,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.persecutio.entities.EntidadeMapa;
 import com.persecutio.entities.Jogador;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 // Progresso da historia do jogo
 public class GerenciadorProgresso {
@@ -14,10 +16,8 @@ public class GerenciadorProgresso {
     // Folga para interacao
     private static final float FOLGA = 8f;
 
-    // Referencia ao sistema de colisao
+    // Referencias opcionais a sistemas externos (usadas apenas para efeitos)
     private final GerenciadorColisao colisao;
-    // Referencia ao gerenciador de portas
-    private final GerenciadorPortas  portas;
 
     // Flag se esta no mundo Umbra
     private boolean mundoUmbra  = false;
@@ -25,9 +25,6 @@ public class GerenciadorProgresso {
     private int     missao      = 1;
     // Documentos lidos
     private int     documentos  = 1;
-
-    // Partes coletadas
-    private int     partes      = 0;
 
     // Subfase da Missao para controle de objetivos
     private int faseMissao = 0;
@@ -41,22 +38,13 @@ public class GerenciadorProgresso {
     // Posicao salva no jardim para fast-travel na Missao 2
     private final Vector2 posicaoJardim = new Vector2();
     private boolean jardimSalvo = false;
-    private boolean temCartela = false;
 
-    // Flag se a porta foi destrancada
-    private boolean destrancada  = false;
-    // Flag se sabe a palavra magica / senha
-    private boolean sabePalavra  = false;
-    // Flag se pegou peca do espelho
-    private boolean pecaEspelho  = false;
-    // Flag se pegou peca da gaveta
-    private boolean pecaGaveta   = false;
-    // Flag se pegou peca do NPC
-    private boolean pecaNpc      = false;
-    // Flag se ja falou com a enfermeira na recepcao
-    private boolean falouComEnfermeira = false;
-    // Flag se leu o documento
-    private boolean leuDocumento = false;
+    // Pool de flags de acoes ativas no progresso (Arquitetura dinamica)
+    private final Set<String> flags = new HashSet<>();
+
+    // Nomes dos documentos ja lidos (Real e Umbra), evita releitura e permite
+    // qualquer quantidade de documentos sem codigo especifico
+    private final Set<String> documentosLidos = new HashSet<>();
 
     // Mensagem de aviso atual
     private String  aviso        = "";
@@ -78,9 +66,8 @@ public class GerenciadorProgresso {
     private final Rectangle rectTemp = new Rectangle();
 
     // Construtor do progresso
-    public GerenciadorProgresso(GerenciadorColisao colisao, GerenciadorPortas portas) {
+    public GerenciadorProgresso(GerenciadorColisao colisao) {
         this.colisao = colisao;
-        this.portas  = portas;
     }
 
     // Alterna entre mundo Real e Umbra
@@ -89,10 +76,10 @@ public class GerenciadorProgresso {
     }
 
     // Retorna a subfase atual da missao
-    public int getFaseMissao() { return faseMissao; }
+    public int obterFase() { return faseMissao; }
 
     // Altera a subfase da missao de forma manual
-    public void setFaseMissao(int novaFase) {
+    public void mudarFase(int novaFase) {
         faseMissao = novaFase;
     }
 
@@ -117,25 +104,25 @@ public class GerenciadorProgresso {
     }
 
     // Consome e limpa a flag de exibição de documento
-    public boolean consumirDocPendente() {
+    public boolean consumirPendente() {
         boolean r = docPendente;
         docPendente = false;
         return r;
     }
 
-    public String getDocChave() { return docChave; }
+    public String obterChave() { return docChave; }
 
     // Retorna se o jogador ja possui a cartela de pilulas
-    public boolean hasCartela() { return temCartela; }
+    public boolean temCartela() { return temFlag("temcartela"); }
 
     // Retorna se o ponto de fast-travel do jardim ja foi salvo
-    public boolean isJardimSalvo() { return jardimSalvo; }
+    public boolean jardimSalvo() { return jardimSalvo; }
 
     // Obtem a coordenada salva do jardim
-    public Vector2 getPosicaoJardim() { return posicaoJardim; }
+    public Vector2 posicaoJardim() { return posicaoJardim; }
 
     // Salva a posicao atual do jogador se ele estiver no jardim no mundo real (Missao 2)
-    public void salvarPosicaoJardim(float x, float y) {
+    private void salvarJardim(float x, float y) {
         if (!mundoUmbra && missao == 2) {
             posicaoJardim.set(x, y);
             jardimSalvo = true;
@@ -144,7 +131,7 @@ public class GerenciadorProgresso {
 
     // Jogador recolhe a cartela inteira na Missao 2 e viaja para o Umbra
     public void pegarCartela() {
-        temCartela = true;
+        darFlag("temcartela");
         mundoUmbra = true;
         faseMissao = 1; // "Investigue a origem do som."
     }
@@ -152,34 +139,40 @@ public class GerenciadorProgresso {
     // Marca o puzzle de pedras como resolvido e abre a porta do Jardim
     public void resolverPuzzle() {
         faseMissao = 3; // "Verifique a porta do Jardim."
-        colisao.destrancar("portaEscritorioJardim");
-        colisao.destrancar("portaEscritorioJardim2");
+        if (colisao != null) {
+            try {
+                colisao.destrancar("portaEscritorioJardim");
+                colisao.destrancar("portaEscritorioJardim2");
+            } catch (Exception ignored) {}
+        }
+        // Compatibilidade com a UI: agenda o dialogo de clique de porta
+        dialogoAlvo = "porta_clique";
     }
 
     // Finaliza a leitura do prontuario de Umbra na Missao 1 e aguarda prompt de acordar
-    public void lerDocumentoUmbra() {
+    public void lerUmbra() {
         faseMissao = 6;
         aviso = "Para acordar aperte [E]";
     }
 
     // Conclui a Missao 1 e retorna ao mundo real no spawn inicial
-    public void concluirMissao1(float spawnX, float spawnY) {
+    public void concluirPrimeira(float spawnX, float spawnY) {
         missao = 2;
         faseMissao = 0; // "Tome seu remedio."
-        destrancada = true; // Porta do quarto aberta no mundo real
+        darFlag("porta_destrancada"); // Porta do quarto aberta no mundo real
         mundoUmbra = false;
         aviso = "";
     }
 
     // Conclui a Missao 2 e prepara para a proxima
-    public void concluirMissao2() {
+    public void concluirSegunda() {
         missao = 3;
         faseMissao = 4;
         aviso = "[Missao 2 Concluida!]";
     }
 
     // Cria hitbox com folga para interacao
-    private Rectangle hitboxFolga(Jogador jogador) {
+    public Rectangle hitboxFolga(Jogador jogador) {
         rectTemp.set(
             jogador.hitbox.x - FOLGA,
             jogador.hitbox.y - FOLGA,
@@ -189,173 +182,171 @@ public class GerenciadorProgresso {
         return rectTemp;
     }
 
-    // Processa interacao do jogador com objetos
-    public void tratarInteracao(Jogador jogador) {
-        cinematica   = false;
-        abriuEspelho = false;
-        abriuGaveta  = false;
-        dialogoAlvo  = null;
+    // Nova API: a logica de progressao agora reage a eventos de alto nivel em vez
+    // de consultar diretamente o sistema de colisao. Isso facilita auditabilidade
+    // e expansibilidade: o mundo envia eventos (NPC fala, item coletado, doc lido,
+    // senha inserida, puzzle resolvido) e o progresso reage.
 
-        Rectangle hitboxInteracao = hitboxFolga(jogador);
+    // Handler quando o jogador interage com um NPC (ex: "enfermeira")
+    public void onNpcInteract(String npcKey) {
+        if (npcKey == null) return;
+        String chave = npcKey.toLowerCase().trim();
+        if ("enfermeira".equals(chave)) {
+            darFlag("falou_enfermeira");
+            dialogoAlvo = "enfermeira";
 
-        if (!mundoUmbra) {
-            interagirReal(hitboxInteracao);
-        } else {
-            interagirUmbra(hitboxInteracao, jogador);
+            if (missao == 1 && faseMissao == 0) faseMissao = 1;
+            else if (missao == 1 && faseMissao == 1) faseMissao = 2;
         }
     }
 
-    // Interacoes no mundo Real (Recepcionista/Enfermeira unificadas)
-    private void interagirReal(Rectangle hitboxInteracao) {
-        EntidadeMapa enfermeira = colisao.getNpc("enfermeira", false);
-        if (enfermeira == null) {
-            enfermeira = colisao.getNpc("npcRecepcao", false);
-        }
+    // Handler quando o jogador interage com um objeto (ex: "pilula", "espelho", "gaveta")
+    public void onObjectInteract(String objectKey) {
+        if (objectKey == null) return;
+        String chave = objectKey.toLowerCase().trim();
 
-        if (enfermeira != null && hitboxInteracao.overlaps(enfermeira.area)) {
-            falouComEnfermeira = true;
-            dialogoAlvo = "enfermeira";
-
-            // Missao 1, fase inicial -> avanca ao falar com a recepcionista
-            if (missao == 1 && faseMissao == 0) {
-                faseMissao = 1; // "Fale com a recepcionista." (Missao 1)
-            }
-            if (missao == 1 && faseMissao == 1) {
-                faseMissao = 2; // "Volte ao seu quarto e tome o remédio." (Missao 1)
-            }
-            return;
-        }
-
-        GerenciadorColisao.ObjetoColisao pilula = colisao.getInterativo("pilula", false);
-        if (pilula != null && hitboxInteracao.overlaps(pilula.area)) {
-            if (!falouComEnfermeira) {
-                aviso = "A enfermeira da recepcao ainda nao autorizou a pílula.";
-                return;
-            }
-
-            // Se estiver na Missão 1 e fase correta, sinaliza o fade para o primeiro mergulho
-            if (missao == 1 && faseMissao == 2) {
-                eventoPilula = true;
-                return;
-            }
-
-            // Se estiver na Missão 2 e fase inicial (Tome seu remédio), aciona o dialogo de recolher a cartela inteira
-            if (missao == 2 && faseMissao == 0) {
-                dialogoAlvo = "maria_pega_pilulas";
-                return;
-            }
-
-            mundoUmbra = true;
-            return;
-        }
-
-        // Reconhecimento universal dos documentos por chaves prefixadas
-        GerenciadorColisao.ObjetoColisao docEncontrado = null;
-        for (GerenciadorColisao.ObjetoColisao d : colisao.getInterativosCompletos(false).values()) {
-            String nomeBase = d.nome.toLowerCase();
-            if (nomeBase.startsWith("documento") || nomeBase.startsWith("planfeto") || nomeBase.startsWith("objeto")) {
-                if (hitboxInteracao.overlaps(d.area)) {
-                    docEncontrado = d;
-                    break;
+        switch (chave) {
+            case "pilula":
+                if (!temFlag("falou_enfermeira")) {
+                    aviso = "A enfermeira da recepcao ainda nao autorizou a pílula.";
+                    return;
                 }
-            }
-        }
+                if (missao == 1 && faseMissao == 2) {
+                    eventoPilula = true;
+                    return;
+                }
+                if (missao == 2 && faseMissao == 0) {
+                    dialogoAlvo = "maria_pega_pilulas";
+                    return;
+                }
+                mundoUmbra = true;
+                break;
 
-        if (docEncontrado != null) {
-            if (!destrancada) {
+            case "espelho":
+                if (missao == 1 && (faseMissao == 3 || faseMissao == 4)) {
+                    faseMissao = 4;
+                    dialogoAlvo = "espelho_umbra";
+                    return;
+                }
+                abriuEspelho = true;
+                if (!temFlag("espelho_visto")) {
+                    darFlag("espelho_visto");
+                    aviso = "Voce encontrou uma pista fundamental no reflexo do espelho!";
+                }
+                break;
+
+            case "gaveta":
+                if (!temFlag("senha_revelada")) {
+                    abriuGaveta = true;
+                }
+                break;
+
+            case "cama":
+                mundoUmbra = false;
+                break;
+
+            default:
+                // objetos genericos nao disparam logica de progresso aqui
+                break;
+        }
+    }
+
+    // Handler generico para documentos lidos (nome do objeto e opcional docId)
+    public void onDocumentFound(String nome, String docId, boolean isUmbra) {
+        if (nome == null) return;
+        String chave = nome.toLowerCase().trim();
+
+        if (!isUmbra) {
+            if (!temFlag("porta_destrancada")) {
                 aviso = "As letras estao borradas, parecem dancar. Nao consigo ler...";
-            } else if (!leuDocumento) {
-                leuDocumento = true;
+                return;
+            }
+            if (!documentosLidos.contains(chave)) {
+                documentosLidos.add(chave);
                 documentos++;
-                faseMissao = 0; // Inicia a Missao 2 na fase 0
-                lerDocumento("documento1_real"); // Agora agenda a leitura da folha gráfica
+                String chaveDoc = (docId != null && !docId.isEmpty()) ? docId : chave;
+                lerDocumento(chaveDoc);
+
+                if (missao == 1) faseMissao = 0;
             } else {
                 aviso = "Voce ja leu este documento.";
             }
-        }
-    }
-
-    // Interacoes no mundo Umbra
-    private void interagirUmbra(Rectangle hitboxInteracao, Jogador jogador) {
-        GerenciadorColisao.ObjetoColisao cama = colisao.getInterativo("cama", true);
-        if (cama != null && hitboxInteracao.overlaps(cama.area)) {
-            mundoUmbra = false;
-            return;
-        }
-
-        GerenciadorColisao.ObjetoColisao pilula = colisao.getInterativo("pilula", true);
-        if (pilula != null && hitboxInteracao.overlaps(pilula.area)) {
-            mundoUmbra = false;
-            return;
-        }
-
-        GerenciadorColisao.ObjetoColisao espelho = colisao.getInterativo("espelho", true);
-        if (espelho != null && hitboxInteracao.overlaps(espelho.area)) {
-            // Se olhar no espelho em Umbra na missão 1 (fase 3 - "Saia do quarto", que muda para fase 4)
-            if (missao == 1 && (faseMissao == 3 || faseMissao == 4)) {
-                faseMissao = 4; // "Descubra como abrir a porta."
-                dialogoAlvo = "espelho_umbra";
-                return;
-            }
-
-            abriuEspelho = true;
-            if (!pecaEspelho) {
-                pecaEspelho = true;
-                partes++;
-                aviso = "Voce encontrou um fragmento no espelho!";
-            }
-            return;
-        }
-
-        GerenciadorColisao.ObjetoColisao gaveta = colisao.getInterativo("gaveta", true);
-        if (gaveta != null && hitboxInteracao.overlaps(gaveta.area) && !pecaGaveta) {
-            abriuGaveta = true;
-            return;
-        }
-
-        // Leitura do prontuario da paciente 103 na recepcao de Umbra (finaliza Missao 1)
-        GerenciadorColisao.ObjetoColisao docEncontrado = null;
-        for (GerenciadorColisao.ObjetoColisao d : colisao.getInterativosCompletos(true).values()) {
-            String nomeBase = d.nome.toLowerCase();
-            if (nomeBase.startsWith("documento") || nomeBase.startsWith("planfeto") || nomeBase.startsWith("objeto")) {
-                if (hitboxInteracao.overlaps(d.area)) {
-                    docEncontrado = d;
-                    break;
-                }
-            }
-        }
-
-        if (docEncontrado != null) {
-            Gdx.app.log("GerenciadorProgresso", "Documento Umbra detectado: " + docEncontrado.nome + " (missao=" + missao + ", faseMissao=" + faseMissao + ")");
-            if (missao == 1 && faseMissao >= 5) {
-                lerDocumento("documento1_umbra"); // Agenda a leitura do prontuário com arte gráfica
-                return;
-            }
-        }
-
-        // Documento opcional do jardim na Missao 2
-        if (faseMissao >= 3) {
-            GerenciadorColisao.ObjetoColisao banco = colisao.getInterativo("banco", true);
-            if (banco == null) {
-                banco = colisao.getInterativo("banco_jardim", true);
-            }
-            if (banco != null && hitboxInteracao.overlaps(banco.area)) {
-                if (!lidoJardim) {
-                    lidoJardim = true;
-                    dialogoAlvo = "doc_jardim";
-                }
+        } else {
+            if (!documentosLidos.contains(chave)) {
+                documentosLidos.add(chave);
+                documentos++;
+                String chaveDoc = (docId != null && !docId.isEmpty()) ? docId : chave;
+                lerDocumento(chaveDoc);
             }
         }
     }
 
-    // Valida a senha da gaveta
-    public boolean validarSenha(String senha) {
-        if (pecaGaveta) return true;
+    // Notifica que o puzzle de pedras foi resolvido (antes, isso era detectado por colisao)
+    public void onPuzzleSolved() {
+        // Mantém compatibilidade: delega para a implementação existente
+        resolverPuzzle();
+    }
+
+    // Resposta de interação com porta para a UI agir de acordo
+    public static class PortaResponse {
+        public enum Action { DIALOG, FADE_MOVE_AND_CONCLUDE, CONTINUE }
+        public final Action action;
+        public final String dialogNode;
+        public final String video;
+        public final boolean usarFade;
+
+        public PortaResponse(Action action, String dialogNode, String video, boolean usarFade) {
+            this.action = action;
+            this.dialogNode = dialogNode;
+            this.video = video;
+            this.usarFade = usarFade;
+        }
+
+        public static PortaResponse dialog(String node) { return new PortaResponse(Action.DIALOG, node, null, false); }
+        public static PortaResponse fadeMoveAndConclude(String video, boolean usarFade) { return new PortaResponse(Action.FADE_MOVE_AND_CONCLUDE, null, video, usarFade); }
+        public static PortaResponse cont() { return new PortaResponse(Action.CONTINUE, null, null, false); }
+    }
+
+    // Handler para interacoes com portas: retorna instrucoes para a UI
+    public PortaResponse onPortaInteract(com.persecutio.managers.GerenciadorPortas.Porta porta) {
+        if (porta == null) return PortaResponse.cont();
+
+        String nome = porta.nome != null ? porta.nome.toLowerCase() : "";
+
+        if (mundoUmbra && missao == 2 && faseMissao == 1) {
+            if (nome.contains("jardim") || nome.contains("escritorio")) {
+                // Porta emperrada: mostra dialogo e avanca fase
+                mudarFase(2);
+                return PortaResponse.dialog("porta_emperrada");
+            }
+        }
+
+        if (mundoUmbra && missao == 2 && faseMissao == 3) {
+            if (nome.contains("jardim") || nome.contains("escritorio")) {
+                return PortaResponse.fadeMoveAndConclude(porta.video, porta.usarFade);
+            }
+        }
+
+        return PortaResponse.cont();
+    }
+
+    // Salva posicao do jardim (antes feita diretamente no progresso com coords)
+    public void onSaveJardim(float x, float y) {
+        salvarJardim(x, y);
+    }
+
+    // Valida a senha via evento
+    public boolean onPasswordEntered(String senha) {
+        return validarSenha(senha);
+    }
+
+    // Valida a senha da gaveta (antiga API, agora exposta via onPasswordEntered)
+    private boolean validarSenha(String senha) {
+        if (temFlag("senha_revelada")) return true;
 
         if ("0410".equals(senha)) {
-            pecaGaveta  = true;
-            sabePalavra = true;
-            partes++;
+            darFlag("senha_revelada");
+            darFlag("porta_destrancada");
             aviso = "Voce destrancou a gaveta e obteve a palavra 'Redencao'. A porta do quarto agora pode ser aberta!";
 
             // Avanca fase da Missao 1 se estiver nela
@@ -370,43 +361,33 @@ public class GerenciadorProgresso {
     }
 
     // Limpa aviso quando jogador sai da area
-    public void verificarAfastamento(Jogador jogador) {
+    public void checarLonge(Jogador jogador) {
         if (aviso.isEmpty()) return;
 
         Rectangle hitboxInteracao = hitboxFolga(jogador);
 
-        for (Rectangle area : colisao.getInterativos(mundoUmbra).values()) {
+        for (Rectangle area : colisao.getInterativos().values()) {
             if (hitboxInteracao.overlaps(area)) return;
         }
 
-        for (EntidadeMapa npc : colisao.getNpcs(mundoUmbra).values()) {
+        for (EntidadeMapa npc : colisao.getNpcs().values()) {
             if (hitboxInteracao.overlaps(npc.area)) return;
         }
 
         aviso = "";
     }
 
-    // Verifica se pode destrancar uma porta (Corrigida a assinatura tipada para Porta)
+    // Verifica se pode destrancar uma porta
     public boolean podeDestrancar(GerenciadorPortas.Porta porta) {
         if (!porta.trancado)     return true;
         if (!porta.destrancavel) return false;
 
-        // Exige apenas a confirmacao da senha correta inserida na gaveta
-        return sabePalavra;
+        // Exige apenas a confirmacao da senha correta ou estado similar
+        return temFlag("porta_destrancada");
     }
 
     // Define mensagem de aviso
-    public void setAviso(String msg) { this.aviso = msg; }
-
-    // Adicionar uma parte coletada
-    public void adicionarParte() {
-        if (partes < 2) partes++;
-    }
-
-    // Marca que a peca do NPC foi entregue
-    public void marcarPecaNpc() {
-        pecaNpc = true;
-    }
+    public void darAviso(String msg) { this.aviso = msg; }
 
     // Retorna e limpa o no de dialogo pendente
     public String pegarDialogo() {
@@ -415,16 +396,30 @@ public class GerenciadorProgresso {
         return r;
     }
 
-    // Forca quantidade de partes
-    public void forcarPartes(int valor) {
-        partes = Math.min(2, Math.max(0, valor));
+    // Verifica se uma flag de acao especifica está ativa
+    public boolean temFlag(String flag) {
+        return flags.contains(flag.toLowerCase().trim());
     }
+
+    // Ativa uma flag no pool
+    public void darFlag(String flag) {
+        flags.add(flag.toLowerCase().trim());
+    }
+
+    // Remove uma flag do pool
+    public void tirarFlag(String flag) {
+        flags.remove(flag.toLowerCase().trim());
+    }
+
+    // Obtem uma copia de todas as acoes completas/flags ativas
+    public Set<String> obterFlags() {
+        return new HashSet<>(flags);
+    }
+
+    public void ativarCinematica() { this.cinematica = true; }
 
     // Retorna se esta no mundo Umbra
     public boolean isUmbra()       { return mundoUmbra; }
-
-    // Retorna quantidade de partes
-    public int     getPartes()     { return partes; }
 
     // Retorna missao atual
     public int     getMissao()     { return missao; }
@@ -433,25 +428,16 @@ public class GerenciadorProgresso {
     public int     getDocumentos() { return documentos; }
 
     // Retorna se porta esta destrancada
-    public boolean isDestrancada() { return destrancada; }
-
-    // Retorna se pegou peca do espelho
-    public boolean isPecaEspelho() { return pecaEspelho; }
-
-    // Retorna se pegou peca da gaveta
-    public boolean isPecaGaveta()  { return pecaGaveta; }
-
-    // Retorna se pegou peca do NPC
-    public boolean isPecaNpc()     { return pecaNpc; }
+    public boolean isDestrancada() { return temFlag("porta_destrancada"); }
 
     // Retorna se ja falou com a enfermeira na recepcao
-    public boolean isFalouComEnfermeira() { return falouComEnfermeira; }
+    public boolean falouEnfermeira() { return temFlag("falou_enfermeira"); }
 
-    // Retorna se sabe a palavra magica
-    public boolean isSabePalavra() { return sabePalavra; }
+    // Retorna se um documento (pelo nome do objeto no Tiled) ja foi lido
+    public boolean leuDoc(String nome) { return documentosLidos.contains(nome); }
 
     // Retorna mensagem de aviso
-    public String  getAviso()      { return aviso; }
+    public String  lerAviso()      { return aviso; }
 
     // Retorna se esta em cinematica
     public boolean isCinematica()  { return cinematica; }

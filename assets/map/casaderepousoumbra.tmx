@@ -1207,11 +1207,6 @@
  </objectgroup>
  <objectgroup id="27" name="NPC" visible="0"/>
  <objectgroup id="36" name="Interativos">
-  <object id="647" name="documento1" type="interativos" x="848.636" y="133.773" width="21.75" height="20.6136">
-   <properties>
-    <property name="umbra" type="bool" value="true"/>
-   </properties>
-  </object>
   <object id="648" name="documento1a" type="interativos" gid="5880" x="863" y="155" width="21" height="21" rotation="270">
    <properties>
     <property name="umbra" type="bool" value="true"/>
@@ -1505,7 +1500,8 @@
   </object>
   <object id="471" type="luz" x="992" y="128" width="96" height="32">
    <properties>
-    <property name="distancia" type="float" value="1000"/>
+    <property name="distancia" type="float" value="1360"/>
+    <property name="real" type="bool" value="false"/>
    </properties>
   </object>
   <object id="486" type="luz" x="1248" y="928" width="704" height="448">
