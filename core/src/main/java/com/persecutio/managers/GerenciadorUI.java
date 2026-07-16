@@ -630,7 +630,7 @@ public class GerenciadorUI {
             else if (sobreArea(rectTemp, sistemaColisao.getArea("espelho")))
                 prompt = "Aperte [E] para olhar no Espelho";
             else if (sobreArea(rectTemp, sistemaColisao.getArea("gaveta")))
-                prompt = "Aperte [E] para abrir a Gaveta";
+                prompt = "Aperte [E] para abrir a Porta";
             else {
                 GerenciadorColisao.ObjetoColisao doc = sistemaColisao.acharDoc(rectTemp);
                 if (doc != null && !progresso.leuDoc(doc.nome)) {
@@ -763,7 +763,7 @@ public class GerenciadorUI {
         desenharCentro(ctx, ctx.fonteIndicadores, "PORTA TRANCADA", -220);
 
         ctx.fonteIndicadores.setColor(Color.WHITE);
-        desenharCentro(ctx, ctx.fonteIndicadores, "Encontre a senha de 4 digitos na gaveta do quarto.", -240);
+        desenharCentro(ctx, ctx.fonteIndicadores, "Digite a senha de 4 digitos.", -240);
         desenharCentro(ctx, ctx.fonteIndicadores, "Pressione [ESC] ou [E] para fechar", -270);
     }
 

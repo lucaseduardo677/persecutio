@@ -231,7 +231,6 @@ public class GerenciadorProgresso {
                 abriuEspelho = true;
                 if (!temFlag("espelho_visto")) {
                     darFlag("espelho_visto");
-                    aviso = "Voce encontrou uma pista fundamental no reflexo do espelho!";
                 }
                 break;
 
@@ -347,7 +346,7 @@ public class GerenciadorProgresso {
         if ("0410".equals(senha)) {
             darFlag("senha_revelada");
             darFlag("porta_destrancada");
-            aviso = "Voce destrancou a gaveta e obteve a palavra 'Redencao'. A porta do quarto agora pode ser aberta!";
+            aviso = "A porta abriu...";
 
             // Avanca fase da Missao 1 se estiver nela
             if (missao == 1 && faseMissao == 4) {
