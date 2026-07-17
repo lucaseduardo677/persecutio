@@ -997,9 +997,13 @@ public class GerenciadorUI {
 
         String label;
         if (!estaDestrancada) {
-            label = proxima.destrancavel
-                ? "Aperte [E] para inspecionar a Porta"
-                : "Porta trancada para sempre";
+            if (proxima.temSenha()) {
+                label = "Aperte [E] para digitar a senha";
+            } else {
+                label = proxima.destrancavel
+                    ? "Aperte [E] para inspecionar a Porta"
+                    : "Porta trancada para sempre";
+            }
         } else {
             label = "Aperte [E] para ir para " + proxima.label;
         }

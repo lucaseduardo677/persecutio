@@ -18,7 +18,7 @@ import java.util.Map;
 public class GerenciadorPortas {
 
     // Folga de alcance para interagir com porta
-    private static final float FOLGA = 24f;
+    private static final float FOLGA = 5f;
 
     // Lista de portas carregadas para cada mundo
     private final List<Porta> portasReal = new ArrayList<>();
@@ -115,13 +115,15 @@ public class GerenciadorPortas {
 
             String  video        = lerProp(props, "video");
             boolean usarFade     = lerBool(props, defaults, classOrig, "fade",         true);
-            boolean noUmbra      = lerBool(props, defaults, classOrig, "umbra",        true);
-            boolean noReal       = lerBool(props, defaults, classOrig, "real",         true);
             boolean trancado     = lerBool(props, defaults, classOrig, "trancado",     false);
             boolean destrancavel = lerBool(props, defaults, classOrig, "destrancavel", false);
 
             String condicao = lerProp(props, "condicao");
             if (condicao == null) condicao = "";
+
+            // Senha da porta, lida direto da propriedade custom "senha" no Tiled
+            String senha = lerProp(props, "senha");
+            if (senha == null) senha = "";
 
             String nome = obj.getName();
             if (nome == null || nome.isEmpty()) nome = lerProp(props, "nome");
@@ -129,7 +131,7 @@ public class GerenciadorPortas {
 
             lista.add(new Porta(
                 CoordenadasTiled.paraMundo(r), nome, label, spawn, areaDestino,
-                video, usarFade, noUmbra, noReal, trancado, destrancavel, condicao
+                video, usarFade, trancado, destrancavel, condicao, senha
             ));
         }
     }
@@ -146,7 +148,6 @@ public class GerenciadorPortas {
 
         List<Porta> lista = umbra ? portasUmbra : portasReal;
         for (Porta p : lista) {
-            if (!p.isAtivo(umbra)) continue;
             if (rectAlcance.overlaps(p.area)) return p;
         }
         return null;
@@ -188,17 +189,15 @@ public class GerenciadorPortas {
         public final String    video;
         public final boolean   usarFade;
 
-        public final boolean noUmbra;
-        public final boolean noReal;
-
         public final boolean trancado;
         public final boolean destrancavel;
         public final String  condicao;
+        public final String  senha;
 
         // Construtor da porta
         Porta(Rectangle area, String nome, String label, Vector2 spawn, Rectangle areaDestino,
-              String video, boolean usarFade, boolean noUmbra, boolean noReal,
-              boolean trancado, boolean destrancavel, String condicao) {
+              String video, boolean usarFade,
+              boolean trancado, boolean destrancavel, String condicao, String senha) {
             this.area         = area;
             this.nome         = nome;
             this.label        = label;
@@ -206,16 +205,15 @@ public class GerenciadorPortas {
             this.areaDestino  = areaDestino;
             this.video        = video;
             this.usarFade     = usarFade;
-            this.noUmbra      = noUmbra;
-            this.noReal       = noReal;
             this.trancado     = trancado;
             this.destrancavel = destrancavel;
             this.condicao     = condicao;
+            this.senha        = senha;
         }
 
-        // Verifica se a porta esta ativa no mundo atual
-        public boolean isAtivo(boolean umbra) {
-            return umbra ? noUmbra : noReal;
+        // Verifica se a porta tem senha cadastrada no Tiled
+        public boolean temSenha() {
+            return senha != null && !senha.isEmpty();
         }
     }
 }

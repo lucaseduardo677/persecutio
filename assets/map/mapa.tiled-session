@@ -1,8 +1,8 @@
 {
     "activeFile": "casaderepouso.tmx",
     "expandedProjectPaths": [
-        ".",
-        "tiles"
+        "tiles",
+        "."
     ],
     "fileStates": {
         "": {
@@ -72,13 +72,16 @@
                 29
             ],
             "expandedObjectLayers": [
+                24,
+                21,
+                25,
                 28
             ],
-            "scale": 0.75,
-            "selectedLayer": 18,
+            "scale": 3,
+            "selectedLayer": 14,
             "viewCenter": {
-                "x": 899.3333333333333,
-                "y": 410.6666666666667
+                "x": 1229.1666666666665,
+                "y": 1037.6666666666665
             }
         },
         "casaderepouso.tmx#Content": {
@@ -147,14 +150,13 @@
         },
         "casaderepousoumbra.tmx": {
             "expandedObjectLayers": [
-                28,
                 36
             ],
-            "scale": 1.5,
-            "selectedLayer": 21,
+            "scale": 3,
+            "selectedLayer": 16,
             "viewCenter": {
-                "x": 992.9999999999999,
-                "y": 204
+                "x": 1248.5,
+                "y": 1046.3333333333333
             }
         },
         "casaderepousoumbra.tmx#Content": {

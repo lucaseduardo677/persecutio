@@ -38,16 +38,6 @@
                     "name": "condicao",
                     "type": "string",
                     "value": ""
-                },
-                {
-                    "name": "real",
-                    "type": "bool",
-                    "value": false
-                },
-                {
-                    "name": "umbra",
-                    "type": "bool",
-                    "value": false
                 }
             ],
             "name": "interativos",
@@ -115,11 +105,6 @@
                     "value": true
                 },
                 {
-                    "name": "real",
-                    "type": "bool",
-                    "value": true
-                },
-                {
                     "name": "segueJogador",
                     "type": "bool",
                     "value": false
@@ -138,11 +123,6 @@
                     "name": "tipoLuz",
                     "type": "string",
                     "value": "point"
-                },
-                {
-                    "name": "umbra",
-                    "type": "bool",
-                    "value": true
                 }
             ],
             "name": "luz",
@@ -169,19 +149,9 @@
                     "value": false
                 },
                 {
-                    "name": "real",
-                    "type": "bool",
-                    "value": true
-                },
-                {
                     "name": "trancado",
                     "type": "bool",
                     "value": false
-                },
-                {
-                    "name": "umbra",
-                    "type": "bool",
-                    "value": true
                 }
             ],
             "name": "npc",
@@ -203,16 +173,6 @@
             "drawFill": true,
             "id": 2,
             "members": [
-                {
-                    "name": "real",
-                    "type": "bool",
-                    "value": true
-                },
-                {
-                    "name": "umbra",
-                    "type": "bool",
-                    "value": true
-                }
             ],
             "name": "objeto",
             "type": "class",
@@ -228,16 +188,6 @@
             "drawFill": true,
             "id": 1,
             "members": [
-                {
-                    "name": "real",
-                    "type": "bool",
-                    "value": true
-                },
-                {
-                    "name": "umbra",
-                    "type": "bool",
-                    "value": true
-                }
             ],
             "name": "parede",
             "type": "class",
@@ -278,9 +228,9 @@
                     "value": true
                 },
                 {
-                    "name": "real",
-                    "type": "bool",
-                    "value": true
+                    "name": "senha",
+                    "type": "string",
+                    "value": ""
                 },
                 {
                     "name": "trancado",
@@ -288,14 +238,9 @@
                     "value": false
                 },
                 {
-                    "name": "umbra",
-                    "type": "bool",
-                    "value": true
-                },
-                {
                     "name": "video",
                     "type": "string",
-                    "value": "video/porta.webm"
+                    "value": "persecutio/assets/video/porta.webm"
                 }
             ],
             "name": "porta",

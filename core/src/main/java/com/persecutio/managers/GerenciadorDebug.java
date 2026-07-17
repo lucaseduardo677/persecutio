@@ -36,9 +36,6 @@ public class GerenciadorDebug {
     // Folga do alcance de interacao
     private static final float FOLGA_PORTA = 24f;
 
-    // Retangulo temporario para alcance
-    private final Rectangle rectAlcance = new Rectangle();
-
     // Construtor das ferramentas de debug
     public GerenciadorDebug() {
         shapes = new ShapeRenderer();
@@ -195,16 +192,7 @@ public class GerenciadorDebug {
 
     // Procura porta mais proxima do jogador
     private GerenciadorPortas.Porta acharPorta(TelaJogo jogo) {
-        Rectangle hj = jogo.hitboxJogador;
-        rectAlcance.set(
-            hj.x - FOLGA_PORTA, hj.y - FOLGA_PORTA,
-            hj.width + FOLGA_PORTA * 2f, hj.height + FOLGA_PORTA * 2f
-        );
-        for (GerenciadorPortas.Porta p : jogo.gerPortas.getPortas()) {
-            if (!p.isAtivo(jogo.mundoUmbra)) continue;
-            if (rectAlcance.overlaps(p.area)) return p;
-        }
-        return null;
+        return jogo.gerPortas.acharPorta(jogo.jogador);
     }
 
     // Libera recursos do debug

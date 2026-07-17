@@ -116,6 +116,9 @@ public class TelaJogo implements Screen {
     // Chave do documento atualmente sob leitura de imagem
     private String docChave = null;
 
+    // Porta aguardando confirmacao de senha no teclado
+    private GerenciadorPortas.Porta portaSenhaPendente = null;
+
     // Contexto compartilhado de renderizacao
     private final ContextoRender ctx = new ContextoRender();
 
@@ -353,6 +356,7 @@ public class TelaJogo implements Screen {
             interfaceJogo.desenharVideo(ctx);
             interfaceJogo.atualizarSenha(delta);
             processarSenha();
+            if (!interfaceJogo.isSenha()) portaSenhaPendente = null;
             desenharFade(ctx);
             return;
         }
@@ -409,6 +413,25 @@ public class TelaJogo implements Screen {
     // Valida a senha digitada pelo jogador
     private void processarSenha() {
         String senha = interfaceJogo.pegarSenha();
+
+        if (portaSenhaPendente != null) {
+            if (senha == null) return;
+
+            GerenciadorPortas.Porta porta = portaSenhaPendente;
+            if (senha.equals(porta.senha)) {
+                interfaceJogo.senhaSucesso();
+                portaSenhaPendente = null;
+                sistemaColisao.destrancar(porta.nome);
+                sistemaAudio.tocarSomPorta();
+                interfaceJogo.iniciarFade(porta.video, () ->
+                    moverJogador(jogador, porta)
+                );
+            } else {
+                interfaceJogo.senhaErro();
+            }
+            return;
+        }
+
         if (senha == null) return;
         if (progresso.onPasswordEntered(senha)) interfaceJogo.senhaSucesso();
         else                                    interfaceJogo.senhaErro();
@@ -572,7 +595,11 @@ public class TelaJogo implements Screen {
             boolean estaDestrancada = !porta.trancado || sistemaColisao.isDestrancado(porta.nome);
 
             if (!estaDestrancada) {
-                if (porta.destrancavel && progresso.podeDestrancar(porta)) {
+                if (porta.temSenha()) {
+                    // Porta trancada com senha propria definida no Tiled: abre o teclado
+                    portaSenhaPendente = porta;
+                    interfaceJogo.mudarEstado(GerenciadorUI.UI_SENHA);
+                } else if (porta.destrancavel && progresso.podeDestrancar(porta)) {
                     sistemaColisao.destrancar(porta.nome);
                     sistemaAudio.tocarSomPorta();
                     interfaceJogo.iniciarFade(porta.video, () ->

@@ -43,10 +43,8 @@ public class GerenciadorLuzes {
     // Lista de luzes fixas do mapa
     private final List<Light> luzesFixas = new ArrayList<>();
 
-    // Mapa de luzes ativas no Umbra
-    private final Map<Light, Boolean> luzNoUmbra = new HashMap<>();
-    // Mapa de luzes ativas no Real
-    private final Map<Light, Boolean> luzNoReal  = new HashMap<>();
+    // Mundo de origem de cada luz fixa, definido estritamente pelo mapa de onde foi lida
+    private final Map<Light, Boolean> luzMundoUmbra = new HashMap<>();
     // Mapa de comodo de cada luz fixa
     private final Map<Light, GerenciadorComodos.Comodo> luzComodo = new HashMap<>();
 
@@ -165,10 +163,6 @@ public class GerenciadorLuzes {
             boolean estatica = lerBool(props, "estatica", true);
             boolean atravessa = lerBool(props, "atravessa", false);
 
-            // Forca o isolamento entre mundos baseando-se estritamente no mapa de origem da carga
-            boolean noUmbra = umbra;
-            boolean noReal  = !umbra;
-
             boolean segue = lerBool(props, "segue", false) || lerBool(props, "segueJogador", false);
             boolean ligada = lerBool(props, "ligada", true) || lerBool(props, "ativo", true);
             float direcao = lerNumero(props, "direcao", 0f);
@@ -196,8 +190,7 @@ public class GerenciadorLuzes {
                     luzJogador = luz;
                 } else {
                     luzesFixas.add(luz);
-                    luzNoUmbra.put(luz, noUmbra);
-                    luzNoReal.put(luz, noReal);
+                    luzMundoUmbra.put(luz, umbra);
 
                     if (gerComodos != null) {
                         GerenciadorComodos.Comodo c = gerComodos.achar(cx, cy);
@@ -267,9 +260,7 @@ public class GerenciadorLuzes {
         List<GerenciadorComodos.Comodo> cullAtivo = gerComodosRef.getCullAtivo(comodoJogador);
 
         for (Light l : luzesFixas) {
-            boolean ativaPorMundo = ambienteUmbraAtivo
-                ? luzNoUmbra.getOrDefault(l, true)
-                : luzNoReal.getOrDefault(l, true);
+            boolean ativaPorMundo = luzMundoUmbra.getOrDefault(l, false) == ambienteUmbraAtivo;
 
             GerenciadorComodos.Comodo c = luzComodo.get(l);
             boolean ativaPorCull = true;

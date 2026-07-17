@@ -735,7 +735,7 @@
   <object id="106" type="parede" x="1088" y="670.5" width="31" height="289.5"/>
   <object id="109" type="parede" x="1104" y="862" width="881" height="34"/>
   <object id="110" type="parede" x="1091.5" y="929.5" width="156" height="30"/>
-  <object id="111" type="parede" x="1217" y="895" width="31" height="95.5"/>
+  <object id="111" type="parede" x="1217" y="895" width="31" height="96.625"/>
   <object id="113" type="parede" x="1233.33" y="897.333" width="750.667" height="30.6667"/>
   <object id="115" type="parede" x="113.885" y="78.3148" width="0.0626473" height="0.00659445" visible="0"/>
   <object id="118" type="parede" x="113.886" y="78.3214" width="0.0622352" height="0.0206077" visible="0"/>
@@ -788,7 +788,7 @@
   <object id="187" type="parede" x="114.721" y="77.2156" width="0.0609214" height="0.0463286" visible="0"/>
   <object id="188" type="parede" x="114.793" y="77.2261" width="0.0246519" height="0.0376863" visible="0"/>
   <object id="190" type="parede" x="114.751" y="77.271" width="0.017568" height="0.0296106" visible="0"/>
-  <object id="725" type="parede" x="1216" y="960" width="32" height="96"/>
+  <object id="725" type="parede" x="1242" y="960" width="6" height="96"/>
   <object id="728" type="parede" x="1952" y="960" width="32" height="96"/>
  </objectgroup>
  <objectgroup id="24" name="Portas">
@@ -818,7 +818,7 @@
     <property name="destino" value="Recepcao"/>
    </properties>
   </object>
-  <object id="206" name="portaCorredorJardim2" type="porta" x="1248.75" y="991.25" width="5.25" height="34">
+  <object id="206" name="portaCorredorJardim2" type="porta" x="1248.08" y="991.25" width="5.25" height="34">
    <properties>
     <property name="area" value="Corredor"/>
     <property name="destino" value="CorredorJardim"/>
@@ -856,7 +856,7 @@
     <property name="destino" value="BanheiroMaria"/>
    </properties>
   </object>
-  <object id="521" name="portaCorredorJardim" type="porta" x="1213.38" y="991.375" width="4" height="33.5">
+  <object id="521" name="portaCorredorJardim" type="porta" x="1237.76" y="991.25" width="4" height="33.5">
    <properties>
     <property name="area" value="Jardim"/>
     <property name="destino" value="Jardim"/>
@@ -950,11 +950,6 @@
   <object id="233" type="objeto" x="1250.18" y="82.75" width="59.8182" height="44.7045"/>
   <object id="234" type="objeto" x="1322.18" y="70.3636" width="10.3636" height="37.6364"/>
   <object id="235" type="objeto" x="32" y="480.125" width="16.125" height="44.125"/>
-  <object id="237" name="planfeto1" type="objeto" x="98.9457" y="564.033" width="26.0543" height="13.7628">
-   <properties>
-    <property name="real" type="bool" value="true"/>
-   </properties>
-  </object>
   <object id="239" type="objeto" x="288.909" y="352.023" width="30.9602" height="61.7955"/>
   <object id="240" type="objeto" x="223.982" y="420.051" width="7.96023" height="16.4943"/>
   <object id="242" type="objeto" x="224.018" y="427" width="19.108" height="14.7273"/>
@@ -1001,21 +996,6 @@
   <object id="318" type="objeto" x="2343.64" y="211.818" width="16.2727" height="32.2727"/>
   <object id="320" type="objeto" x="1094.75" y="1023.5" width="22.2727" height="33"/>
   <object id="324" type="objeto" x="1096.86" y="945.114" width="14.2727" height="19.1591"/>
-  <object id="335" name="planfeto2" type="objeto" x="457.182" y="614" width="14.4545" height="21.4545">
-   <properties>
-    <property name="umbra" type="bool" value="false"/>
-   </properties>
-  </object>
-  <object id="336" name="planfeto3" type="objeto" x="1865.09" y="550.364" width="15.2727" height="21.4545">
-   <properties>
-    <property name="real" type="bool" value="false"/>
-   </properties>
-  </object>
-  <object id="337" name="planfeto4" type="objeto" x="937.364" y="6.09091" width="14.5455" height="21.9091">
-   <properties>
-    <property name="umbra" type="bool" value="false"/>
-   </properties>
-  </object>
   <object id="576" type="objeto" x="2018" y="420.364" width="28.4545" height="38"/>
   <object id="577" type="objeto" x="1993.91" y="409.818" width="2.54545" height="24.4545"/>
   <object id="578" type="objeto" x="1994.18" y="419.545" width="15.2727" height="14.6364"/>
@@ -1089,12 +1069,6 @@
   <object id="802" name="pilula" type="objeto" x="64.3636" y="350" width="31.6364" height="16.9091">
    <properties>
     <property name="real" type="bool" value="true"/>
-    <property name="umbra" type="bool" value="true"/>
-   </properties>
-  </object>
-  <object id="803" name="gaveta" type="objeto" x="22" y="495" width="24" height="18">
-   <properties>
-    <property name="real" type="bool" value="false"/>
     <property name="umbra" type="bool" value="true"/>
    </properties>
   </object>

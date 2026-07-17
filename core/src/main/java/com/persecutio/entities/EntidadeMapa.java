@@ -14,10 +14,8 @@ public class EntidadeMapa {
     // Textura do sprite
     public final TextureRegion textura;
 
-    // Ativo no mundo Umbra
-    public final boolean noUmbra;
-    // Ativo no mundo Real
-    public final boolean noReal;
+    // Mundo de origem da entidade, definido estritamente pelo mapa em que foi lida
+    public final boolean mundoUmbra;
 
     // Trancado
     public final boolean trancado;
@@ -28,15 +26,11 @@ public class EntidadeMapa {
 
     // Construtor da entidade do mapa
     public EntidadeMapa(String nome, Rectangle area, TextureRegion textura,
-                        MapProperties props, boolean padraoUmbra) {
-        this.nome    = nome;
-        this.area    = area;
-        this.textura = textura;
-
-        Object u = props.get("umbra");
-        Object r = props.get("real");
-        this.noUmbra = (u != null) ? Boolean.parseBoolean(u.toString()) : padraoUmbra;
-        this.noReal  = (r != null) ? Boolean.parseBoolean(r.toString()) : !padraoUmbra;
+                        MapProperties props, boolean mundoUmbra) {
+        this.nome       = nome;
+        this.area       = area;
+        this.textura    = textura;
+        this.mundoUmbra = mundoUmbra;
 
         Object t = props.get("trancado");
         this.trancado = (t != null) ? Boolean.parseBoolean(t.toString()) : false;
@@ -48,8 +42,8 @@ public class EntidadeMapa {
         this.condicao = (c != null) ? c.toString() : "";
     }
 
-    // Verifica se a entidade existe no mundo atual
+    // Verifica se a entidade pertence ao mundo atual
     public boolean isAtivo(boolean umbra) {
-        return umbra ? noUmbra : noReal;
+        return mundoUmbra == umbra;
     }
 }

@@ -12,21 +12,13 @@ public class ObjetoInterativo {
     // Dimensao
     public float   largura, altura;
 
-    // Ativo no mundo Real
-    public boolean ativoNoMundoReal;
-    // Ativo no mundo Umbra
-    public boolean ativoNoMundoUmbra;
-
     // Construtor do objeto interativo
-    public ObjetoInterativo(String nome, float x, float y, float largura, float altura,
-                            boolean noReal, boolean noUmbra) {
-        this.nome             = nome;
-        this.mundoX           = x;
-        this.mundoY           = y;
-        this.largura          = largura;
-        this.altura           = altura;
-        this.ativoNoMundoReal  = noReal;
-        this.ativoNoMundoUmbra = noUmbra;
+    public ObjetoInterativo(String nome, float x, float y, float largura, float altura) {
+        this.nome    = nome;
+        this.mundoX  = x;
+        this.mundoY  = y;
+        this.largura = largura;
+        this.altura  = altura;
     }
 
     // Retorna area de colisao do objeto

@@ -69,8 +69,8 @@ public class GerenciadorColisao {
         // Area publica e mutavel para podermos empurrar os blocos
         public Rectangle area;
         public final String    nome;
-        public final boolean   noUmbra;
-        public final boolean   noReal;
+        // Mundo de origem do objeto, definido estritamente pelo mapa em que foi lido
+        public final boolean   mundoUmbra;
         public final boolean   trancado;
         public final boolean   destrancavel;
         public final String    condicao;
@@ -89,15 +89,8 @@ public class GerenciadorColisao {
             String classe = props.get("type")  != null ? props.get("type").toString()  :
                             props.get("class") != null ? props.get("class").toString() : "";
 
-            Object u = props.get("umbra");
-            Object r = props.get("real");
-
-            boolean defaultUmbra = pegarDefault(defaults, classe, "umbra", false);
-            boolean defaultReal  = pegarDefault(defaults, classe, "real", false);
-
-            // A forca da deducao: Se a propriedade nao estiver marcada mas o objeto veio daquele mapa especifico, ele DEVE existir nele.
-            this.noUmbra = (u != null) ? Boolean.parseBoolean(u.toString()) : (isUmbraMap || defaultUmbra);
-            this.noReal  = (r != null) ? Boolean.parseBoolean(r.toString()) : (!isUmbraMap || defaultReal);
+            // O mundo do objeto e sempre o mapa de onde ele foi lido, sem flag configuravel
+            this.mundoUmbra = isUmbraMap;
 
             Object t = props.get("trancado");
             this.trancado = (t != null) ? Boolean.parseBoolean(t.toString())
@@ -115,7 +108,7 @@ public class GerenciadorColisao {
         }
 
         public boolean checarAtivo(boolean umbra) {
-            return umbra ? noUmbra : noReal;
+            return mundoUmbra == umbra;
         }
     }
 
@@ -163,17 +156,25 @@ public class GerenciadorColisao {
         npcs         = new HashMap<>();
         objetosDesenhaveis = new ArrayList<>();
 
+        // Cada mapa carrega suas proprias camadas de forma independente: tudo que
+        // existe no mapa Real pertence ao mundo Real e tudo que existe no mapa
+        // Umbra pertence ao mundo Umbra, sem depender de flags no Tiled.
         if (mapaReal != null) {
             lerParedes(mapaReal, "Colisoes", paredes, false);
             lerInterativos(mapaReal, "Interativos", false);
             lerInterativos(mapaReal, "Objetos", false);
             lerNpcs(mapaReal, "NPCs", false);
+            lerNpcs(mapaReal, "NPC", false);
             lerParedes(mapaReal, "Portas", hitboxPortas, false);
         }
 
         if (mapaUmbra != null) {
-            // Carrega a camada de interativos do mundo Umbra de forma independente
+            lerParedes(mapaUmbra, "Colisoes", paredes, true);
             lerInterativos(mapaUmbra, "Interativos", true);
+            lerInterativos(mapaUmbra, "Objetos", true);
+            lerNpcs(mapaUmbra, "NPCs", true);
+            lerNpcs(mapaUmbra, "NPC", true);
+            lerParedes(mapaUmbra, "Portas", hitboxPortas, true);
         }
     }
 
