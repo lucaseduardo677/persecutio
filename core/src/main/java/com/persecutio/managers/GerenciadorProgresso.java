@@ -20,11 +20,11 @@ public class GerenciadorProgresso {
     private final GerenciadorColisao colisao;
 
     // Flag se esta no mundo Umbra
-    private boolean mundoUmbra  = false;
+    private boolean mundoUmbra = false;
     // Missao atual
-    private int     missao      = 1;
+    private int missao = 1;
     // Documentos lidos
-    private int     documentos  = 1;
+    private int documentos = 1;
 
     // Subfase da Missao para controle de objetivos
     private int faseMissao = 0;
@@ -47,22 +47,22 @@ public class GerenciadorProgresso {
     private final Set<String> documentosLidos = new HashSet<>();
 
     // Mensagem de aviso atual
-    private String  aviso        = "";
+    private String aviso = "";
     // No de dialogo a iniciar (blade-ink)
-    private String  dialogoAlvo  = null;
+    private String dialogoAlvo = null;
 
     // Flag de leitura agendada de imagem de documento
     private boolean docPendente = false;
-    private String  docChave     = "";
+    private String docChave = "";
 
     // Flag se esta em cinematica
-    private boolean cinematica   = false;
+    private boolean cinematica = false;
     // Flag se acionou espelho
     private boolean abriuEspelho = false;
     // Flag se acionou gaveta
-    private boolean abriuGaveta  = false;
+    private boolean abriuGaveta = false;
 
-    // NOVO: Flag para teleportar o jogador ao mundo real apos fechar documento umbra
+    // Flag para teleportar o jogador ao mundo real apos fechar documento umbra
     private boolean teleportarAposDocUmbra = false;
     private boolean dialogoRevelacaoDocUmbra = false;
     private boolean dialogoMusicaUmbraM2 = false;
@@ -105,7 +105,7 @@ public class GerenciadorProgresso {
     // Agenda a abertura visual do documento
     public void lerDocumento(String chave) {
         docPendente = true;
-        docChave    = chave;
+        docChave = chave;
     }
 
     // Consome e limpa a flag de exibicao de documento
@@ -180,16 +180,11 @@ public class GerenciadorProgresso {
         rectTemp.set(
             jogador.hitbox.x - FOLGA,
             jogador.hitbox.y - FOLGA,
-            jogador.hitbox.width  + FOLGA * 2f,
+            jogador.hitbox.width + FOLGA * 2f,
             jogador.hitbox.height + FOLGA * 2f
         );
         return rectTemp;
     }
-
-    // Nova API: a logica de progressao agora reage a eventos de alto nivel em vez
-    // de consultar diretamente o sistema de colisao. Isso facilita auditabilidade
-    // e expansibilidade: o mundo envia eventos (NPC fala, item coletado, doc lido,
-    // senha inserida, puzzle resolvido) e o progresso reage.
 
     // Handler quando o jogador interage com um NPC (ex: "enfermeira")
     public void onNpcInteract(String npcKey) {
@@ -199,7 +194,9 @@ public class GerenciadorProgresso {
             if (!temFlag("falou_enfermeira")) {
                 darFlag("falou_enfermeira");
                 dialogoAlvo = "enfermeira";
-                if (missao == 1 && faseMissao == 0) faseMissao = 1;
+                // CORRECAO: Primeira conversa ja avanca direto para fase 2,
+                // permitindo pegar a pilula logo apos falar com a enfermeira
+                if (missao == 1 && faseMissao <= 1) faseMissao = 2;
             } else {
                 // Apos a primeira conversa, so repete uma fala curta em loop
                 dialogoAlvo = "enfermeira_volte_quarto";
@@ -221,11 +218,6 @@ public class GerenciadorProgresso {
                 }
                 if (missao == 1 && faseMissao == 2) {
                     eventoPilula = true;
-                    return;
-                }
-                if (missao == 1) {
-                    // Ainda falta terminar de falar com a enfermeira antes de tomar o remedio
-                    aviso = "Ainda nao devo tomar o remedio agora.";
                     return;
                 }
                 if (missao == 2 && faseMissao == 0 && !mundoUmbra) {
@@ -304,7 +296,7 @@ public class GerenciadorProgresso {
         }
     }
 
-    // NOVO: consome e retorna a flag de teleporte apos documento umbra
+    // Consome e retorna a flag de teleporte apos documento umbra
     public boolean consumirTeleporteAposDocUmbra() {
         boolean r = teleportarAposDocUmbra;
         teleportarAposDocUmbra = false;
@@ -335,9 +327,8 @@ public class GerenciadorProgresso {
         return r;
     }
 
-    // Notifica que o puzzle de pedras foi resolvido (antes, isso era detectado por colisao)
+    // Notifica que o puzzle de pedras foi resolvido
     public void onPuzzleSolved() {
-        // Mantem compatibilidade: delega para a implementacao existente
         resolverPuzzle();
     }
 
@@ -384,7 +375,7 @@ public class GerenciadorProgresso {
         return PortaResponse.cont();
     }
 
-    // Salva posicao do jardim (antes feita diretamente no progresso com coords)
+    // Salva posicao do jardim
     public void onSaveJardim(float x, float y) {
         salvarJardim(x, y);
     }
@@ -394,7 +385,7 @@ public class GerenciadorProgresso {
         return validarSenha(senha);
     }
 
-    // Valida a senha da gaveta (antiga API, agora exposta via onPasswordEntered)
+    // Valida a senha da gaveta
     private boolean validarSenha(String senha) {
         if (temFlag("senha_revelada")) return true;
 
@@ -433,10 +424,9 @@ public class GerenciadorProgresso {
 
     // Verifica se pode destrancar uma porta
     public boolean podeDestrancar(GerenciadorPortas.Porta porta) {
-        if (!porta.trancado)     return true;
+        if (!porta.trancado) return true;
         if (!porta.destrancavel) return false;
 
-        // Exige apenas a confirmacao da senha correta ou estado similar
         return temFlag("porta_destrancada");
     }
 
@@ -445,7 +435,7 @@ public class GerenciadorProgresso {
 
     // Retorna e limpa o no de dialogo pendente
     public String pegarDialogo() {
-        String r    = dialogoAlvo;
+        String r = dialogoAlvo;
         dialogoAlvo = null;
         return r;
     }
@@ -473,13 +463,13 @@ public class GerenciadorProgresso {
     public void ativarCinematica() { this.cinematica = true; }
 
     // Retorna se esta no mundo Umbra
-    public boolean isUmbra()       { return mundoUmbra; }
+    public boolean isUmbra() { return mundoUmbra; }
 
     // Retorna missao atual
-    public int     getMissao()     { return missao; }
+    public int getMissao() { return missao; }
 
     // Retorna quantidade de documentos lidos
-    public int     getDocumentos() { return documentos; }
+    public int getDocumentos() { return documentos; }
 
     // Retorna se porta esta destrancada
     public boolean isDestrancada() { return temFlag("porta_destrancada"); }
@@ -491,15 +481,15 @@ public class GerenciadorProgresso {
     public boolean leuDoc(String nome) { return documentosLidos.contains(nome); }
 
     // Retorna mensagem de aviso
-    public String  lerAviso()      { return aviso; }
+    public String lerAviso() { return aviso; }
 
     // Retorna se esta em cinematica
-    public boolean isCinematica()  { return cinematica; }
+    public boolean isCinematica() { return cinematica; }
 
     // Retorna se abriu o espelho
-    public boolean isEspelho()     { return abriuEspelho; }
+    public boolean isEspelho() { return abriuEspelho; }
 
-    // Consome o evento de abrir o espelho, evitando que ele reabra em interacoes nao relacionadas
+    // Consome o evento de abrir o espelho
     public boolean consumirEspelho() {
         boolean r = abriuEspelho;
         abriuEspelho = false;
@@ -507,9 +497,9 @@ public class GerenciadorProgresso {
     }
 
     // Retorna se abriu a gaveta
-    public boolean isGaveta()      { return abriuGaveta; }
+    public boolean isGaveta() { return abriuGaveta; }
 
-    // Consome o evento de abrir a gaveta, evitando que ela reabra em interacoes nao relacionadas
+    // Consome o evento de abrir a gaveta
     public boolean consumirGaveta() {
         boolean r = abriuGaveta;
         abriuGaveta = false;
