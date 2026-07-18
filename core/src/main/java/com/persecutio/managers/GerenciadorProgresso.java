@@ -265,7 +265,7 @@ public class GerenciadorProgresso {
             if (!documentosLidos.contains(chave)) {
                 documentosLidos.add(chave);
                 documentos++;
-                String chaveDoc = (docId != null && !docId.isEmpty()) ? docId : chave;
+                String chaveDoc = (docId != null && !docId.isEmpty()) ? docId : chave + "_real";
                 lerDocumento(chaveDoc);
 
                 if (missao == 1) faseMissao = 0;
@@ -276,10 +276,10 @@ public class GerenciadorProgresso {
             if (!documentosLidos.contains(chave)) {
                 documentosLidos.add(chave);
                 documentos++;
-                String chaveDoc = (docId != null && !docId.isEmpty()) ? docId : chave;
+                String chaveDoc = (docId != null && !docId.isEmpty()) ? docId : chave + "_umbra";
                 lerDocumento(chaveDoc);
-                // NOVO: se leu o prontuario no umbra, agenda teleporte ao fechar
-                if ("documento1_umbra".equals(chaveDoc)) {
+                // Teleporta ao fechar o documento umbra do prontuario
+                if ("documento1".equals(chave)) {
                     teleportarAposDocUmbra = true;
                 }
             }
