@@ -1097,7 +1097,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="32" name="Comodos" visible="0">
+ <objectgroup id="32" name="Comodos">
   <object id="342" name="QuartoMaria" type="comodo" x="0.666667" y="320" width="223.333" height="318.667">
    <properties>
     <property name="cameraEstatica" type="bool" value="true"/>
@@ -1497,7 +1497,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="34" name="Destinos">
+ <objectgroup id="34" name="Destinos" visible="0">
   <object id="510" name="QuartoCorredor" x="265.438" y="640.528" width="12.75" height="11.75"/>
   <object id="511" name="spawnpoint" x="41" y="366" width="13.5" height="14"/>
   <object id="513" name="QuartoMaria" x="265.79" y="593.869" width="12.75" height="11.75"/>

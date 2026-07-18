@@ -125,8 +125,8 @@ public class TelaJogo implements Screen {
     private boolean umbraAnterior = false;
     // Ultima missao conhecida para invalidar posicao Umbra de missoes anteriores
     private int ultimaMissaoConhecida = 1;
-    // Flag para sincronizar posicoes na primeira pilula do JardimInterno na Missao 2
-    private boolean sincronizarJardimInternoM2 = true;
+    // Flag para controlar se ja houve sincronizacao inicial no jardim
+    private boolean sincronizacaoJardimFeita = false;
 
     // Chave do documento atualmente sob leitura de imagem
     private String docChave = null;
@@ -601,15 +601,15 @@ public class TelaJogo implements Screen {
                 posUmbra.set(jogador.mundoX, jogador.mundoY);
             }
 
-            // Na Missao 2 ao tomar a pilula pela primeira vez no JardimInterno sincroniza posicoes
-            if (progresso.getMissao() == 2 && sincronizarJardimInternoM2 && indoProUmbra) {
+            // Ao ir para o Umbra a partir do jardim sincroniza posicoes na primeira vez
+            if (indoProUmbra && !sincronizacaoJardimFeita) {
                 float hcX = jogador.hitbox.x + jogador.hitbox.width / 2f;
                 float hcY = jogador.hitbox.y + jogador.hitbox.height / 2f;
                 GerenciadorComodos.Comodo comodoJogador = gerComodos.achar(hcX, hcY);
-                if (comodoJogador != null && "jardiminterno".equals(comodoJogador.nomeGrupo)) {
+                if (comodoJogador != null && ("jardiminterno".equals(comodoJogador.nomeGrupo) || "jardimexterno".equals(comodoJogador.nomeGrupo))) {
                     posUmbra.set(jogador.mundoX, jogador.mundoY);
                     posUmbraDefinida = true;
-                    sincronizarJardimInternoM2 = false;
+                    sincronizacaoJardimFeita = true;
                 }
             }
 
