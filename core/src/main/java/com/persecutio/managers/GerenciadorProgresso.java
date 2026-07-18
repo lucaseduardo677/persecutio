@@ -223,6 +223,11 @@ public class GerenciadorProgresso {
                     eventoPilula = true;
                     return;
                 }
+                if (missao == 1) {
+                    // Ainda falta terminar de falar com a enfermeira antes de tomar o remedio
+                    aviso = "Ainda nao devo tomar o remedio agora.";
+                    return;
+                }
                 if (missao == 2 && faseMissao == 0 && !mundoUmbra) {
                     // A flag "temcartela" so e concedida ao final deste dialogo
                     // (efeito tomar_pilula_missao2), nao apenas por tocar na cabeceira
@@ -233,8 +238,7 @@ public class GerenciadorProgresso {
                     dialogoAlvo = "maria_jardim_umbra";
                     return;
                 }
-                mundoUmbra = true;
-                break;
+                return;
 
             case "espelho":
                 if (missao == 1 && (faseMissao == 3 || faseMissao == 4)) {

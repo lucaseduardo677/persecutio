@@ -25,11 +25,11 @@ public class RepoDialogos {
         public final float opacidade;
 
         public Fala(String falante, String texto, String efeito, String retrato, Color corFundo, float opacidade) {
-            this.falante   = falante;
-            this.texto     = texto;
-            this.efeito    = efeito;
-            this.retrato   = retrato;
-            this.corFundo  = corFundo != null ? corFundo : Color.valueOf("#2b2b36");
+            this.falante = falante;
+            this.texto = texto;
+            this.efeito = efeito;
+            this.retrato = retrato;
+            this.corFundo = corFundo != null ? corFundo : Color.valueOf("#2b2b36");
             this.opacidade = opacidade;
         }
 
@@ -45,11 +45,11 @@ public class RepoDialogos {
     // Classe da escolha
     public static class Escolha {
         public final String texto;
-        public final int    pontos;
+        public final int pontos;
         public final String proxNo;
 
         public Escolha(String texto, int pontos, String proxNo) {
-            this.texto  = texto;
+            this.texto = texto;
             this.pontos = pontos;
             this.proxNo = proxNo;
         }
@@ -62,11 +62,11 @@ public class RepoDialogos {
 
     // Classe do no
     public static class NoDialogo {
-        public final List<Fala>    falas;
+        public final List<Fala> falas;
         public final List<Escolha> escolhas;
 
         public NoDialogo(List<Fala> falas, List<Escolha> escolhas) {
-            this.falas    = falas;
+            this.falas = falas;
             this.escolhas = escolhas;
         }
 
@@ -90,9 +90,9 @@ public class RepoDialogos {
 
     // Constroi os dialogos (GDD Paginas 7-9)
     private void criarDialogos() {
-        Color corBase     = Color.valueOf("#2b2b36");
+        Color corBase = Color.valueOf("#2b2b36");
         // Sprite 2x2 do Dr. Elimar (o antigo caminho "dr_elimar.png" nao existia nos assets)
-        String imgElimar  = "img/elimarSprite.png";
+        String imgElimar = "img/elimarSprite.png";
 
         // Alto-falante de Missao 1
         dicNos.put("alto_falante", new NoDialogo(Arrays.asList(
@@ -137,11 +137,7 @@ public class RepoDialogos {
             )
         ));
 
-        // Dialogos de Missao 2
-        dicNos.put("maria_musica", new NoDialogo(Arrays.asList(
-            new Fala("Maria", "Essa musica..."),
-            new Fala("Maria", "...acho que esta vindo da ala leste da casa.")
-        )));
+        // REMOVIDO: dialogo da musica (maria_musica) - nao deve mais tocar
 
         // Reacao ao encontrar a porta emperrada no Jardim
         dicNos.put("porta_emperrada", new NoDialogo(Arrays.asList(
@@ -171,8 +167,16 @@ public class RepoDialogos {
         )));
 
         // Fala curta em loop: toca sempre que o jogador tenta sair do quarto sem a cartela
+        // (apos ja ter visto o lembrete uma vez)
         dicNos.put("maria_precisa_pilulas", new NoDialogo(Arrays.asList(
             new Fala("Maria", "Tenho que pegar as pilulas.")
+        )));
+
+        // CORRECAO: Dialogo mais longo sobre a pilula - toca UMA VEZ na primeira vez que
+        // o jogador tenta sair do quarto sem a cartela. Depois, e trocado pelo curto acima.
+        dicNos.put("maria_pilula_lembrete", new NoDialogo(Arrays.asList(
+            new Fala("Maria", "Espera... eu ainda nao tomei meu remedio."),
+            new Fala("Maria", "A enfermeira disse que deixou na minha mesa de cabeceira. Melhor pegar antes de sair.")
         )));
 
         // Desculpa para ir ao jardim, toca apenas no Umbra Missao 2
@@ -299,10 +303,11 @@ public class RepoDialogos {
             new Fala("Narrador", "As sombras deixam de persegui-la. O Mundo Umbra desaparece lentamente enquanto o mundo real permanece.", null, null, corBase, 1.0f)
         )));
 
-        // Monologo sutil ao despertar no quarto no inicio da Missao 2
+        // CORRECAO: Monologo sutil ao despertar no quarto no inicio da Missao 2
+        // Mudado para ser mais sutil e natural: "O que foi isso...? Eu preciso ir tomar um ar..."
         dicNos.put("maria_acorda_missao2", new NoDialogo(Arrays.asList(
-            new Fala("Maria", "Acordei de novo no mundo real..."),
-            new Fala("Maria", "Um vento estranho vem do jardim. Devo dar uma olhada.")
+            new Fala("Maria", "O que foi isso...?"),
+            new Fala("Maria", "Eu preciso ir tomar um ar...")
         )));
 
         // Desculpa in-game de Maria para recolher a cartela inteira na Missao 2
