@@ -98,6 +98,11 @@ public class Jogador {
         batch.draw(frameAtual, telaX - 28, telaY - 28, 56, 56);
     }
 
+    // Vira o jogador para baixo
+    public void virarParaBaixo() {
+        controladorInput.setDirecaoAnimacao(ControladorInput.DIRECAO_BAIXO);
+    }
+
     // Teleporta jogador para nova posicao
     public void teleportar(float novoX, float novoY) {
         mundoX = novoX;

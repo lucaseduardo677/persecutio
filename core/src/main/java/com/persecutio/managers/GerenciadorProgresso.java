@@ -64,6 +64,8 @@ public class GerenciadorProgresso {
 
     // NOVO: Flag para teleportar o jogador ao mundo real apos fechar documento umbra
     private boolean teleportarAposDocUmbra = false;
+    private boolean dialogoRevelacaoDocUmbra = false;
+    private boolean dialogoMusicaUmbraM2 = false;
 
     // Retangulo temporario
     private final Rectangle rectTemp = new Rectangle();
@@ -194,11 +196,15 @@ public class GerenciadorProgresso {
         if (npcKey == null) return;
         String chave = npcKey.toLowerCase().trim();
         if ("enfermeira".equals(chave)) {
-            darFlag("falou_enfermeira");
-            dialogoAlvo = "enfermeira";
-
-            if (missao == 1 && faseMissao == 0) faseMissao = 1;
-            else if (missao == 1 && faseMissao == 1) faseMissao = 2;
+            if (!temFlag("falou_enfermeira")) {
+                darFlag("falou_enfermeira");
+                dialogoAlvo = "enfermeira";
+                if (missao == 1 && faseMissao == 0) faseMissao = 1;
+            } else {
+                // Apos a primeira conversa, so repete uma fala curta em loop
+                dialogoAlvo = "enfermeira_volte_quarto";
+                if (missao == 1 && faseMissao == 1) faseMissao = 2;
+            }
         }
     }
 
@@ -217,8 +223,14 @@ public class GerenciadorProgresso {
                     eventoPilula = true;
                     return;
                 }
-                if (missao == 2 && faseMissao == 0) {
+                if (missao == 2 && faseMissao == 0 && !mundoUmbra) {
+                    // A flag "temcartela" so e concedida ao final deste dialogo
+                    // (efeito tomar_pilula_missao2), nao apenas por tocar na cabeceira
                     dialogoAlvo = "maria_pega_pilulas";
+                    return;
+                }
+                if (missao == 2 && mundoUmbra) {
+                    dialogoAlvo = "maria_jardim_umbra";
                     return;
                 }
                 mundoUmbra = true;
@@ -265,7 +277,7 @@ public class GerenciadorProgresso {
             if (!documentosLidos.contains(chave)) {
                 documentosLidos.add(chave);
                 documentos++;
-                String chaveDoc = (docId != null && !docId.isEmpty()) ? docId : chave + "_real";
+                String chaveDoc = (docId != null && !docId.isEmpty()) ? docId : chave;
                 lerDocumento(chaveDoc);
 
                 if (missao == 1) faseMissao = 0;
@@ -276,11 +288,13 @@ public class GerenciadorProgresso {
             if (!documentosLidos.contains(chave)) {
                 documentosLidos.add(chave);
                 documentos++;
-                String chaveDoc = (docId != null && !docId.isEmpty()) ? docId : chave + "_umbra";
-                lerDocumento(chaveDoc);
-                // Teleporta ao fechar o documento umbra do prontuario
+                // Documento1 no umbra: mostra documento e agenda teleporte ao fechar
                 if ("documento1".equals(chave)) {
+                    lerDocumento("documento1_umbra");
                     teleportarAposDocUmbra = true;
+                } else {
+                    String chaveDoc = (docId != null && !docId.isEmpty()) ? docId : chave + "_umbra";
+                    lerDocumento(chaveDoc);
                 }
             }
         }
@@ -290,6 +304,30 @@ public class GerenciadorProgresso {
     public boolean consumirTeleporteAposDocUmbra() {
         boolean r = teleportarAposDocUmbra;
         teleportarAposDocUmbra = false;
+        return r;
+    }
+
+    public boolean isTeleporteAposDocUmbra() {
+        return teleportarAposDocUmbra;
+    }
+
+    public void agendarDialogoMusicaUmbraM2() {
+        dialogoMusicaUmbraM2 = true;
+    }
+
+    public boolean consumirDialogoMusicaUmbraM2() {
+        boolean r = dialogoMusicaUmbraM2;
+        dialogoMusicaUmbraM2 = false;
+        return r;
+    }
+
+    public void agendarDialogoRevelacaoDocUmbra() {
+        dialogoRevelacaoDocUmbra = true;
+    }
+
+    public boolean consumirDialogoRevelacaoDocUmbra() {
+        boolean r = dialogoRevelacaoDocUmbra;
+        dialogoRevelacaoDocUmbra = false;
         return r;
     }
 

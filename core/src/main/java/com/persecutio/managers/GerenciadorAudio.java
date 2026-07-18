@@ -86,8 +86,8 @@ public class GerenciadorAudio {
             ambienteUmbra = Gdx.audio.newMusic(Gdx.files.internal("audio/ambienteUmbra.ogg"));
             ambienteUmbra.setLooping(true);
         }
-        if (Gdx.files.internal("audio/missao2.ogg").exists()) {
-            musicaDois = Gdx.audio.newMusic(Gdx.files.internal("audio/missao2.ogg"));
+        if (Gdx.files.internal("audio/musicaUmbra.ogg").exists()) {
+            musicaDois = Gdx.audio.newMusic(Gdx.files.internal("audio/musicaUmbra.ogg"));
             musicaDois.setLooping(true);
         }
 

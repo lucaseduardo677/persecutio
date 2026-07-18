@@ -68,6 +68,13 @@ public class GerenciadorUI {
     private String tituloMissaoAtual = "Primeiros Passos";
     private String objetivoMissaoAtual = "Va ate a recepcao.";
 
+    // Estado do aviso grande de "temcartela" (aparece centralizado ao ganhar a
+    // cartela, depois some com fade-out e vira o aviso pequeno no canto inferior)
+    private boolean temCartelaAnterior = false;
+    private EstadoMissao estadoAvisoCartela = EstadoMissao.CONCLUIDA;
+    private float timerAvisoCartela = 0f;
+    private float alphaAvisoCartela = 0f;
+
     // Flag se esta pausado
     private boolean pausado    = false;
     // Opcao selecionada no menu de pausa
@@ -583,6 +590,49 @@ public class GerenciadorUI {
                     break;
             }
         }
+
+        // Assim que o jogador ganha a cartela (temcartela), mostra o aviso grande
+        // centralizado uma unica vez; depois ele some com fade e vira o aviso
+        // pequeno persistente no canto inferior (desenharTutorial cuida disso)
+        if (progresso != null) {
+            boolean temCartelaAgora = progresso.temCartela();
+            if (temCartelaAgora && !temCartelaAnterior) {
+                estadoAvisoCartela = EstadoMissao.ENTRADA;
+                timerAvisoCartela = 0f;
+                alphaAvisoCartela = 0f;
+            }
+            temCartelaAnterior = temCartelaAgora;
+        }
+
+        if (estadoAvisoCartela != EstadoMissao.CONCLUIDA) {
+            timerAvisoCartela += delta;
+            switch (estadoAvisoCartela) {
+                case ENTRADA:
+                    alphaAvisoCartela = Math.min(1f, timerAvisoCartela / TEMPO_FADE_MISSAO);
+                    if (timerAvisoCartela >= TEMPO_FADE_MISSAO) {
+                        alphaAvisoCartela = 1f;
+                        estadoAvisoCartela = EstadoMissao.VISIVEL;
+                        timerAvisoCartela = 0f;
+                    }
+                    break;
+                case VISIVEL:
+                    alphaAvisoCartela = 1f;
+                    if (timerAvisoCartela >= TEMPO_VISIVEL_MISSAO) {
+                        estadoAvisoCartela = EstadoMissao.SAIDA;
+                        timerAvisoCartela = 0f;
+                    }
+                    break;
+                case SAIDA:
+                    alphaAvisoCartela = Math.max(0f, 1f - (timerAvisoCartela / TEMPO_FADE_MISSAO));
+                    if (timerAvisoCartela >= TEMPO_FADE_MISSAO) {
+                        alphaAvisoCartela = 0f;
+                        estadoAvisoCartela = EstadoMissao.CONCLUIDA;
+                    }
+                    break;
+                case CONCLUIDA:
+                    break;
+            }
+        }
     }
 
     // Ajusta tamanho do puzzle
@@ -635,7 +685,11 @@ public class GerenciadorUI {
                 if (sobreArea(rectTemp, sistemaColisao.getArea("pilula"))) {
                     // A prompt da pilula so aparece na tela apos falar com a enfermeira
                     if (falouEnfermeira) {
-                        prompt = "Aperte [E] para tomar a Pilula";
+                        if (progresso.getMissao() == 2) {
+                            prompt = "Aperte [E] para pegar as Pilulas";
+                        } else {
+                            prompt = "Aperte [E] para tomar a Pilula";
+                        }
                     }
                 } else if (sobreArea(rectTemp, sistemaColisao.getArea("enfermeira"))
                       || sobreArea(rectTemp, sistemaColisao.getArea("npcRecepcao"))) {
@@ -718,6 +772,15 @@ public class GerenciadorUI {
 
     // Desenha tutoriais e o HUD de missao usando estritamente a fonte_indicadores.ttf
     public void desenharTutorial(ContextoRender ctx) {
+        if (estadoAvisoCartela != EstadoMissao.CONCLUIDA && progresso != null) {
+            ctx.fonteIndicadores.setColor(1f, 1f, 1f, alphaAvisoCartela);
+            String textoRemedioGrande = progresso.isUmbra()
+                ? "Aperte [F] para acordar"
+                : "Aperte [F] para tomar a pilula";
+            desenharCentro(ctx, ctx.fonteIndicadores, textoRemedioGrande, 0f);
+            ctx.fonteIndicadores.setColor(Color.WHITE);
+        }
+
         if (estadoMissao != EstadoMissao.CONCLUIDA) {
             ctx.fonteIndicadores.setColor(1f, 1f, 1f, alphaMissao);
             desenharCentro(ctx, ctx.fonteIndicadores, tituloMissaoAtual, 40f);
@@ -742,8 +805,8 @@ public class GerenciadorUI {
         if (progresso != null && progresso.temCartela()) {
             ctx.fonteIndicadores.setColor(0.5f, 0.5f, 0.5f, 0.6f);
             String textoRemedio = progresso.isUmbra()
-                ? "Aperte [P] para acordar"
-                : "Aperte [P] para tomar a pilula";
+                ? "Aperte [F] para acordar"
+                : "Aperte [F] para tomar a pilula";
             ctx.fonteIndicadores.draw(ctx.batch, textoRemedio, 15f, 25f);
             ctx.fonteIndicadores.setColor(Color.WHITE);
         }

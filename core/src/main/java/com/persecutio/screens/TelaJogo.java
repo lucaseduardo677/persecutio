@@ -119,14 +119,23 @@ public class TelaJogo implements Screen {
     private final Vector2 posUmbra = new Vector2();
     // Flag se a posicao do mundo Umbra ja foi definida (primeira visita usa o spawn)
     private boolean posUmbraDefinida = false;
+    // Verdadeiro apenas ate a primeirissima visita ao Umbra no jogo todo (usa o
+    // spawnpoint do Tiled); em missoes seguintes, a posicao ja vem espelhada do real
+    private boolean primeiraVisitaUmbraGlobal = true;
     // Estado do mundo Umbra no frame anterior, usado para detectar a troca de mundo
     private boolean umbraAnterior = false;
+    // Ultima missao conhecida, usada para invalidar a posicao Umbra salva de missoes
+    // anteriores (cada missao pode ter um layout Umbra completamente diferente)
+    private int ultimaMissaoConhecida = 1;
 
     // Chave do documento atualmente sob leitura de imagem
     private String docChave = null;
 
     // Porta aguardando confirmacao de senha no teclado
     private GerenciadorPortas.Porta portaSenhaPendente = null;
+
+    // Flag para teleporte apos dialogo de revelacao do documento umbra terminar
+    private boolean teleportePosRevelacao = false;
 
     // Contexto compartilhado de renderizacao
     private final ContextoRender ctx = new ContextoRender();
@@ -253,6 +262,8 @@ public class TelaJogo implements Screen {
         posUmbra.set(this.inicialXUmbra, this.inicialYUmbra);
         posUmbraDefinida = false;
         umbraAnterior    = false;
+        primeiraVisitaUmbraGlobal = true;
+        ultimaMissaoConhecida     = progresso.getMissao();
 
         timerFade  = 0f;
         fadeAtivo  = true;
@@ -306,6 +317,15 @@ public class TelaJogo implements Screen {
         boolean umbra       = progresso.isUmbra();
         boolean destrancada = progresso.isDestrancada();
 
+        if (progresso.getMissao() != ultimaMissaoConhecida) {
+            // Nova missao: a posicao Umbra salva era da missao anterior e nao deve
+            // ser reaproveitada. A entrada no Umbra desta missao volta a se comportar
+            // como "primeira vez" (usa o espelho da posicao real, nao um spawn antigo).
+            ultimaMissaoConhecida = progresso.getMissao();
+            posUmbraDefinida = false;
+            posUmbra.set(jogador.mundoX, jogador.mundoY);
+        }
+
         if (umbra != umbraAnterior) {
             // Guarda a posicao do mundo que esta sendo deixado
             if (umbraAnterior) posUmbra.set(jogador.mundoX, jogador.mundoY);
@@ -313,11 +333,21 @@ public class TelaJogo implements Screen {
 
             if (umbra) {
                 if (!posUmbraDefinida) {
-                    // Primeira vez no mundo Umbra: acorda no spawn daquele mundo
-                    posUmbra.set(inicialXUmbra, inicialYUmbra);
+                    if (primeiraVisitaUmbraGlobal) {
+                        // Primeira vez no mundo Umbra de todo o jogo: acorda no spawn daquele mundo
+                        posUmbra.set(inicialXUmbra, inicialYUmbra);
+                        primeiraVisitaUmbraGlobal = false;
+                    }
+                    // Em missoes seguintes, posUmbra ja foi espelhada da posicao real
+                    // no momento em que a missao mudou (ver deteccao de troca de missao acima)
                     posUmbraDefinida = true;
                 }
                 jogador.teleportar(posUmbra.x, posUmbra.y);
+                // Dialogo da musica ao entrar no Umbra na Missao 2
+                if (progresso.getMissao() == 2 && !umbraAnterior) {
+                    gerDialogo.iniciar("maria_musica");
+                    interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+                }
             } else {
                 jogador.teleportar(posReal.x, posReal.y);
             }
@@ -487,6 +517,17 @@ public class TelaJogo implements Screen {
 
         sistemaAudio.tratarInputVolume();
 
+        // Teleporte apos dialogo de revelacao do documento umbra terminar
+        if (teleportePosRevelacao && !gerDialogo.estaAtivo() && interfaceJogo.obterEstado() != GerenciadorUI.UI_DIALOGO) {
+            teleportePosRevelacao = false;
+            interfaceJogo.fadeSimples(() -> {
+                jogador.teleportar(inicialXReal, inicialYReal);
+                jogador.virarParaBaixo();
+                progresso.concluirPrimeira(inicialXReal, inicialYReal);
+                mundoUmbra = false;
+            }, 3.0f);
+        }
+
         if (interfaceJogo.isSenha()) return;
 
         if (fadeAtivo) {
@@ -495,17 +536,14 @@ public class TelaJogo implements Screen {
             return;
         }
 
-        // Fechamento do documento: verifica flag de teleporte do progresso
+        // Fechamento do documento
         if (interfaceJogo.consumirFechado()) {
-            if (progresso.consumirTeleporteAposDocUmbra()) {
-                // Teleporta para o mundo real no spawn inicial e inicia dialogo de pegar pilulas
-                interfaceJogo.fadeSimples(() -> {
-                    posUmbraDefinida = false;
-                    jogador.teleportar(inicialXReal, inicialYReal);
-                    progresso.concluirPrimeira(inicialXReal, inicialYReal);
-                    gerDialogo.iniciar("maria_pega_pilulas");
-                    interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
-                });
+            if (progresso.isTeleporteAposDocUmbra()) {
+                // Documento1 umbra: agenda dialogo de revelacao da Maria
+                progresso.consumirTeleporteAposDocUmbra();
+                gerDialogo.iniciar("maria_doc1_revelacao");
+                interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+                teleportePosRevelacao = true;
             } else if (docChave != null && !docChave.isEmpty()) {
                 gerDialogo.iniciar(docChave);
                 interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
@@ -559,15 +597,7 @@ public class TelaJogo implements Screen {
         sistemaDebug.tratarAtalhos(this);
 
         // Missao 2 em diante: usar o remedio em qualquer lugar para alternar de mundo
-        if (progresso.getMissao() >= 2 && progresso.temCartela() && Gdx.input.isKeyJustPressed(Keys.P)) {
-            // Se esta no jardim no mundo real e ainda nao definiu o spawn umbra da missao 2,
-            // salva a posicao atual como entrada do umbra
-            if (!mundoUmbra && comodoAtual != null && "jardimexterno".equals(comodoAtual.nomeGrupo)) {
-                if (!posUmbraDefinida) {
-                    posUmbra.set(jogador.mundoX, jogador.mundoY);
-                    posUmbraDefinida = true;
-                }
-            }
+        if (progresso.getMissao() >= 2 && progresso.temCartela() && Gdx.input.isKeyJustPressed(Keys.F)) {
             interfaceJogo.fadeTrocaMundo(() -> progresso.alternarUmbra(), true);
             return;
         }
@@ -577,20 +607,6 @@ public class TelaJogo implements Screen {
         boolean estavaAndando = andando;
         jogador.atualizar(delta, sistemaColisao);
         andando = jogador.isAndando();
-
-        // Preso no jardim Umbra na Missao 2 ate puzzle resolvido
-        if (mundoUmbra && progresso.getMissao() == 2 && progresso.obterFase() < 3) {
-            boolean dentroJardim = false;
-            for (GerenciadorComodos.Comodo c : gerComodos.getComodos()) {
-                if ("jardimexterno".equals(c.nomeGrupo) && c.area.contains(jogador.hitbox.x + jogador.hitbox.width / 2f, jogador.hitbox.y + jogador.hitbox.height / 2f)) {
-                    dentroJardim = true;
-                    break;
-                }
-            }
-            if (!dentroJardim) {
-                jogador.teleportar(posUmbra.x, posUmbra.y);
-            }
-        }
 
         progresso.checarLonge(jogador);
 
@@ -631,6 +647,17 @@ public class TelaJogo implements Screen {
 
     // Trata interacao do jogador com portas e objetos (Mecanica de empurrar integrada)
     private void tratarInteracao() {
+        // Missao 2 no Umbra: bloqueia saida do jardim
+        if (mundoUmbra && progresso.getMissao() == 2 && progresso.obterFase() < 3) {
+            GerenciadorPortas.Porta portaSaida = gerPortas.acharPorta(jogador);
+            if (portaSaida != null) {
+                String destino = portaSaida.nome != null ? portaSaida.nome.toLowerCase() : "";
+                if (!destino.contains("jardim")) {
+                    progresso.darAviso("Nao posso sair do jardim agora...");
+                    return;
+                }
+            }
+        }
         if (!mundoUmbra && progresso.getMissao() == 2 && progresso.obterFase() == 2) {
             GerenciadorColisao.ObjetoColisao pedra = sistemaColisao.acharPedra(jogador);
             if (pedra != null) {
@@ -650,6 +677,15 @@ public class TelaJogo implements Screen {
 
         GerenciadorPortas.Porta porta = gerPortas.acharPorta(jogador);
         if (porta != null) {
+            // Missao 2 fase 0 mundo real: sem a cartela (dada so ao interagir com a
+            // cabeceira/pilula), a porta do quarto fica bloqueada com uma fala curta em loop
+            if (!mundoUmbra && progresso.getMissao() == 2 && progresso.obterFase() == 0
+                    && !progresso.temFlag("temcartela")) {
+                gerDialogo.iniciar("maria_precisa_pilulas");
+                interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+                return;
+            }
+
             // Pergunta ao progresso se esta porta exige algum comportamento especial
             GerenciadorProgresso.PortaResponse resp = progresso.onPortaInteract(porta);
             if (resp != null) {
@@ -743,7 +779,11 @@ public class TelaJogo implements Screen {
                 interfaceJogo.fadeSimples(() -> {
                     progresso.alternarUmbra();
                     progresso.mudarFase(1);
-                    gerDialogo.iniciar("maria_musica");
+                    if (progresso.getMissao() == 1) {
+                        gerDialogo.iniciar("maria_entra_umbra_m1");
+                    } else {
+                        gerDialogo.iniciar("maria_musica");
+                    }
                     interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
                 });
                 return;

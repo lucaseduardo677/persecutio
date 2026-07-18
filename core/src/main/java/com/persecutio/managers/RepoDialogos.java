@@ -102,12 +102,16 @@ public class RepoDialogos {
         // Dialogos da enfermeira da recepcao (Enfermeira, retrato = null)
         dicNos.put("enfermeira", new NoDialogo(
             Arrays.asList(
-                new Fala("Enfermeira", "Bom dia, senhorita Maria. Seus medicamentos acabaram de chegar.", null, null, corBase, 1.0f),
-                new Fala("Enfermeira", "Eles fazem parte do seu tratamento. Sempre que sentir tonturas ou confusao, tome apenas um comprimido.", null, null, corBase, 1.0f),
-                new Fala("Enfermeira", "Mas tenha cuidado. O remedio e bastante forte e costuma provocar muito sono.", null, null, corBase, 1.0f),
-                new Fala("Enfermeira", "Ja deixamos a cartela na mesa de cabeceira.", null, null, corBase, 1.0f)
+                new Fala("Enfermeira", "Bom dia, Maria. Seus remedios chegaram.", null, null, corBase, 1.0f),
+                new Fala("Enfermeira", "Tome apenas um comprimido se sentir tontura ou confusao. Ele e forte, da muito sono.", null, null, corBase, 1.0f),
+                new Fala("Enfermeira", "Ja deixamos a cartela na sua mesa de cabeceira.", null, null, corBase, 1.0f)
             )
         ));
+
+        // Fala curta em loop apos a primeira conversa com a enfermeira
+        dicNos.put("enfermeira_volte_quarto", new NoDialogo(Arrays.asList(
+            new Fala("Enfermeira", "Pode voltar para o seu quarto agora.", null, null, corBase, 1.0f)
+        )));
 
         // Constatacao de porta trancada em Umbra
         dicNos.put("porta_quarto_trancada", new NoDialogo(Arrays.asList(
@@ -156,11 +160,30 @@ public class RepoDialogos {
         )));
 
         // Questionario final do Dr. Elimar Gonzalez, decide o final do jogo (GDD paginas 4 e 7-9)
+        // Maria ao entrar no Umbra na Missao 1
+        dicNos.put("maria_entra_umbra_m1", new NoDialogo(Arrays.asList(
+            new Fala("Maria", "O que... o que esta acontecendo? Preciso ir ate a recepcao.")
+        )));
+
+        // Revelacao curta da Maria apos ler o prontuario no Umbra
+        dicNos.put("maria_doc1_revelacao", new NoDialogo(Arrays.asList(
+            new Fala("Maria", "Isso e... sobre mim?")
+        )));
+
+        // Fala curta em loop: toca sempre que o jogador tenta sair do quarto sem a cartela
+        dicNos.put("maria_precisa_pilulas", new NoDialogo(Arrays.asList(
+            new Fala("Maria", "Tenho que pegar as pilulas.")
+        )));
+
+        // Desculpa para ir ao jardim, toca apenas no Umbra Missao 2
+        dicNos.put("maria_jardim_umbra", new NoDialogo(Arrays.asList(
+            new Fala("Maria", "Um vento estranho... e um barulho de pedras vindo do jardim.")
+        )));
+
         dicNos.put("elimar_intro", new NoDialogo(
             Arrays.asList(
-                new Fala("Dr. Elimar", "Ola senhorita Maria Clara. Meu eu sou o doutor Elimar Gonzalez, e um prazer te conhecer.", null, imgElimar, corBase, 1.0f),
-                new Fala("Dr. Elimar", "Estou aqui para averiguar se sua estadia em nossas instalacoes foi proveitosa.", null, imgElimar, corBase, 1.0f),
-                new Fala("Dr. Elimar", "Peco que me responda com sinceridade as perguntas que hei de fazer a senhorita.", null, imgElimar, corBase, 1.0f),
+                new Fala("Dr. Elimar", "Ola, Maria Clara. Sou o Dr. Elimar Gonzalez.", null, imgElimar, corBase, 1.0f),
+                new Fala("Dr. Elimar", "Vou avaliar sua estadia. Responda com sinceridade.", null, imgElimar, corBase, 1.0f),
                 new Fala("Maria", "Ok...", null, null, corBase, 1.0f)
             ),
             Arrays.asList(
@@ -255,9 +278,9 @@ public class RepoDialogos {
 
         // Encerramento do questionario, antes de revelar o final calculado pela pontuacao
         dicNos.put("elimar_encerramento", new NoDialogo(Arrays.asList(
-            new Fala("Dr. Elimar", "Interessante... Bom, agradeco a sinceridade da senhorita.", null, imgElimar, corBase, 1.0f),
+            new Fala("Dr. Elimar", "Obrigado pela sinceridade.", null, imgElimar, corBase, 1.0f),
             new Fala("Maria", "Espere... e so isso?", null, null, corBase, 1.0f),
-            new Fala("Dr. Elimar", "Receio que sim senhorita. Agora descanse senhorita, amanha e outro dia.", null, imgElimar, corBase, 1.0f)
+            new Fala("Dr. Elimar", "Por hoje, sim. Descanse.", null, imgElimar, corBase, 1.0f)
         )));
 
         // Finais possiveis (GDD item 13), escolhidos pela TelaElimar de acordo com a pontuacao final
@@ -278,34 +301,29 @@ public class RepoDialogos {
 
         // Monologo sutil ao despertar no quarto no inicio da Missao 2
         dicNos.put("maria_acorda_missao2", new NoDialogo(Arrays.asList(
-            new Fala("Maria", "Acordei de novo no mundo real... Senti um vento estranho vindo do jardim externo."),
-            new Fala("Maria", "E ouvi um barulho distante de pedras se movendo... Talvez eu deva ir la dar uma olhada.")
+            new Fala("Maria", "Acordei de novo no mundo real..."),
+            new Fala("Maria", "Um vento estranho vem do jardim. Devo dar uma olhada.")
         )));
 
         // Desculpa in-game de Maria para recolher a cartela inteira na Missao 2
         // Agora com direcionamento ao jardim apos pegar a cartela
         dicNos.put("maria_pega_pilulas", new NoDialogo(Arrays.asList(
-            new Fala("Maria", "A enfermeira deixou a cartela inteira na mesa de cabeceira..."),
-            new Fala("Maria", "Nao quero ter que voltar toda vez que precisar de um comprimido. E melhor levar a cartela inteira comigo.", "tomar_pilula_missao2"),
-            new Fala("Maria", "Senti um vento estranho vindo do jardim externo. E ouvi um barulho distante de pedras se movendo... Talvez eu deva ir la dar uma olhada.")
+            new Fala("Maria", "A cartela inteira... melhor levar comigo.", "tomar_pilula_missao2")
         )));
 
         // Leitura sutil e narrativa do prontuario da paciente 103 no Mundo Umbra
         dicNos.put("documento1_umbra", new NoDialogo(Arrays.asList(
-            new Fala("Narrador", "(O papel em cima do balcao, que antes parecia um borrao sem nexo... agora esta nitido aos meus olhos.)"),
-            new Fala("Narrador", "Documento Clinico - Acesso Restrito. Casa de Repouso Elimar Gonzalez. Paciente 103..."),
-            new Fala("Narrador", "A paciente apresenta perda de memoria seletiva associada a episodios graves de violencia em ambiente domestico..."),
-            new Fala("Narrador", "Demonstra incapacidade de recordar vinculos familiares ou de reconhecer determinados espacos residenciais..."),
-            new Fala("Narrador", "Considerando o trauma, o cerebro da paciente parece ter desenvolvido um bloqueio de memoria parcial como mecanismo de autopreservacao..."),
-            new Fala("Maria", "(Paciente 103... Por que a leitura destas linhas me causa um arrepio tao profundo? Esse prontuario... parece ser sobre mim.)", "ler_prontuario_umbra")
+            new Fala("Narrador", "(O borrao no papel agora esta nitido.)"),
+            new Fala("Narrador", "Documento Clinico - Paciente 103. Perda de memoria seletiva ligada a violencia domestica..."),
+            new Fala("Narrador", "...bloqueio parcial como mecanismo de autopreservacao."),
+            new Fala("Maria", "(Paciente 103... Por que isso parece ser sobre mim?)", "ler_prontuario_umbra")
         )));
 
         // Leitura do prontuario no mundo real (GDD/Fluxo do Jogo)
         dicNos.put("documento1_real", new NoDialogo(Arrays.asList(
-            new Fala("Narrador", "CONTEUDO DO PAPEL: Relatorio de Incidente..."),
-            new Fala("Narrador", "A paciente Maria Clara demonstrou surtos de panico extremos durante as sessoes com o Dr. Gonzalez..."),
+            new Fala("Narrador", "Relatorio de Incidente: panico extremo nas sessoes com o Dr. Gonzalez."),
             new Fala("Narrador", "[Missao 1 Concluida!]"),
-            new Fala("Maria", "(Isso... isso confirma as minhas suspeitas. Eu preciso continuar investigando...)")
+            new Fala("Maria", "(Isso confirma minhas suspeitas...)")
         )));
     }
 }

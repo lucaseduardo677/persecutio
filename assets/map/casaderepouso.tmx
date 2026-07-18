@@ -673,7 +673,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="21" name="Colisoes" class="parede">
+ <objectgroup id="21" name="Colisoes" class="parede" visible="0">
   <object id="4" type="parede" x="0.5" y="321.5" width="31.5" height="733.5"/>
   <object id="7" type="parede" x="4" y="322.667" width="982.667" height="28.6667"/>
   <object id="10" type="parede" x="320.5" y="323" width="30.5" height="315.5"/>
@@ -791,7 +791,7 @@
   <object id="725" type="parede" x="1242" y="960" width="6" height="96"/>
   <object id="728" type="parede" x="1952" y="960" width="32" height="96"/>
  </objectgroup>
- <objectgroup id="24" name="Portas">
+ <objectgroup id="24" name="Portas" visible="0">
   <object id="192" name="portaQuartoMaria1" type="porta" x="256" y="609.667" width="33" height="4.33333">
    <properties>
     <property name="area" value="Corredor"/>
@@ -942,7 +942,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="25" name="Objetos" class="objeto">
+ <objectgroup id="25" name="Objetos" class="objeto" visible="0">
   <object id="216" type="objeto" x="733" y="54" width="130" height="183.167"/>
   <object id="217" type="objeto" x="937.875" y="98.125" width="47.25" height="87.2159"/>
   <object id="230" type="objeto" x="1250.55" y="243.25" width="58.9091" height="44.9318"/>
@@ -1085,7 +1085,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="27" name="NPCs">
+ <objectgroup id="27" name="NPCs" visible="0">
   <object id="329" name="enfermeira" type="npc" x="832" y="145.637" width="64" height="7.27271">
    <properties>
     <property name="umbra" type="bool" value="false"/>
@@ -1158,7 +1158,7 @@
   <object id="671" name="JardimExterno" type="comodo" x="1216" y="896" width="768" height="512"/>
   <object id="672" x="2060" y="1209.33"/>
  </objectgroup>
- <objectgroup id="28" name="Luzes">
+ <objectgroup id="28" name="Luzes" visible="0">
   <object id="411" name="abajur" type="luz" x="75.0001" y="328.032" width="11" height="11.9688">
    <properties>
     <property name="cor" type="color" value="#ffffff00"/>
@@ -1497,7 +1497,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="34" name="Destinos" visible="0">
+ <objectgroup id="34" name="Destinos">
   <object id="510" name="QuartoCorredor" x="265.438" y="640.528" width="12.75" height="11.75"/>
   <object id="511" name="spawnpoint" x="41" y="366" width="13.5" height="14"/>
   <object id="513" name="QuartoMaria" x="265.79" y="593.869" width="12.75" height="11.75"/>

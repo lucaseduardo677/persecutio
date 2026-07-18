@@ -53,6 +53,9 @@ public class ControladorInput {
     // Retorna direcao da animacao
     public int     getDirecaoAnimacao()  { return direcaoAnimacao; }
 
+    // Define direcao da animacao
+    public void    setDirecaoAnimacao(int dir) { direcaoAnimacao = dir; }
+
     // Retorna se esta se movendo
     public boolean isMovendo()           { return movendo; }
 }
