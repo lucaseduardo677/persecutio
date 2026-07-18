@@ -31,12 +31,12 @@ import java.util.Map;
 public class GerenciadorUI {
 
     // Estados da interface
-    public static final int UI_JOGO      = 0;
-    public static final int UI_PORTA     = 1;
-    public static final int UI_ESPELHO   = 2;
-    public static final int UI_SENHA     = 3;
-    public static final int UI_FADE      = 4;
-    public static final int UI_DIALOGO   = 5;
+    public static final int UI_JOGO = 0;
+    public static final int UI_PORTA = 1;
+    public static final int UI_ESPELHO = 2;
+    public static final int UI_SENHA = 3;
+    public static final int UI_FADE = 4;
+    public static final int UI_DIALOGO = 5;
     public static final int UI_DOCUMENTO = 6;
 
     // Fases do fade de tela
@@ -46,7 +46,7 @@ public class GerenciadorUI {
     private enum EstadoMissao { ENTRADA, VISIVEL, SAIDA, CONCLUIDA }
 
     // State atual da UI
-    private int     estadoUi       = UI_JOGO;
+    private int estadoUi = UI_JOGO;
     // Flag para mostrar mensagem de area liberada
     private boolean mostrarLiberada = false;
 
@@ -68,19 +68,18 @@ public class GerenciadorUI {
     private String tituloMissaoAtual = "Primeiros Passos";
     private String objetivoMissaoAtual = "Va ate a recepcao.";
 
-    // Estado do aviso grande de "temcartela" (aparece centralizado ao ganhar a
-    // cartela, depois some com fade-out e vira o aviso pequeno no canto inferior)
+    // Estado do aviso grande de temcartela ao ganhar a cartela
     private boolean temCartelaAnterior = false;
     private EstadoMissao estadoAvisoCartela = EstadoMissao.CONCLUIDA;
     private float timerAvisoCartela = 0f;
     private float alphaAvisoCartela = 0f;
 
     // Flag se esta pausado
-    private boolean pausado    = false;
+    private boolean pausado = false;
     // Opcao selecionada no menu de pausa
-    private int     opcaoPausa = 0;
+    private int opcaoPausa = 0;
     // Opcao anterior para som
-    private int     opcaoPausaAnterior = 0;
+    private int opcaoPausaAnterior = 0;
 
     // Puzzle de senha
     private PuzzleSenha puzzle;
@@ -93,21 +92,21 @@ public class GerenciadorUI {
     // Cache de texturas carregadas dinamicamente
     private final Map<String, Texture> cacheTexturas = new HashMap<>();
 
-    // Duracao do fade (curto para transicao rapida)
-    private static final float T_FADE   = 0.3f;
+    // Duracao do fade curto para transicao rapida
+    private static final float T_FADE = 0.3f;
     // Duracao mais rapida usada nas trocas de mundo a partir da Missao 2
     private static final float T_FADE_RAPIDO = 0.12f;
     // Tempo de espera entre fades
     private static final float T_ESPERA = 0.3f;
-    // Duracao do fade atualmente em curso (ajustavel por chamada)
+    // Duracao do fade atualmente em curso
     private float duracaoFadeAtual = T_FADE;
 
     // Fase atual do fade
-    private FaseFade faseFade  = FaseFade.INATIVO;
+    private FaseFade faseFade = FaseFade.INATIVO;
     // Timer do fade
-    private float    timerFade = 0f;
+    private float timerFade = 0f;
     // Alpha do fade
-    private float    alfaFade  = 0f;
+    private float alfaFade = 0f;
 
     // Acao a executar ao escurecer
     private Runnable aoEscurecer;
@@ -116,15 +115,15 @@ public class GerenciadorUI {
     private float timerInput = 0f;
 
     // Textura branca para overlays
-    private Texture         texBranca;
+    private Texture texBranca;
     // Gerenciador de video
     private GerenciadorVideo video;
     // Referencia ao audio
     private GerenciadorAudio audio;
 
     // Coordenadas do mouse
-    private final Vector2     mouse   = new Vector2();
-    // Medidor de text
+    private final Vector2 mouse = new Vector2();
+    // Medidor de texto
     private final GlyphLayout medidor = new GlyphLayout();
 
     // Ultimo prompt interativo exibido
@@ -133,7 +132,7 @@ public class GerenciadorUI {
     // Retangulo temporario
     private final Rectangle rectTemp = new Rectangle();
 
-    // Campo da animacao VHS de fundo e tempo
+    // Folha de animacao VHS de fundo e animacao
     private Texture vhsSheet;
     private Animation<TextureRegion> animVhs;
 
@@ -150,9 +149,9 @@ public class GerenciadorUI {
         inicializar(fonte, viewport, audioRef);
     }
 
-    // Inicializa recursos da UI com audio (mantendo compatibilidade)
+    // Inicializa recursos da UI com audio mantendo compatibilidade
     public void inicializar(BitmapFont fonte, ExtendViewport viewport, GerenciadorAudio audioRef) {
-        audio  = audioRef;
+        audio = audioRef;
         puzzle = new PuzzleSenha();
         puzzle.inicializar(fonte, viewport);
 
@@ -164,7 +163,7 @@ public class GerenciadorUI {
 
         video = new GerenciadorVideo();
 
-        // Carrega a folha de animacao VHS para fundo de dialogos de forma segura
+        // Carrega a folha de animacao VHS para fundo de dialogos
         if (Gdx.files.internal("img/vhs_sheet.png").exists()) {
             try {
                 vhsSheet = new Texture(Gdx.files.internal("img/vhs_sheet.png"));
@@ -203,7 +202,7 @@ public class GerenciadorUI {
         }
     }
 
-    // Textos de missao conforme o estado atual
+    // Atualiza textos de missao conforme o estado atual do progresso
     private void atualizarMissao() {
         if (progresso == null) return;
 
@@ -258,7 +257,9 @@ public class GerenciadorUI {
 
     // Retorna se o jogador esta bloqueado de se mover ou interagir
     public boolean isBloqueado() {
-        return estadoUi == UI_FADE || estadoUi == UI_SENHA || estadoUi == UI_DIALOGO || estadoUi == UI_DOCUMENTO || timerInput > 0f || (progresso != null && progresso.obterFase() == 6);
+        return estadoUi == UI_FADE || estadoUi == UI_SENHA || estadoUi == UI_DIALOGO
+                || estadoUi == UI_DOCUMENTO || timerInput > 0f
+                || (progresso != null && progresso.obterFase() == 6);
     }
 
     // Atualiza os timers da UI
@@ -278,6 +279,11 @@ public class GerenciadorUI {
             if (timerVerde <= 0) { timerVerde = -1; mostrarLiberada = false; }
         }
 
+        // Destrava dialogo que estava aguardando o fade terminar
+        if (dialogo != null && dialogo.estaAtivo() && dialogo.isAguardandoFade() && faseFade == FaseFade.INATIVO) {
+            dialogo.destravarAposFade();
+        }
+
         if (faseFade == FaseFade.INATIVO) return;
         timerFade += delta;
 
@@ -285,8 +291,8 @@ public class GerenciadorUI {
             case ESCURECENDO:
                 alfaFade = Math.min(1f, timerFade / duracaoFadeAtual);
                 if (timerFade >= duracaoFadeAtual) {
-                    alfaFade  = 1f;
-                    faseFade  = FaseFade.ESCURO;
+                    alfaFade = 1f;
+                    faseFade = FaseFade.ESCURO;
                     timerFade = 0f;
 
                     if (aoEscurecer != null) {
@@ -299,7 +305,7 @@ public class GerenciadorUI {
                         faseFade = FaseFade.VIDEO;
                         if (audio != null) audio.iniciarFadeOut(duracaoFadeAtual);
                     } else {
-                        faseFade  = FaseFade.AGUARDANDO;
+                        faseFade = FaseFade.AGUARDANDO;
                         timerFade = 0f;
                     }
                 }
@@ -311,7 +317,7 @@ public class GerenciadorUI {
             case VIDEO:
                 boolean videoAtivo = video.atualizar(delta);
                 if (!videoAtivo) {
-                    faseFade  = FaseFade.AGUARDANDO;
+                    faseFade = FaseFade.AGUARDANDO;
                     timerFade = 0f;
                     if (audio != null) audio.iniciarFadeIn(duracaoFadeAtual);
                 }
@@ -319,7 +325,7 @@ public class GerenciadorUI {
 
             case AGUARDANDO:
                 if (timerFade >= T_ESPERA) {
-                    faseFade  = FaseFade.CLAREANDO;
+                    faseFade = FaseFade.CLAREANDO;
                     timerFade = 0f;
                 }
                 break;
@@ -337,7 +343,7 @@ public class GerenciadorUI {
                         estadoUi = UI_JOGO;
                     }
 
-                    // Inicia bloqueio total de 0.5 segundos logo apos o fade terminar
+                    // Bloqueio de 0.5 segundos logo apos o fade terminar
                     timerInput = 0.5f;
                 }
                 break;
@@ -355,15 +361,15 @@ public class GerenciadorUI {
     // Inicia fade com video opcional e duracao customizada
     public void iniciarFade(String caminhoVideo, Runnable aoEscurecer, float duracao) {
         this.aoEscurecer = aoEscurecer;
-        estadoUi         = UI_FADE;
-        faseFade         = FaseFade.ESCURECENDO;
-        timerFade        = 0f;
-        alfaFade         = 0f;
+        estadoUi = UI_FADE;
+        faseFade = FaseFade.ESCURECENDO;
+        timerFade = 0f;
+        alfaFade = 0f;
         duracaoFadeAtual = duracao;
         video.preparar(caminhoVideo);
     }
 
-    // Inicia fade simples sem video, com duracao padrao
+    // Inicia fade simples sem video com duracao padrao
     public void fadeSimples(Runnable aoEscurecer) {
         iniciarFade(null, aoEscurecer, T_FADE);
     }
@@ -373,7 +379,7 @@ public class GerenciadorUI {
         iniciarFade(null, aoEscurecer, duracao);
     }
 
-    // Fade dedicado para troca entre mundo Real e Umbra: mais rapido a partir da Missao 2
+    // Fade dedicado para troca entre mundo Real e Umbra
     public void fadeTrocaMundo(Runnable aoEscurecer, boolean rapido) {
         iniciarFade(null, aoEscurecer, rapido ? T_FADE_RAPIDO : T_FADE);
     }
@@ -383,13 +389,13 @@ public class GerenciadorUI {
 
     // Processa input do jogador
     public boolean puxarInput(ExtendViewport viewport) {
-        // Ignora totalmente se estiver em transicao ou sob bloqueio pos transicao
-        if (estadoUi == UI_FADE || timerInput > 0f) return true;
+        // Bloqueia input durante fade ativo ou bloqueio pos transicao
+        if (estadoUi == UI_FADE || timerInput > 0f || faseFade != FaseFade.INATIVO) return true;
 
-        // Se estiver aguardando acordar no final da Missao 1, consome input de movimento de forma estrita
+        // Aguardando acordar no final da Missao 1
         if (progresso != null && progresso.obterFase() == 6) {
             if (Gdx.input.isKeyJustPressed(Keys.E) || Gdx.input.isKeyJustPressed(Keys.ENTER)) {
-                return false; // Permite que a TelaJogo leia a interacao para acordar
+                return false;
             }
             return true;
         }
@@ -420,11 +426,11 @@ public class GerenciadorUI {
 
         if (pausado) {
             boolean mudou = false;
-            if (Gdx.input.isKeyJustPressed(Keys.UP)   || Gdx.input.isKeyJustPressed(Keys.W)) {
+            if (Gdx.input.isKeyJustPressed(Keys.UP) || Gdx.input.isKeyJustPressed(Keys.W)) {
                 opcaoPausa = 0;
                 mudou = true;
             }
-            if (Gdx.input.isKeyJustPressed(Keys.DOWN)  || Gdx.input.isKeyJustPressed(Keys.S)) {
+            if (Gdx.input.isKeyJustPressed(Keys.DOWN) || Gdx.input.isKeyJustPressed(Keys.S)) {
                 opcaoPausa = 1;
                 mudou = true;
             }
@@ -438,12 +444,12 @@ public class GerenciadorUI {
             }
 
             float vL = viewport.getWorldWidth(), vA = viewport.getWorldHeight();
-            float cx = vL / 2f,               cy = vA / 2f;
+            float cx = vL / 2f, cy = vA / 2f;
             mouse.set(Gdx.input.getX(), Gdx.input.getY());
             viewport.unproject(mouse);
 
-            boolean hoverVoltar = mouse.x >= cx-100 && mouse.x <= cx+150 && mouse.y >= cy+45 && mouse.y <= cy+85;
-            boolean hoverSair   = mouse.x >= cx-100 && mouse.x <= cx+150 && mouse.y >= cy-15 && mouse.y <= cy+25;
+            boolean hoverVoltar = mouse.x >= cx - 100 && mouse.x <= cx + 150 && mouse.y >= cy + 45 && mouse.y <= cy + 85;
+            boolean hoverSair = mouse.x >= cx - 100 && mouse.x <= cx + 150 && mouse.y >= cy - 15 && mouse.y <= cy + 25;
 
             if (hoverVoltar) {
                 if (opcaoPausa != 0) {
@@ -475,7 +481,6 @@ public class GerenciadorUI {
             return true;
         }
         if (estadoUi == UI_DOCUMENTO) {
-            // Fecha o documento com qualquer tecla do teclado
             boolean qualquerTecla = false;
             for (int i = 0; i < 256; i++) {
                 if (Gdx.input.isKeyJustPressed(i)) {
@@ -501,9 +506,9 @@ public class GerenciadorUI {
     // Fecha a visualizacao do documento e dispara flag de fechamento
     public void fecharDocumento() {
         estadoUi = UI_JOGO;
-        fechado  = true;
+        fechado = true;
         if (audio != null) {
-            audio.tocarDocumento(); // toca o som de papel ao fechar tambem
+            audio.tocarDocumento();
         }
     }
 
@@ -543,7 +548,7 @@ public class GerenciadorUI {
     // Muda o estado da UI
     public void mudarEstado(int novoEstado) {
         estadoUi = novoEstado;
-        if (novoEstado == UI_SENHA)   abrirSenha();
+        if (novoEstado == UI_SENHA) abrirSenha();
         if (novoEstado == UI_DIALOGO) escolhaDialogo = 0;
     }
 
@@ -554,7 +559,6 @@ public class GerenciadorUI {
     public void atualizarTutorial(boolean andando, float delta) {
         if (progresso != null && missaoExibida != progresso.getMissao()) {
             atualizarMissao();
-            // Reseta a maquina de estados para rodar o fade da nova missao
             estadoMissao = EstadoMissao.ENTRADA;
             timerMissao = 0f;
             alphaMissao = 0f;
@@ -586,14 +590,11 @@ public class GerenciadorUI {
                     }
                     break;
                 case CONCLUIDA:
-                    // Nenhuma acao necessaria quando a missao ja foi concluida.
                     break;
             }
         }
 
-        // Assim que o jogador ganha a cartela (temcartela), mostra o aviso grande
-        // centralizado uma unica vez; depois ele some com fade e vira o aviso
-        // pequeno persistente no canto inferior (desenharTutorial cuida disso)
+        // Aviso grande ao ganhar a cartela que depois vira aviso pequeno
         if (progresso != null) {
             boolean temCartelaAgora = progresso.temCartela();
             if (temCartelaAgora && !temCartelaAnterior) {
@@ -639,24 +640,24 @@ public class GerenciadorUI {
     public void redimensionar(int w, int h) { if (puzzle != null) puzzle.redimensionar(w, h); }
 
     // Abre tela de senha
-    public void   abrirSenha()    { estadoUi = UI_SENHA; if (puzzle != null) puzzle.abrir(); }
+    public void abrirSenha() { estadoUi = UI_SENHA; if (puzzle != null) puzzle.abrir(); }
 
     // Retorna se esta na tela de senha
-    public boolean isSenha()      { return estadoUi == UI_SENHA; }
+    public boolean isSenha() { return estadoUi == UI_SENHA; }
 
-    // slot para atualizar senha
-    public void   atualizarSenha(float delta) {
+    // Atualiza o puzzle de senha
+    public void atualizarSenha(float delta) {
         if (puzzle != null) { puzzle.atualizar(delta); if (!puzzle.isAberto()) estadoUi = UI_JOGO; }
     }
 
     // Retorna senha digitada
-    public String  pegarSenha()   { return puzzle != null ? puzzle.pegarSenha() : null; }
+    public String pegarSenha() { return puzzle != null ? puzzle.pegarSenha() : null; }
 
     // Processa sucesso na senha
-    public void    senhaSucesso()  { if (puzzle != null) puzzle.fecharSucesso(); }
+    public void senhaSucesso() { if (puzzle != null) puzzle.fecharSucesso(); }
 
     // Processa erro na senha
-    public void    senhaErro()     { if (puzzle != null) puzzle.mostrarErro(); }
+    public void senhaErro() { if (puzzle != null) puzzle.mostrarErro(); }
 
     // Desenha avisos e prompts interativos
     public void desenharAvisos(ContextoRender ctx, GerenciadorColisao sistemaColisao, Jogador jogador) {
@@ -673,7 +674,7 @@ public class GerenciadorUI {
         String prompt = null;
 
         if (!mundoUmbra) {
-            // Verifica se esta encarando alguma pedra para empurrar (Missao 2, Fase 2) no mundo real
+            // Verifica pedra para empurrar na Missao 2 Fase 2 no mundo real
             if (progresso.getMissao() == 2 && progresso.obterFase() == 2) {
                 GerenciadorColisao.ObjetoColisao pedra = sistemaColisao.acharPedra(jogador);
                 if (pedra != null) {
@@ -683,7 +684,6 @@ public class GerenciadorUI {
 
             if (prompt == null) {
                 if (sobreArea(rectTemp, sistemaColisao.getArea("pilula"))) {
-                    // A prompt da pilula so aparece na tela apos falar com a enfermeira
                     if (falouEnfermeira) {
                         if (progresso.getMissao() == 2) {
                             prompt = "Aperte [E] para pegar as Pilulas";
@@ -692,8 +692,7 @@ public class GerenciadorUI {
                         }
                     }
                 } else if (sobreArea(rectTemp, sistemaColisao.getArea("enfermeira"))
-                      || sobreArea(rectTemp, sistemaColisao.getArea("npcRecepcao"))) {
-                    // A enfermeira e a recepcionista sao tratadas de forma unificada como Enfermeira
+                        || sobreArea(rectTemp, sistemaColisao.getArea("npcRecepcao"))) {
                     prompt = "Aperte [E] para falar com a Enfermeira";
                 } else {
                     GerenciadorColisao.ObjetoColisao doc = sistemaColisao.acharDoc(rectTemp);
@@ -718,7 +717,7 @@ public class GerenciadorUI {
                 }
             }
 
-            // Prompt do documento opcional de jardim no Umbra (Fase 3 ou superior)
+            // Prompt do documento opcional de jardim no Umbra
             if (prompt == null && progresso.obterFase() >= 3) {
                 Rectangle bancoArea = sistemaColisao.getArea("banco");
                 if (bancoArea == null) {
@@ -764,13 +763,13 @@ public class GerenciadorUI {
         ctx.batch.setColor(Color.WHITE);
     }
 
-    // Desenha text centralizado na tela
+    // Desenha texto centralizado na tela
     private void desenharCentro(ContextoRender ctx, BitmapFont fonte, String texto, float offsetY) {
         medidor.setText(fonte, texto);
         fonte.draw(ctx.batch, texto, ctx.centroX - medidor.width / 2f, ctx.centroY + offsetY);
     }
 
-    // Desenha tutoriais e o HUD de missao usando estritamente a fonte_indicadores.ttf
+    // Desenha tutoriais e o HUD de missao
     public void desenharTutorial(ContextoRender ctx) {
         if (estadoAvisoCartela != EstadoMissao.CONCLUIDA && progresso != null) {
             ctx.fonteIndicadores.setColor(1f, 1f, 1f, alphaAvisoCartela);
@@ -788,7 +787,7 @@ public class GerenciadorUI {
 
             if (missaoExibida == 1) {
                 ctx.fonteIndicadores.setColor(0.72f, 0.72f, 0.72f, alphaMissao);
-                desenharCentro(ctx, ctx.fonteIndicadores, "[WASD / Setas] Mover  •  [E] Interagir  •  [TAB] Ver Objetivos", -20f);
+                desenharCentro(ctx, ctx.fonteIndicadores, "[WASD / Setas] Mover \u2022 [E] Interagir \u2022 [TAB] Ver Objetivos", -20f);
             }
             ctx.fonteIndicadores.setColor(Color.WHITE);
             return;
@@ -812,16 +811,16 @@ public class GerenciadorUI {
         }
     }
 
-    // Desenha a visualizacao do documento de forma escurecida com a prompt de saida
+    // Desenha a visualizacao do documento com prompt de saida
     public void desenharDocumento(ContextoRender ctx, Texture imgDocumento) {
         desenharEscuro(ctx, 0.85f);
 
         float maxLarg = ctx.vLargura * 0.82f;
-        float maxAlt  = ctx.vAltura * 0.82f;
+        float maxAlt = ctx.vAltura * 0.82f;
         float proporcao = (float) imgDocumento.getWidth() / imgDocumento.getHeight();
 
         float largDoc = maxLarg;
-        float altDoc  = maxAlt;
+        float altDoc = maxAlt;
 
         if (proporcao > 1f) {
             altDoc = maxLarg / proporcao;
@@ -859,36 +858,32 @@ public class GerenciadorUI {
         desenharCentro(ctx, ctx.fonteIndicadores, "Pressione [ESC] ou [E] para fechar", -270);
     }
 
-    // Desenha gradiente vertical no rodape para os dialogos sem foto
+    // Desenha gradiente vertical no rodape para dialogos sem foto
     private void desenharGradiente(ContextoRender ctx, float altura) {
         float[] vertices = new float[20];
         Color rCor = Color.valueOf("#0D0D0D");
 
         float corBaixo = new Color(rCor.r, rCor.g, rCor.b, 1.0f).toFloatBits();
-        float corCima  = new Color(rCor.r, rCor.g, rCor.b, 0.0f).toFloatBits();
+        float corCima = new Color(rCor.r, rCor.g, rCor.b, 0.0f).toFloatBits();
 
-        // Bottom-left
         vertices[0] = 0f;
         vertices[1] = 0f;
         vertices[2] = corBaixo;
         vertices[3] = 0f;
         vertices[4] = 0f;
 
-        // Top-left
         vertices[5] = 0f;
         vertices[6] = altura;
         vertices[7] = corCima;
         vertices[8] = 0f;
         vertices[9] = 1f;
 
-        // Top-right
         vertices[10] = ctx.vLargura;
         vertices[11] = altura;
         vertices[12] = corCima;
         vertices[13] = 1f;
         vertices[14] = 1f;
 
-        // Bottom-right
         vertices[15] = ctx.vLargura;
         vertices[16] = 0f;
         vertices[17] = corBaixo;
@@ -898,9 +893,11 @@ public class GerenciadorUI {
         ctx.batch.draw(texBranca, vertices, 0, 20);
     }
 
-    // Desenha caixa de dialogo aplicando as predefinicoes de fundo e retrato automaticamente
+    // Desenha caixa de dialogo com fundo e retrato automaticos
     public void desenharDialogo(ContextoRender ctx) {
         if (dialogo == null || !dialogo.estaAtivo()) return;
+        // Bloqueia renderizacao do dialogo enquanto houver qualquer fade ativo
+        if (faseFade != FaseFade.INATIVO) return;
 
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -909,12 +906,12 @@ public class GerenciadorUI {
         boolean temFoto = path != null && !path.isEmpty();
 
         if (temFoto) {
-            // Predefinicao A: Fundo com a cor #0D0D0D solida na tela inteira
+            // Fundo solido com a cor escura na tela inteira
             ctx.batch.setColor(Color.valueOf("#0D0D0D"));
             ctx.batch.draw(texBranca, 0, 0, ctx.vLargura, ctx.vAltura);
             ctx.batch.setColor(Color.WHITE);
 
-            // Resolve textura usando o cache dinamico de caminhos
+            // Resolve textura do retrato usando cache dinamico
             Texture texRetrato = cacheTexturas.get(path);
             if (texRetrato == null) {
                 if (Gdx.files.internal(path).exists()) {
@@ -925,17 +922,15 @@ public class GerenciadorUI {
             }
 
             if (texRetrato != null) {
-                // Limites maximos da caixa de retrato
                 float maxLarg = 220f;
-                float maxAlt  = 220f;
+                float maxAlt = 220f;
 
                 float largOriginal = texRetrato.getWidth();
-                float altOriginal  = texRetrato.getHeight();
+                float altOriginal = texRetrato.getHeight();
 
-                // Proporcao para nao distorcer a imagem
                 float proporcao = largOriginal / altOriginal;
                 float largRetrato = maxLarg;
-                float altRetrato  = maxAlt;
+                float altRetrato = maxAlt;
 
                 if (proporcao > 1f) {
                     altRetrato = maxLarg / proporcao;
@@ -943,45 +938,44 @@ public class GerenciadorUI {
                     largRetrato = maxAlt * proporcao;
                 }
 
-                // Calcula posicoes de desenho centralizadas
                 float posXRetrato = ctx.centroX - (largRetrato / 2f);
                 float posYRetrato = ctx.centroY - 30f;
 
                 ctx.batch.draw(texRetrato, posXRetrato, posYRetrato, largRetrato, altRetrato);
             }
         } else {
-            // Predefinicao B: Fundo com apenas um gradiente de #0D0D0D ate transparente englobando apenas a area do dialogo
-            float alturaDialogo = ctx.vAltura * 0.42f; // cobre de forma suave a area do texto e opcoes
+            // Fundo com gradiente escuro cobrindo a area do dialogo
+            float alturaDialogo = ctx.vAltura * 0.42f;
             desenharGradiente(ctx, alturaDialogo);
         }
 
-        // Posicao base do texto colada na borda inferior da tela, deslocada 25px para cima
+        // Posicao base do texto na borda inferior
         float baseX = ctx.centroX;
-        float baseY = ctx.vAltura  * 0.25f;
+        float baseY = ctx.vAltura * 0.25f;
         float nomeY = baseY + 30f;
 
         String falante = dialogo.getFalante();
-        String texto   = dialogo.getTextoVisivel();
+        String texto = dialogo.getTextoVisivel();
 
-        // Oculta o nome de Maria (a protagonista) para dar efeito de reflexao/pensamento interno
+        // Nome do falante usando a mesma fonte dos dialogos
         if (!falante.isEmpty() && !"maria".equalsIgnoreCase(falante)) {
             String textoNome = falante + ": ";
-            ctx.fonteNomes.setColor(Color.ORANGE);
-            medidor.setText(ctx.fonteNomes, textoNome);
+            ctx.fonteDialogos.setColor(Color.ORANGE);
+            medidor.setText(ctx.fonteDialogos, textoNome);
             float nomeX = baseX - (medidor.width / 2f);
-            ctx.fonteNomes.draw(ctx.batch, textoNome, nomeX, nomeY);
-            ctx.fonteNomes.setColor(Color.WHITE);
+            ctx.fonteDialogos.draw(ctx.batch, textoNome, nomeX, nomeY);
+            ctx.fonteDialogos.setColor(Color.WHITE);
         }
 
         ctx.fonteDialogos.setColor(Color.WHITE);
 
-        // Divide e quebra as linhas de dialogo de forma automatica para caber em qualquer resolucao de tela de forma centrada
+        // Texto do dialogo com quebra de linha automatica e centralizado
         float largTexto = ctx.vLargura - 100f;
         medidor.setText(ctx.fonteDialogos, texto, Color.WHITE, largTexto, Align.center, true);
         float textoX = baseX - (largTexto / 2f);
         ctx.fonteDialogos.draw(ctx.batch, medidor, textoX, baseY);
 
-        // Lista de escolhas
+        // Lista de escolhas do dialogo
         List<String> escolhas = dialogo.getEscolhas();
         float javaY = baseY - 35f;
 
@@ -1040,7 +1034,7 @@ public class GerenciadorUI {
 
     // Desenha prompt de porta proxima
     public void desenharPrompt(ContextoRender ctx, GerenciadorPortas gerPortas,
-                                    GerenciadorColisao colisao, Jogador jogador) {
+            GerenciadorColisao colisao, Jogador jogador) {
         if (gerPortas == null) return;
         if (ultimoPromptInterativo != null) return;
 
@@ -1073,11 +1067,11 @@ public class GerenciadorUI {
         ctx.fonteIndicadores.setColor(Color.WHITE);
     }
 
-    // Desenha menu de pausa usando fonte_indicadores.ttf
+    // Desenha menu de pausa
     public void desenharPausa(ContextoRender ctx) {
         ctx.fonteIndicadores.setColor(Color.WHITE);
         desenharCentro(ctx, ctx.fonteIndicadores, opcaoPausa == 0 ? "> VOLTAR" : "  VOLTAR", 40);
-        desenharCentro(ctx, ctx.fonteIndicadores, opcaoPausa == 1 ? "> SAIR"   : "  SAIR",    0);
+        desenharCentro(ctx, ctx.fonteIndicadores, opcaoPausa == 1 ? "> SAIR" : "  SAIR", 0);
     }
 
     // Verifica se hitbox esta sobre uma area
@@ -1086,7 +1080,7 @@ public class GerenciadorUI {
     }
 
     // Retorna se esta na tela de porta
-    public boolean isPorta()   { return estadoUi == UI_PORTA; }
+    public boolean isPorta() { return estadoUi == UI_PORTA; }
 
     // Retorna se esta na tela de espelho
     public boolean isEspelho() { return estadoUi == UI_ESPELHO; }
@@ -1098,10 +1092,10 @@ public class GerenciadorUI {
     public boolean isPausado() { return pausado; }
 
     // Retorna se esta em fade
-    public boolean isFade()    { return estadoUi == UI_FADE; }
+    public boolean isFade() { return estadoUi == UI_FADE; }
 
     // Retorna se esta em video
-    public boolean isVideo()   { return faseFade == FaseFade.VIDEO; }
+    public boolean isVideo() { return faseFade == FaseFade.VIDEO; }
 
     // Retorna gerenciador de video
     public GerenciadorVideo obterVideo() { return video; }
@@ -1109,9 +1103,9 @@ public class GerenciadorUI {
     // Libera recursos da UI
     public void dispose() {
         if (vhsSheet != null) vhsSheet.dispose();
-        if (puzzle    != null) puzzle.dispose();
+        if (puzzle != null) puzzle.dispose();
         if (texBranca != null) texBranca.dispose();
-        if (video     != null) video.dispose();
+        if (video != null) video.dispose();
 
         for (Texture tex : cacheTexturas.values()) {
             if (tex != null) tex.dispose();
@@ -1123,23 +1117,15 @@ public class GerenciadorUI {
 
     // Puzzle de senha interno
     private static class PuzzleSenha {
-        // Tamanho maximo da senha
         private static final int TAMANHO_SENHA = 4;
 
-        // Stage do puzzle
-        private Stage     stage;
-        // Campo de texto da senha
+        private Stage stage;
         private TextField campoSenha;
-        // Label de feedback
-        private Label     labelFeedback;
-        // Flag se esta aberto
-        private boolean   aberto        = false;
-        // Flag para fechar no proximo frame
-        private boolean   fecharProximo = false;
-        // Senha submetida
-        private String    senhaSubmetida = null;
+        private Label labelFeedback;
+        private boolean aberto = false;
+        private boolean fecharProximo = false;
+        private String senhaSubmetida = null;
 
-        // Texturas do cursor selecao e fundo
         private Texture cursorTex, selecaoTex, backTex;
 
         // Inicializa recursos do puzzle
@@ -1160,15 +1146,15 @@ public class GerenciadorUI {
             backTex = new Texture(bp); bp.dispose();
 
             TextFieldStyle ts = new TextFieldStyle();
-            ts.font       = font;
-            ts.fontColor  = Color.WHITE;
-            ts.cursor     = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(cursorTex));
-            ts.selection  = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(selecaoTex));
+            ts.font = font;
+            ts.fontColor = Color.WHITE;
+            ts.cursor = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(cursorTex));
+            ts.selection = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(selecaoTex));
             ts.background = new com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable(new TextureRegion(backTex));
 
             LabelStyle ls = new LabelStyle(); ls.font = font; ls.fontColor = Color.WHITE;
 
-            campoSenha    = new TextField("", ts);
+            campoSenha = new TextField("", ts);
             campoSenha.setMaxLength(TAMANHO_SENHA);
             campoSenha.setTextFieldFilter((f, c) -> Character.isDigit(c));
             campoSenha.setAlignment(com.badlogic.gdx.utils.Align.center);
@@ -1184,7 +1170,7 @@ public class GerenciadorUI {
 
         // Abre o puzzle de senha
         public void abrir() {
-            aberto        = true;
+            aberto = true;
             senhaSubmetida = null;
             campoSenha.setText("");
             labelFeedback.setText("Cadeado de 4 digitos:");
@@ -1204,7 +1190,7 @@ public class GerenciadorUI {
         public void atualizar(float delta) {
             if (!aberto) return;
             if (fecharProximo) {
-                aberto        = false;
+                aberto = false;
                 fecharProximo = false;
                 if (Gdx.input.getInputProcessor() == stage) Gdx.input.setInputProcessor(null);
                 return;
@@ -1226,7 +1212,7 @@ public class GerenciadorUI {
         // Fecha puzzle cancelando
         public void fecharCancelar() {
             senhaSubmetida = null;
-            fecharProximo  = true;
+            fecharProximo = true;
             Gdx.input.setOnscreenKeyboardVisible(false);
             if (Gdx.input.getInputProcessor() == stage) Gdx.input.setInputProcessor(null);
         }
@@ -1240,35 +1226,31 @@ public class GerenciadorUI {
 
         // Retorna senha digitada
         public String pegarSenha() {
-            String r       = senhaSubmetida;
+            String r = senhaSubmetida;
             senhaSubmetida = null;
             return r;
         }
 
         // Libera recursos do puzzle
         public void dispose() {
-            if (stage      != null) stage.dispose();
-            if (cursorTex  != null) cursorTex.dispose();
+            if (stage != null) stage.dispose();
+            if (cursorTex != null) cursorTex.dispose();
             if (selecaoTex != null) selecaoTex.dispose();
-            if (backTex    != null) backTex.dispose();
+            if (backTex != null) backTex.dispose();
             if (Gdx.input.getInputProcessor() == stage) Gdx.input.setInputProcessor(null);
         }
     }
 
     // Configuracao de retrato
     public static class ConfigRetrato {
-        // Cor do fundo
-        public final Color   corFundo;
-        // Opacidade do fundo
-        public final float   opacidade;
-        // Texture do retrato
+        public final Color corFundo;
+        public final float opacidade;
         public final Texture imagem;
 
-        // Construtor da configuracao
         public ConfigRetrato(Color corFundo, float opacidade, Texture imagem) {
-            this.corFundo  = corFundo;
+            this.corFundo = corFundo;
             this.opacidade = opacidade;
-            this.imagem    = imagem;
+            this.imagem = imagem;
         }
     }
 }

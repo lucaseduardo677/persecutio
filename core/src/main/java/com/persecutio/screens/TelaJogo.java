@@ -125,6 +125,8 @@ public class TelaJogo implements Screen {
     private boolean umbraAnterior = false;
     // Ultima missao conhecida para invalidar posicao Umbra de missoes anteriores
     private int ultimaMissaoConhecida = 1;
+    // Flag para sincronizar posicoes na primeira pilula do JardimInterno na Missao 2
+    private boolean sincronizarJardimInternoM2 = true;
 
     // Chave do documento atualmente sob leitura de imagem
     private String docChave = null;
@@ -332,33 +334,9 @@ public class TelaJogo implements Screen {
         if (progresso.getMissao() != ultimaMissaoConhecida) {
             ultimaMissaoConhecida = progresso.getMissao();
             posUmbraDefinida = false;
-            posUmbra.set(jogador.mundoX, jogador.mundoY);
         }
 
         if (umbra != umbraAnterior) {
-            // Guarda a posicao do mundo que esta sendo deixado
-            if (umbraAnterior) posUmbra.set(jogador.mundoX, jogador.mundoY);
-            else posReal.set(jogador.mundoX, jogador.mundoY);
-
-            if (umbra) {
-                if (!posUmbraDefinida) {
-                    if (primeiraVisitaUmbraGlobal) {
-                        // Primeira vez no Umbra usa o spawnpoint daquele mundo
-                        posUmbra.set(inicialXUmbra, inicialYUmbra);
-                        primeiraVisitaUmbraGlobal = false;
-                    }
-                    posUmbraDefinida = true;
-                }
-                jogador.teleportar(posUmbra.x, posUmbra.y);
-            } else {
-                // So teleporta para a posicao salva do Real se estiver no jardim
-                float hcX = jogador.hitbox.x + jogador.hitbox.width / 2f;
-                float hcY = jogador.hitbox.y + jogador.hitbox.height / 2f;
-                GerenciadorComodos.Comodo comodoJogador = gerComodos.achar(hcX, hcY);
-                if (comodoJogador != null && "jardimexterno".equals(comodoJogador.nomeGrupo)) {
-                    jogador.teleportar(posReal.x, posReal.y);
-                }
-            }
             umbraAnterior = umbra;
         }
 
@@ -531,10 +509,13 @@ public class TelaJogo implements Screen {
         if (teleportePosRevelacao && !gerDialogo.estaAtivo() && interfaceJogo.obterEstado() != GerenciadorUI.UI_DIALOGO) {
             teleportePosRevelacao = false;
             interfaceJogo.fadeSimples(() -> {
+                posReal.set(inicialXReal, inicialYReal);
                 jogador.teleportar(inicialXReal, inicialYReal);
                 jogador.virarParaBaixo();
                 progresso.concluirPrimeira(inicialXReal, inicialYReal);
                 mundoUmbra = false;
+                gerDialogo.iniciar("maria_acorda_missao2");
+                interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
             }, 3.0f);
         }
 
@@ -572,7 +553,10 @@ public class TelaJogo implements Screen {
             if (Gdx.input.isKeyJustPressed(Keys.E) || Gdx.input.isKeyJustPressed(Keys.ENTER)) {
                 interfaceJogo.fadeSimples(() -> {
                     posReal.set(inicialXReal, inicialYReal);
+                    jogador.teleportar(inicialXReal, inicialYReal);
+                    jogador.virarParaBaixo();
                     progresso.concluirPrimeira(inicialXReal, inicialYReal);
+                    mundoUmbra = false;
                     gerDialogo.iniciar("maria_acorda_missao2");
                     interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
                 });
@@ -608,7 +592,48 @@ public class TelaJogo implements Screen {
 
         // Missao 2 em diante usa o remedio em qualquer lugar para alternar de mundo
         if (progresso.getMissao() >= 2 && progresso.temCartela() && Gdx.input.isKeyJustPressed(Keys.F)) {
-            interfaceJogo.fadeTrocaMundo(() -> progresso.alternarUmbra(), true);
+            boolean indoProUmbra = !mundoUmbra;
+
+            // Salva a posicao do mundo que esta sendo deixado
+            if (indoProUmbra) {
+                posReal.set(jogador.mundoX, jogador.mundoY);
+            } else {
+                posUmbra.set(jogador.mundoX, jogador.mundoY);
+            }
+
+            // Na Missao 2 ao tomar a pilula pela primeira vez no JardimInterno sincroniza posicoes
+            if (progresso.getMissao() == 2 && sincronizarJardimInternoM2 && indoProUmbra) {
+                float hcX = jogador.hitbox.x + jogador.hitbox.width / 2f;
+                float hcY = jogador.hitbox.y + jogador.hitbox.height / 2f;
+                GerenciadorComodos.Comodo comodoJogador = gerComodos.achar(hcX, hcY);
+                if (comodoJogador != null && "jardiminterno".equals(comodoJogador.nomeGrupo)) {
+                    posUmbra.set(jogador.mundoX, jogador.mundoY);
+                    posUmbraDefinida = true;
+                    sincronizarJardimInternoM2 = false;
+                }
+            }
+
+            // Define a posicao de destino no outro mundo
+            float destinoX, destinoY;
+            if (indoProUmbra) {
+                if (!posUmbraDefinida) {
+                    if (primeiraVisitaUmbraGlobal) {
+                        posUmbra.set(inicialXUmbra, inicialYUmbra);
+                        primeiraVisitaUmbraGlobal = false;
+                    }
+                    posUmbraDefinida = true;
+                }
+                destinoX = posUmbra.x;
+                destinoY = posUmbra.y;
+            } else {
+                destinoX = posReal.x;
+                destinoY = posReal.y;
+            }
+
+            interfaceJogo.fadeTrocaMundo(() -> {
+                progresso.alternarUmbra();
+                jogador.teleportar(destinoX, destinoY);
+            }, true);
             return;
         }
 
@@ -787,9 +812,20 @@ public class TelaJogo implements Screen {
 
         if (interagiu) {
             if (progresso.consumirPilula()) {
+                posReal.set(jogador.mundoX, jogador.mundoY);
+                if (!posUmbraDefinida) {
+                    if (primeiraVisitaUmbraGlobal) {
+                        posUmbra.set(inicialXUmbra, inicialYUmbra);
+                        primeiraVisitaUmbraGlobal = false;
+                    }
+                    posUmbraDefinida = true;
+                }
+                float destX = posUmbra.x;
+                float destY = posUmbra.y;
                 interfaceJogo.fadeSimples(() -> {
                     progresso.alternarUmbra();
                     progresso.mudarFase(1);
+                    jogador.teleportar(destX, destY);
                     if (progresso.getMissao() == 1) {
                         gerDialogo.iniciar("maria_entra_umbra_m1");
                         interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
@@ -823,9 +859,20 @@ public class TelaJogo implements Screen {
 
         // Reage a eventos gerados pelo progresso fora da interacao direta
         if (progresso.consumirPilula()) {
+            posReal.set(jogador.mundoX, jogador.mundoY);
+            if (!posUmbraDefinida) {
+                if (primeiraVisitaUmbraGlobal) {
+                    posUmbra.set(inicialXUmbra, inicialYUmbra);
+                    primeiraVisitaUmbraGlobal = false;
+                }
+                posUmbraDefinida = true;
+            }
+            float destX = posUmbra.x;
+            float destY = posUmbra.y;
             interfaceJogo.fadeSimples(() -> {
                 progresso.alternarUmbra();
                 progresso.mudarFase(1);
+                jogador.teleportar(destX, destY);
             });
             return;
         }

@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-// Gerencia os dialogos
+// Gerencia os dialogos do jogo
 public class GerenciadorDialogo {
 
     // Repositorio de dialogos
@@ -17,7 +17,7 @@ public class GerenciadorDialogo {
     // Falante da linha
     private String falante = "";
     // Texto da linha
-    private String texto   = "";
+    private String texto = "";
     // Caminho da imagem
     private String retrato = null;
     // Cor do fundo
@@ -30,10 +30,13 @@ public class GerenciadorDialogo {
     // Flag de dialogo
     private boolean ativo = false;
 
+    // Flag para adiar voz e texto ate o fade terminar
+    private boolean aguardandoFade = false;
+
     // Escolhas disponiveis
     private final List<String> escolhas = new ArrayList<>();
     // Efeitos pendentes
-    private final List<String> efeitos  = new ArrayList<>();
+    private final List<String> efeitos = new ArrayList<>();
 
     // Instancia o gerenciador
     public GerenciadorDialogo() {
@@ -45,16 +48,17 @@ public class GerenciadorDialogo {
         voz = vozRef;
     }
 
-    // Inicia um no
+    // Inicia um no de dialogo com voz e texto adiados ate o fade terminar
     public void iniciar(String noAlvo) {
         noAtual = repositorio.getNo(noAlvo);
         if (noAtual == null) {
             ativo = false;
             return;
         }
-        ativo    = true;
+        ativo = true;
         idxAtual = -1;
         escolhas.clear();
+        aguardandoFade = true;
         avancar();
     }
 
@@ -67,17 +71,18 @@ public class GerenciadorDialogo {
 
         if (idxAtual < noAtual.falas.size()) {
             RepoDialogos.Fala fala = noAtual.falas.get(idxAtual);
-            falante   = fala.falante;
-            texto     = fala.texto;
-            retrato   = fala.retrato;
-            corFundo  = fala.corFundo;
+            falante = fala.falante;
+            texto = fala.texto;
+            retrato = fala.retrato;
+            corFundo = fala.corFundo;
             opacidade = fala.opacidade;
 
             if (fala.efeito != null && !fala.efeito.isEmpty()) {
                 efeitos.add(fala.efeito);
             }
 
-            if (voz != null) voz.falar(falante, texto);
+            // So inicia a voz se nao estiver aguardando o fade terminar
+            if (!aguardandoFade && voz != null) voz.falar(falante, texto);
 
             if (idxAtual == noAtual.falas.size() - 1) {
                 if (noAtual.escolhas != null && !noAtual.escolhas.isEmpty()) {
@@ -91,7 +96,7 @@ public class GerenciadorDialogo {
         }
     }
 
-    // Retorna os pontos associados a uma escolha do no atual (0 se nao houver)
+    // Retorna os pontos associados a uma escolha do no atual
     public int obterPontos(int indice) {
         if (noAtual == null || noAtual.escolhas == null) return 0;
         if (indice < 0 || indice >= noAtual.escolhas.size()) return 0;
@@ -110,9 +115,10 @@ public class GerenciadorDialogo {
 
     // Finaliza o dialogo
     public void encerrar() {
-        ativo   = false;
+        ativo = false;
         noAtual = null;
         escolhas.clear();
+        aguardandoFade = false;
         if (voz != null) voz.parar();
     }
 
@@ -123,20 +129,34 @@ public class GerenciadorDialogo {
         return res;
     }
 
+    // Destrava a voz e o texto apos o fade terminar
+    public void destravarAposFade() {
+        if (!aguardandoFade) return;
+        aguardandoFade = false;
+        if (voz != null && ativo && noAtual != null && idxAtual >= 0 && idxAtual < noAtual.falas.size()) {
+            RepoDialogos.Fala fala = noAtual.falas.get(idxAtual);
+            voz.falar(fala.falante, fala.texto);
+        }
+    }
+
+    // Retorna se esta aguardando o fade terminar para iniciar voz e texto
+    public boolean isAguardandoFade() { return aguardandoFade; }
+
     // Verifica estado ativo
-    public boolean estaAtivo()   { return ativo; }
+    public boolean estaAtivo() { return ativo; }
 
     // Verifica se possui escolha
     public boolean temEscolhas() { return !escolhas.isEmpty(); }
 
     // Obtem o falante
-    public String getFalante()   { return falante; }
+    public String getFalante() { return falante; }
 
     // Obtem o texto
-    public String getTexto()     { return texto; }
+    public String getTexto() { return texto; }
 
-    // Obtem o texto revelado ate agora, em sincronia com a fala animalese
+    // Obtem o texto revelado ate agora em sincronia com a fala animalese
     public String getTextoVisivel() {
+        if (aguardandoFade) return "";
         if (voz == null) return texto;
         int letras = Math.min(texto.length(), voz.obterLetraAtual());
         return texto.substring(0, letras);
