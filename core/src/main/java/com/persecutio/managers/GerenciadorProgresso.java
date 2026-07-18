@@ -16,7 +16,7 @@ public class GerenciadorProgresso {
     // Folga para interacao
     private static final float FOLGA = 8f;
 
-    // Referencias opcionais a sistemas externos (usadas apenas para efeitos)
+    // Referencias opcionais a sistemas externos usadas apenas para efeitos
     private final GerenciadorColisao colisao;
 
     // Flag se esta no mundo Umbra
@@ -26,7 +26,7 @@ public class GerenciadorProgresso {
     // Documentos lidos
     private int documentos = 1;
 
-    // Subfase da Missao para controle de objetivos
+    // Subfase da missao para controle de objetivos
     private int faseMissao = 0;
     // Flag se o documento opcional do jardim foi lido
     private boolean lidoJardim = false;
@@ -35,20 +35,19 @@ public class GerenciadorProgresso {
     // Flag de acionamento do evento de documento umbra para fade
     private boolean eventoDocumento = false;
 
-    // Posicao salva no jardim para fast-travel na Missao 2
+    // Posicao salva no jardim para fast travel na Missao 2
     private final Vector2 posicaoJardim = new Vector2();
     private boolean jardimSalvo = false;
 
-    // Pool de flags de acoes ativas no progresso (Arquitetura dinamica)
+    // Pool de flags de acoes ativas no progresso
     private final Set<String> flags = new HashSet<>();
 
-    // Nomes dos documentos ja lidos (Real e Umbra), evita releitura e permite
-    // qualquer quantidade de documentos sem codigo especifico
+    // Nomes dos documentos ja lidos em ambos os mundos
     private final Set<String> documentosLidos = new HashSet<>();
 
     // Mensagem de aviso atual
     private String aviso = "";
-    // No de dialogo a iniciar (blade-ink)
+    // No de dialogo a iniciar
     private String dialogoAlvo = null;
 
     // Flag de leitura agendada de imagem de documento
@@ -67,7 +66,7 @@ public class GerenciadorProgresso {
     private boolean dialogoRevelacaoDocUmbra = false;
     private boolean dialogoMusicaUmbraM2 = false;
 
-    // Retangulo temporario
+    // Retangulo temporario reutilizavel
     private final Rectangle rectTemp = new Rectangle();
 
     // Construtor do progresso
@@ -120,13 +119,13 @@ public class GerenciadorProgresso {
     // Retorna se o jogador ja possui a cartela de pilulas
     public boolean temCartela() { return temFlag("temcartela"); }
 
-    // Retorna se o ponto de fast-travel do jardim ja foi salvo
+    // Retorna se o ponto de fast travel do jardim ja foi salvo
     public boolean jardimSalvo() { return jardimSalvo; }
 
     // Obtem a coordenada salva do jardim
     public Vector2 posicaoJardim() { return posicaoJardim; }
 
-    // Salva a posicao atual do jogador se ele estiver no jardim no mundo real (Missao 2)
+    // Salva a posicao atual do jogador se ele estiver no jardim no mundo real na Missao 2
     private void salvarJardim(float x, float y) {
         if (!mundoUmbra && missao == 2) {
             posicaoJardim.set(x, y);
@@ -138,23 +137,22 @@ public class GerenciadorProgresso {
     public void pegarCartela() {
         darFlag("temcartela");
         mundoUmbra = true;
-        faseMissao = 1; // "Investigue a origem do som."
+        faseMissao = 1;
     }
 
     // Marca o puzzle de pedras como resolvido e abre a porta do Jardim
     public void resolverPuzzle() {
-        faseMissao = 3; // "Verifique a porta do Jardim."
+        faseMissao = 3;
         if (colisao != null) {
             try {
                 colisao.destrancar("portaEscritorioJardim");
                 colisao.destrancar("portaEscritorioJardim2");
             } catch (Exception ignored) {}
         }
-        // Compatibilidade com a UI: agenda o dialogo de clique de porta
         dialogoAlvo = "porta_clique";
     }
 
-    // Finaliza a leitura do prontuario de Umbra na Missao 1 e aguarda o despertar automatico
+    // Finaliza a leitura do prontuario de Umbra na Missao 1 e aguarda o despertar
     public void lerUmbra() {
         faseMissao = 6;
     }
@@ -162,8 +160,8 @@ public class GerenciadorProgresso {
     // Conclui a Missao 1 e retorna ao mundo real no spawn inicial
     public void concluirPrimeira(float spawnX, float spawnY) {
         missao = 2;
-        faseMissao = 0; // "Tome seu remedio."
-        darFlag("porta_destrancada"); // Porta do quarto aberta no mundo real
+        faseMissao = 0;
+        darFlag("porta_destrancada");
         mundoUmbra = false;
         aviso = "";
     }
@@ -186,7 +184,7 @@ public class GerenciadorProgresso {
         return rectTemp;
     }
 
-    // Handler quando o jogador interage com um NPC (ex: "enfermeira")
+    // Handler quando o jogador interage com um NPC
     public void onNpcInteract(String npcKey) {
         if (npcKey == null) return;
         String chave = npcKey.toLowerCase().trim();
@@ -194,18 +192,17 @@ public class GerenciadorProgresso {
             if (!temFlag("falou_enfermeira")) {
                 darFlag("falou_enfermeira");
                 dialogoAlvo = "enfermeira";
-                // CORRECAO: Primeira conversa ja avanca direto para fase 2,
-                // permitindo pegar a pilula logo apos falar com a enfermeira
+                // Primeira conversa ja avanca direto para fase 2 permitindo pegar a pilula
                 if (missao == 1 && faseMissao <= 1) faseMissao = 2;
             } else {
-                // Apos a primeira conversa, so repete uma fala curta em loop
+                // Apos a primeira conversa repete uma fala curta em loop
                 dialogoAlvo = "enfermeira_volte_quarto";
                 if (missao == 1 && faseMissao == 1) faseMissao = 2;
             }
         }
     }
 
-    // Handler quando o jogador interage com um objeto (ex: "pilula", "espelho", "gaveta")
+    // Handler quando o jogador interage com um objeto
     public void onObjectInteract(String objectKey) {
         if (objectKey == null) return;
         String chave = objectKey.toLowerCase().trim();
@@ -221,8 +218,7 @@ public class GerenciadorProgresso {
                     return;
                 }
                 if (missao == 2 && faseMissao == 0 && !mundoUmbra) {
-                    // A flag "temcartela" so e concedida ao final deste dialogo
-                    // (efeito tomar_pilula_missao2), nao apenas por tocar na cabeceira
+                    // A flag temcartela so e concedida ao final do dialogo via efeito
                     dialogoAlvo = "maria_pega_pilulas";
                     return;
                 }
@@ -255,12 +251,11 @@ public class GerenciadorProgresso {
                 break;
 
             default:
-                // objetos genericos nao disparam logica de progresso aqui
                 break;
         }
     }
 
-    // Handler generico para documentos lidos (nome do objeto e opcional docId)
+    // Handler generico para documentos lidos
     public void onDocumentFound(String nome, String docId, boolean isUmbra) {
         if (nome == null) return;
         String chave = nome.toLowerCase().trim();
@@ -284,7 +279,6 @@ public class GerenciadorProgresso {
             if (!documentosLidos.contains(chave)) {
                 documentosLidos.add(chave);
                 documentos++;
-                // Documento1 no umbra: mostra documento e agenda teleporte ao fechar
                 if ("documento1".equals(chave)) {
                     lerDocumento("documento1_umbra");
                     teleportarAposDocUmbra = true;
@@ -352,7 +346,7 @@ public class GerenciadorProgresso {
         public static PortaResponse cont() { return new PortaResponse(Action.CONTINUE, null, null, false); }
     }
 
-    // Handler para interacoes com portas: retorna instrucoes para a UI
+    // Handler para interacoes com portas retornando instrucoes para a UI
     public PortaResponse onPortaInteract(com.persecutio.managers.GerenciadorPortas.Porta porta) {
         if (porta == null) return PortaResponse.cont();
 
@@ -360,7 +354,6 @@ public class GerenciadorProgresso {
 
         if (mundoUmbra && missao == 2 && faseMissao == 1) {
             if (nome.contains("jardim") || nome.contains("escritorio")) {
-                // Porta emperrada: mostra dialogo e avanca fase
                 mudarFase(2);
                 return PortaResponse.dialog("porta_emperrada");
             }
@@ -394,9 +387,8 @@ public class GerenciadorProgresso {
             darFlag("porta_destrancada");
             aviso = "A porta abriu...";
 
-            // Avanca fase da Missao 1 se estiver nela
             if (missao == 1 && faseMissao == 4) {
-                faseMissao = 5; // "Leia o documento na recepcao."
+                faseMissao = 5;
             }
             return true;
         }
@@ -405,7 +397,7 @@ public class GerenciadorProgresso {
         return false;
     }
 
-    // Limpa aviso quando jogador sai da area
+    // Limpa aviso quando jogador sai da area de interacao
     public void checarLonge(Jogador jogador) {
         if (aviso.isEmpty()) return;
 
@@ -455,7 +447,7 @@ public class GerenciadorProgresso {
         flags.remove(flag.toLowerCase().trim());
     }
 
-    // Obtem uma copia de todas as acoes completas/flags ativas
+    // Obtem uma copia de todas as flags ativas
     public Set<String> obterFlags() {
         return new HashSet<>(flags);
     }
@@ -477,7 +469,7 @@ public class GerenciadorProgresso {
     // Retorna se ja falou com a enfermeira na recepcao
     public boolean falouEnfermeira() { return temFlag("falou_enfermeira"); }
 
-    // Retorna se um documento (pelo nome do objeto no Tiled) ja foi lido
+    // Retorna se um documento ja foi lido pelo nome do objeto no Tiled
     public boolean leuDoc(String nome) { return documentosLidos.contains(nome); }
 
     // Retorna mensagem de aviso
@@ -489,7 +481,7 @@ public class GerenciadorProgresso {
     // Retorna se abriu o espelho
     public boolean isEspelho() { return abriuEspelho; }
 
-    // Consome o evento de abrir o espelho
+    // Consome o evento de abrir o espelho evitando reabertura indevida
     public boolean consumirEspelho() {
         boolean r = abriuEspelho;
         abriuEspelho = false;
@@ -499,7 +491,7 @@ public class GerenciadorProgresso {
     // Retorna se abriu a gaveta
     public boolean isGaveta() { return abriuGaveta; }
 
-    // Consome o evento de abrir a gaveta
+    // Consome o evento de abrir a gaveta evitando reabertura indevida
     public boolean consumirGaveta() {
         boolean r = abriuGaveta;
         abriuGaveta = false;
