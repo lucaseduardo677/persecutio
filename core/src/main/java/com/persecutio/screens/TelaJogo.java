@@ -15,6 +15,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 
 import com.persecutio.game.PersecutioGame;
 import com.persecutio.entities.HitboxConfig;
@@ -88,7 +89,7 @@ public class TelaJogo implements Screen {
     // Flag se o jogador esta andando
     private boolean andando         = false;
 
-    // Controla se o rádio inicial de chamada ja foi ativado
+    // Controla se o radio inicial de chamada ja foi ativado
     private boolean falanteTocado   = false;
 
     // Comodo atual onde o jogador se encontra
@@ -109,9 +110,17 @@ public class TelaJogo implements Screen {
     // Textura branca para o fade
     private Texture texBranca;
 
-    // Coordenadas de spawn de cache
-    private float inicialX;
-    private float inicialY;
+    // Coordenadas de spawn de cada mundo (podem divergir no Tiled)
+    private float inicialXReal, inicialYReal;
+    private float inicialXUmbra, inicialYUmbra;
+
+    // Posicao independente do jogador em cada mundo (Real e Umbra)
+    private final Vector2 posReal  = new Vector2();
+    private final Vector2 posUmbra = new Vector2();
+    // Flag se a posicao do mundo Umbra ja foi definida (primeira visita usa o spawn)
+    private boolean posUmbraDefinida = false;
+    // Estado do mundo Umbra no frame anterior, usado para detectar a troca de mundo
+    private boolean umbraAnterior = false;
 
     // Chave do documento atualmente sob leitura de imagem
     private String docChave = null;
@@ -215,46 +224,62 @@ public class TelaJogo implements Screen {
         gerLuzes.carregarLuzesDoTiled(mapaTiledUmbra, true);
         gerLuzes.criarParedes(sistemaColisao.paredesBox(), sistemaColisao.portasBox());
 
-        // Posicao inicial do jogador
-        float inicialX = 75f * escala;
-        float inicialY = (768f + 180f) * escala;
+        // Posicao inicial padrao do jogador (fallback caso o Tiled nao tenha spawnpoint)
+        float padraoX = 75f * escala;
+        float padraoY = (768f + 180f) * escala;
+        this.inicialXReal  = padraoX;
+        this.inicialYReal  = padraoY;
+        this.inicialXUmbra = padraoX;
+        this.inicialYUmbra = padraoY;
 
-        Rectangle spawnRect = null;
-        MapLayer camadaDestinos = mapaTiled.getLayers().get("Destinos");
-        if (camadaDestinos != null) {
-            for (MapObject obj : camadaDestinos.getObjects()) {
-                if ("spawnpoint".equalsIgnoreCase(obj.getName())) {
-                    if (obj instanceof RectangleMapObject) {
-                        Rectangle r = ((RectangleMapObject) obj).getRectangle();
-                        spawnRect = new Rectangle(
-                            r.x * escala,
-                            r.y * escala,
-                            r.width * escala,
-                            r.height * escala
-                        );
-                        break;
-                    }
-                }
-            }
+        HitboxConfig cfgSpawn = HitboxConfig.padrao();
+        Vector2 spawnReal  = lerSpawn(mapaTiledReal, escala, cfgSpawn);
+        if (spawnReal != null) {
+            this.inicialXReal = spawnReal.x;
+            this.inicialYReal = spawnReal.y;
+        }
+        Vector2 spawnUmbra = lerSpawn(mapaTiledUmbra, escala, cfgSpawn);
+        if (spawnUmbra != null) {
+            this.inicialXUmbra = spawnUmbra.x;
+            this.inicialYUmbra = spawnUmbra.y;
         }
 
-        if (spawnRect != null) {
-            HitboxConfig cfg = HitboxConfig.padrao();
-            float cx = spawnRect.x + spawnRect.width / 2f;
-            float cy = spawnRect.y + spawnRect.height / 2f;
-            this.inicialX = cx - cfg.offsetX() - cfg.larguraHitbox() / 2f;
-            this.inicialY = cy - cfg.offsetY() - cfg.alturaHitbox() / 2f;
-        }
-
-        jogador        = new Jogador(this.inicialX, this.inicialY, spriteSheet);
+        jogador        = new Jogador(this.inicialXReal, this.inicialYReal, spriteSheet);
         hitboxJogador  = jogador.hitbox;
 
         gerLuzes.inicializar(jogador.mundoX, jogador.mundoY);
+
+        posReal.set(this.inicialXReal, this.inicialYReal);
+        posUmbra.set(this.inicialXUmbra, this.inicialYUmbra);
+        posUmbraDefinida = false;
+        umbraAnterior    = false;
 
         timerFade  = 0f;
         fadeAtivo  = true;
         falanteTocado = false;
         docChave = null;
+    }
+
+    // Le o retangulo "spawnpoint" da camada Destinos de um mapa, convertendo para a
+    // posicao de mundo (canto inferior esquerdo da hitbox) ja escalada
+    private Vector2 lerSpawn(TiledMap mapa, float escala, HitboxConfig cfg) {
+        MapLayer camadaDestinos = mapa.getLayers().get("Destinos");
+        if (camadaDestinos == null) return null;
+
+        for (MapObject obj : camadaDestinos.getObjects()) {
+            if (!"spawnpoint".equalsIgnoreCase(obj.getName())) continue;
+            if (!(obj instanceof RectangleMapObject)) continue;
+
+            Rectangle r = ((RectangleMapObject) obj).getRectangle();
+            float cx = r.x * escala + (r.width  * escala) / 2f;
+            float cy = r.y * escala + (r.height * escala) / 2f;
+
+            return new Vector2(
+                cx - cfg.offsetX() - cfg.larguraHitbox() / 2f,
+                cy - cfg.offsetY() - cfg.alturaHitbox() / 2f
+            );
+        }
+        return null;
     }
 
     // Loop principal de atualizacao e desenho
@@ -280,6 +305,25 @@ public class TelaJogo implements Screen {
 
         boolean umbra       = progresso.isUmbra();
         boolean destrancada = progresso.isDestrancada();
+
+        if (umbra != umbraAnterior) {
+            // Guarda a posicao do mundo que esta sendo deixado
+            if (umbraAnterior) posUmbra.set(jogador.mundoX, jogador.mundoY);
+            else                posReal.set(jogador.mundoX, jogador.mundoY);
+
+            if (umbra) {
+                if (!posUmbraDefinida) {
+                    // Primeira vez no mundo Umbra: acorda no spawn daquele mundo
+                    posUmbra.set(inicialXUmbra, inicialYUmbra);
+                    posUmbraDefinida = true;
+                }
+                jogador.teleportar(posUmbra.x, posUmbra.y);
+            } else {
+                jogador.teleportar(posReal.x, posReal.y);
+            }
+            umbraAnterior = umbra;
+        }
+
         mundoUmbra            = umbra;
         portaUmbraDestrancada = destrancada;
 
@@ -451,8 +495,18 @@ public class TelaJogo implements Screen {
             return;
         }
 
+        // Fechamento do documento: verifica flag de teleporte do progresso
         if (interfaceJogo.consumirFechado()) {
-            if (docChave != null && !docChave.isEmpty()) {
+            if (progresso.consumirTeleporteAposDocUmbra()) {
+                // Teleporta para o mundo real no spawn inicial e inicia dialogo de pegar pilulas
+                interfaceJogo.fadeSimples(() -> {
+                    posUmbraDefinida = false;
+                    jogador.teleportar(inicialXReal, inicialYReal);
+                    progresso.concluirPrimeira(inicialXReal, inicialYReal);
+                    gerDialogo.iniciar("maria_pega_pilulas");
+                    interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+                });
+            } else if (docChave != null && !docChave.isEmpty()) {
                 gerDialogo.iniciar(docChave);
                 interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
                 docChave = null;
@@ -466,21 +520,19 @@ public class TelaJogo implements Screen {
         }
 
         if (!interfaceJogo.isDialogo() && progresso.getMissao() == 1 && progresso.obterFase() == 6) {
+            // Aguarda o jogador apertar E para acordar automaticamente
             if (Gdx.input.isKeyJustPressed(Keys.E) || Gdx.input.isKeyJustPressed(Keys.ENTER)) {
                 interfaceJogo.fadeSimples(() -> {
-                    progresso.concluirPrimeira(inicialX, inicialY);
-                    jogador = new Jogador(inicialX, inicialY, spriteSheet);
-                    hitboxJogador = jogador.hitbox;
-
+                    posReal.set(inicialXReal, inicialYReal);
+                    progresso.concluirPrimeira(inicialXReal, inicialYReal);
                     gerDialogo.iniciar("maria_acorda_missao2");
                     interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
                 });
             }
+            andando = false;
+            interfaceJogo.atualizarTutorial(andando, delta);
             return;
         }
-
-        // Removed direct debug shortcut (P) that toggled Umbra when holding cartela.
-        // World transitions should be driven by game events via GerenciadorProgresso.
 
         if (interfaceJogo.puxarInput(jogo.viewport)) {
             andando = false;
@@ -506,11 +558,39 @@ public class TelaJogo implements Screen {
 
         sistemaDebug.tratarAtalhos(this);
 
+        // Missao 2 em diante: usar o remedio em qualquer lugar para alternar de mundo
+        if (progresso.getMissao() >= 2 && progresso.temCartela() && Gdx.input.isKeyJustPressed(Keys.P)) {
+            // Se esta no jardim no mundo real e ainda nao definiu o spawn umbra da missao 2,
+            // salva a posicao atual como entrada do umbra
+            if (!mundoUmbra && comodoAtual != null && "jardimexterno".equals(comodoAtual.nomeGrupo)) {
+                if (!posUmbraDefinida) {
+                    posUmbra.set(jogador.mundoX, jogador.mundoY);
+                    posUmbraDefinida = true;
+                }
+            }
+            interfaceJogo.fadeTrocaMundo(() -> progresso.alternarUmbra(), true);
+            return;
+        }
+
         if (Gdx.input.isKeyJustPressed(Keys.E)) tratarInteracao();
 
         boolean estavaAndando = andando;
         jogador.atualizar(delta, sistemaColisao);
         andando = jogador.isAndando();
+
+        // Preso no jardim Umbra na Missao 2 ate puzzle resolvido
+        if (mundoUmbra && progresso.getMissao() == 2 && progresso.obterFase() < 3) {
+            boolean dentroJardim = false;
+            for (GerenciadorComodos.Comodo c : gerComodos.getComodos()) {
+                if ("jardimexterno".equals(c.nomeGrupo) && c.area.contains(jogador.hitbox.x + jogador.hitbox.width / 2f, jogador.hitbox.y + jogador.hitbox.height / 2f)) {
+                    dentroJardim = true;
+                    break;
+                }
+            }
+            if (!dentroJardim) {
+                jogador.teleportar(posUmbra.x, posUmbra.y);
+            }
+        }
 
         progresso.checarLonge(jogador);
 
@@ -540,11 +620,9 @@ public class TelaJogo implements Screen {
                 progresso.lerUmbra();
                 break;
             case "tomar_pilula_missao2":
-                interfaceJogo.fadeSimples(() -> {
-                    progresso.pegarCartela();
-                    gerDialogo.iniciar("maria_musica");
-                    interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
-                });
+                // Apenas pega a cartela e libera alternancia de mundo, sem teleportar
+                progresso.darFlag("temcartela");
+                progresso.mudarFase(1);
                 break;
             default:
                 Gdx.app.log("TelaJogo", "efeito desconhecido: " + nome);
@@ -559,7 +637,7 @@ public class TelaJogo implements Screen {
                 if (sistemaColisao.empurrarPedra(jogador, pedra)) {
                     sistemaAudio.tocarSomPorta();
                     // Caso o movimento tenha resolvido o puzzle, o GerenciadorColisao
-                    // notificará o progresso via onPuzzleSolved(), que agenda o diálogo.
+                    // notificara o progresso via onPuzzleSolved(), que agenda o dialogo.
                     String no = progresso.pegarDialogo();
                     if (no != null) {
                         gerDialogo.iniciar(no);
@@ -631,6 +709,13 @@ public class TelaJogo implements Screen {
             progresso.onNpcInteract("enfermeira");
         }
 
+        // Dr. Elimar (Missao 3): troca para a tela do questionario final assim que ele comeca
+        EntidadeMapa elimar = sistemaColisao.getNpc("elimar");
+        if (elimar != null && hitboxInteracao.overlaps(elimar.area) && progresso.getMissao() == 3) {
+            jogo.setScreen(new TelaElimar(jogo));
+            return;
+        }
+
         // Interativos: procura o primeiro objeto ativo sobreposto e dispara um evento
         boolean interagiu = false;
         for (GerenciadorColisao.ObjetoColisao obj : sistemaColisao.todosInterativos().values()) {
@@ -639,21 +724,21 @@ public class TelaJogo implements Screen {
             if (!hitboxInteracao.overlaps(obj.area)) continue;
 
             String nomeObj = obj.nome != null ? obj.nome.toLowerCase() : "";
-            // Docs têm prioridade: chaves prefixadas
+            // Docs tem prioridade: chaves prefixadas
             if (nomeObj.startsWith("documento") || nomeObj.startsWith("planfeto") || nomeObj.startsWith("objeto")) {
                 progresso.onDocumentFound(obj.nome, obj.docId, mundoUmbra);
                 interagiu = true;
                 break;
             }
 
-            // Caso genérico: passa a chave do objeto para o progresso
+            // Caso generico: passa a chave do objeto para o progresso
             progresso.onObjectInteract(obj.nome);
             interagiu = true;
             break;
         }
 
         if (interagiu) {
-            // Consumir possíveis efeitos agendados pelo progresso
+            // Consumir possiveis efeitos agendados pelo progresso
             if (progresso.consumirPilula()) {
                 interfaceJogo.fadeSimples(() -> {
                     progresso.alternarUmbra();
@@ -683,8 +768,8 @@ public class TelaJogo implements Screen {
                 return;
             }
 
-            if (progresso.isEspelho())    { interfaceJogo.mudarEstado(GerenciadorUI.UI_ESPELHO); return; }
-            if (progresso.isGaveta())     { interfaceJogo.mudarEstado(GerenciadorUI.UI_SENHA);    return; }
+            if (progresso.consumirEspelho()) { interfaceJogo.mudarEstado(GerenciadorUI.UI_ESPELHO); return; }
+            if (progresso.consumirGaveta())  { interfaceJogo.mudarEstado(GerenciadorUI.UI_SENHA);    return; }
         }
 
         // Reage a eventos gerados pelo progresso
@@ -715,9 +800,6 @@ public class TelaJogo implements Screen {
             gerDialogo.iniciar(no);
             interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
         }
-
-        if (progresso.isEspelho())    interfaceJogo.mudarEstado(GerenciadorUI.UI_ESPELHO);
-        if (progresso.isGaveta())     interfaceJogo.mudarEstado(GerenciadorUI.UI_SENHA);
     }
 
     // Libera todos os recursos da tela

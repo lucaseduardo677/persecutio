@@ -73,15 +73,15 @@
             ],
             "expandedObjectLayers": [
                 24,
-                21,
                 25,
+                21,
                 28
             ],
-            "scale": 3,
+            "scale": 0.75,
             "selectedLayer": 14,
             "viewCenter": {
-                "x": 1229.1666666666665,
-                "y": 1037.6666666666665
+                "x": 1100.6666666666667,
+                "y": 194.66666666666669
             }
         },
         "casaderepouso.tmx#Content": {
@@ -152,11 +152,11 @@
             "expandedObjectLayers": [
                 36
             ],
-            "scale": 3,
-            "selectedLayer": 16,
+            "scale": 4,
+            "selectedLayer": 19,
             "viewCenter": {
-                "x": 1248.5,
-                "y": 1046.3333333333333
+                "x": 867.125,
+                "y": 141
             }
         },
         "casaderepousoumbra.tmx#Content": {

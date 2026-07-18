@@ -91,6 +91,13 @@ public class GerenciadorDialogo {
         }
     }
 
+    // Retorna os pontos associados a uma escolha do no atual (0 se nao houver)
+    public int obterPontos(int indice) {
+        if (noAtual == null || noAtual.escolhas == null) return 0;
+        if (indice < 0 || indice >= noAtual.escolhas.size()) return 0;
+        return noAtual.escolhas.get(indice).pontos;
+    }
+
     // Processa uma escolha
     public void escolher(int indice) {
         if (noAtual == null || noAtual.escolhas == null) return;

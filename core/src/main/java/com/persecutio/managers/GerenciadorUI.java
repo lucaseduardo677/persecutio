@@ -42,7 +42,7 @@ public class GerenciadorUI {
     // Fases do fade de tela
     private enum FaseFade { INATIVO, ESCURECENDO, ESCURO, VIDEO, AGUARDANDO, CLAREANDO }
 
-    // Estados de exibição da mensagem de missão centralizada
+    // Estados de exibicao da mensagem de missao centralizada
     private enum EstadoMissao { ENTRADA, VISIVEL, SAIDA, CONCLUIDA }
 
     // State atual da UI
@@ -53,7 +53,7 @@ public class GerenciadorUI {
     // Timer da mensagem verde
     private float timerVerde = -1f;
 
-    // Estados e variáveis para controle de fade da missão
+    // Estados e variaveis para controle de fade da missao
     private EstadoMissao estadoMissao = EstadoMissao.ENTRADA;
     private float timerMissao = 0f;
     private float alphaMissao = 0f;
@@ -86,10 +86,14 @@ public class GerenciadorUI {
     // Cache de texturas carregadas dinamicamente
     private final Map<String, Texture> cacheTexturas = new HashMap<>();
 
-    // Duracao do fade (curto para transição rápida)
+    // Duracao do fade (curto para transicao rapida)
     private static final float T_FADE   = 0.3f;
+    // Duracao mais rapida usada nas trocas de mundo a partir da Missao 2
+    private static final float T_FADE_RAPIDO = 0.12f;
     // Tempo de espera entre fades
     private static final float T_ESPERA = 0.3f;
+    // Duracao do fade atualmente em curso (ajustavel por chamada)
+    private float duracaoFadeAtual = T_FADE;
 
     // Fase atual do fade
     private FaseFade faseFade  = FaseFade.INATIVO;
@@ -122,10 +126,9 @@ public class GerenciadorUI {
     // Retangulo temporario
     private final Rectangle rectTemp = new Rectangle();
 
-    // Campo da animação VHS de fundo e tempo
+    // Campo da animacao VHS de fundo e tempo
     private Texture vhsSheet;
     private Animation<TextureRegion> animVhs;
-    private float tempoAnimDialogo = 0f;
 
     // Flag para sinalizar que o documento foi fechado
     private boolean fechado = false;
@@ -154,7 +157,7 @@ public class GerenciadorUI {
 
         video = new GerenciadorVideo();
 
-        // Carrega a folha de animação VHS para fundo de diálogos de forma segura
+        // Carrega a folha de animacao VHS para fundo de dialogos de forma segura
         if (Gdx.files.internal("img/vhs_sheet.png").exists()) {
             try {
                 vhsSheet = new Texture(Gdx.files.internal("img/vhs_sheet.png"));
@@ -221,7 +224,7 @@ public class GerenciadorUI {
                 if (fase == 0) {
                     objetivoMissaoAtual = "Tome seu remedio.";
                 } else if (fase == 1) {
-                    objetivoMissaoAtual = "Investigue a origem do som.";
+                    objetivoMissaoAtual = "Va ate o jardim. Voce sentiu um vento estranho vindo de la.";
                 } else if (fase == 2) {
                     objetivoMissaoAtual = "Descubra como abrir a porta que leva aos escritorios.";
                 } else if (fase == 3) {
@@ -253,10 +256,9 @@ public class GerenciadorUI {
 
     // Atualiza os timers da UI
     public void atualizarTimers(float delta) {
-        tempoAnimDialogo += delta;
         if (audio != null) audio.atualizar(delta);
 
-        // Deduz tempo do bloqueio de input pos-transicao
+        // Deduz tempo do bloqueio de input pos transicao
         if (timerInput > 0f) {
             timerInput -= delta;
             if (timerInput < 0f) {
@@ -274,8 +276,8 @@ public class GerenciadorUI {
 
         switch (faseFade) {
             case ESCURECENDO:
-                alfaFade = Math.min(1f, timerFade / T_FADE);
-                if (timerFade >= T_FADE) {
+                alfaFade = Math.min(1f, timerFade / duracaoFadeAtual);
+                if (timerFade >= duracaoFadeAtual) {
                     alfaFade  = 1f;
                     faseFade  = FaseFade.ESCURO;
                     timerFade = 0f;
@@ -288,7 +290,7 @@ public class GerenciadorUI {
                     if (video.isPreparado()) {
                         video.iniciar();
                         faseFade = FaseFade.VIDEO;
-                        if (audio != null) audio.iniciarFadeOut(T_FADE);
+                        if (audio != null) audio.iniciarFadeOut(duracaoFadeAtual);
                     } else {
                         faseFade  = FaseFade.AGUARDANDO;
                         timerFade = 0f;
@@ -304,7 +306,7 @@ public class GerenciadorUI {
                 if (!videoAtivo) {
                     faseFade  = FaseFade.AGUARDANDO;
                     timerFade = 0f;
-                    if (audio != null) audio.iniciarFadeIn(T_FADE);
+                    if (audio != null) audio.iniciarFadeIn(duracaoFadeAtual);
                 }
                 break;
 
@@ -316,8 +318,8 @@ public class GerenciadorUI {
                 break;
 
             case CLAREANDO:
-                alfaFade = Math.max(0f, 1f - timerFade / T_FADE);
-                if (timerFade >= T_FADE) {
+                alfaFade = Math.max(0f, 1f - timerFade / duracaoFadeAtual);
+                if (timerFade >= duracaoFadeAtual) {
                     alfaFade = 0f;
                     faseFade = FaseFade.INATIVO;
 
@@ -338,19 +340,35 @@ public class GerenciadorUI {
         }
     }
 
-    // Inicia fade com video opcional
+    // Inicia fade com video opcional e duracao padrao
     public void iniciarFade(String caminhoVideo, Runnable aoEscurecer) {
+        iniciarFade(caminhoVideo, aoEscurecer, T_FADE);
+    }
+
+    // Inicia fade com video opcional e duracao customizada
+    public void iniciarFade(String caminhoVideo, Runnable aoEscurecer, float duracao) {
         this.aoEscurecer = aoEscurecer;
         estadoUi         = UI_FADE;
         faseFade         = FaseFade.ESCURECENDO;
         timerFade        = 0f;
         alfaFade         = 0f;
+        duracaoFadeAtual = duracao;
         video.preparar(caminhoVideo);
     }
 
-    // Inicia fade simples sem video
+    // Inicia fade simples sem video, com duracao padrao
     public void fadeSimples(Runnable aoEscurecer) {
-        iniciarFade(null, aoEscurecer);
+        iniciarFade(null, aoEscurecer, T_FADE);
+    }
+
+    // Inicia fade simples com duracao customizada
+    public void fadeSimples(Runnable aoEscurecer, float duracao) {
+        iniciarFade(null, aoEscurecer, duracao);
+    }
+
+    // Fade dedicado para troca entre mundo Real e Umbra: mais rapido a partir da Missao 2
+    public void fadeTrocaMundo(Runnable aoEscurecer, boolean rapido) {
+        iniciarFade(null, aoEscurecer, rapido ? T_FADE_RAPIDO : T_FADE);
     }
 
     // Retorna se o fade esta ativo
@@ -358,7 +376,7 @@ public class GerenciadorUI {
 
     // Processa input do jogador
     public boolean puxarInput(ExtendViewport viewport) {
-        // Ignora totalmente se estiver em transicao ou sob bloqueio pos-transicao
+        // Ignora totalmente se estiver em transicao ou sob bloqueio pos transicao
         if (estadoUi == UI_FADE || timerInput > 0f) return true;
 
         // Se estiver aguardando acordar no final da Missao 1, consome input de movimento de forma estrita
@@ -450,7 +468,15 @@ public class GerenciadorUI {
             return true;
         }
         if (estadoUi == UI_DOCUMENTO) {
-            if (Gdx.input.isKeyJustPressed(Keys.E)) {
+            // Fecha o documento com qualquer tecla do teclado
+            boolean qualquerTecla = false;
+            for (int i = 0; i < 256; i++) {
+                if (Gdx.input.isKeyJustPressed(i)) {
+                    qualquerTecla = true;
+                    break;
+                }
+            }
+            if (qualquerTecla) {
                 fecharDocumento();
             }
             return true;
@@ -465,16 +491,16 @@ public class GerenciadorUI {
         return false;
     }
 
-    // Fecha a visualização do documento e dispara flag de fechamento
+    // Fecha a visualizacao do documento e dispara flag de fechamento
     public void fecharDocumento() {
         estadoUi = UI_JOGO;
         fechado  = true;
         if (audio != null) {
-            audio.tocarDocumento(); // toca o som de papel ao fechar também
+            audio.tocarDocumento(); // toca o som de papel ao fechar tambem
         }
     }
 
-    // Consome a flag para iniciar o diálogo correspondente no frame correto
+    // Consome a flag para iniciar o dialogo correspondente no frame correto
     public boolean consumirFechado() {
         boolean r = fechado;
         fechado = false;
@@ -553,7 +579,7 @@ public class GerenciadorUI {
                     }
                     break;
                 case CONCLUIDA:
-                    // Nenhuma ação necessária quando a missão já foi concluída.
+                    // Nenhuma acao necessaria quando a missao ja foi concluida.
                     break;
             }
         }
@@ -597,7 +623,7 @@ public class GerenciadorUI {
         String prompt = null;
 
         if (!mundoUmbra) {
-            // Verifica se esta encarando alguma pedra para empurrar (Missão 2, Fase 2) no mundo real
+            // Verifica se esta encarando alguma pedra para empurrar (Missao 2, Fase 2) no mundo real
             if (progresso.getMissao() == 2 && progresso.obterFase() == 2) {
                 GerenciadorColisao.ObjetoColisao pedra = sistemaColisao.acharPedra(jogador);
                 if (pedra != null) {
@@ -607,7 +633,7 @@ public class GerenciadorUI {
 
             if (prompt == null) {
                 if (sobreArea(rectTemp, sistemaColisao.getArea("pilula"))) {
-                    // A prompt da pílula só aparece na tela após falar com a enfermeira
+                    // A prompt da pilula so aparece na tela apos falar com a enfermeira
                     if (falouEnfermeira) {
                         prompt = "Aperte [E] para tomar a Pilula";
                     }
@@ -672,7 +698,7 @@ public class GerenciadorUI {
         }
     }
 
-    // Desenha overlay escuro com alpha padrão
+    // Desenha overlay escuro com alpha padrao
     public void desenharEscuro(ContextoRender ctx) {
         desenharEscuro(ctx, 0.86f);
     }
@@ -713,14 +739,17 @@ public class GerenciadorUI {
             ctx.fonteIndicadores.setColor(Color.WHITE);
         }
 
-        if (progresso != null && !progresso.isUmbra() && progresso.temCartela()) {
+        if (progresso != null && progresso.temCartela()) {
             ctx.fonteIndicadores.setColor(0.5f, 0.5f, 0.5f, 0.6f);
-            ctx.fonteIndicadores.draw(ctx.batch, "Aperte [P] para tomar a pilula", 15f, 25f);
+            String textoRemedio = progresso.isUmbra()
+                ? "Aperte [P] para acordar"
+                : "Aperte [P] para tomar a pilula";
+            ctx.fonteIndicadores.draw(ctx.batch, textoRemedio, 15f, 25f);
             ctx.fonteIndicadores.setColor(Color.WHITE);
         }
     }
 
-    // Desenha a visualização do documento de forma escurecida com a prompt de saída
+    // Desenha a visualizacao do documento de forma escurecida com a prompt de saida
     public void desenharDocumento(ContextoRender ctx, Texture imgDocumento) {
         desenharEscuro(ctx, 0.85f);
 
@@ -740,7 +769,7 @@ public class GerenciadorUI {
         ctx.batch.draw(imgDocumento, ctx.centroX - largDoc / 2f, ctx.centroY - altDoc / 2f, largDoc, altDoc);
 
         ctx.fonteIndicadores.setColor(Color.WHITE);
-        desenharCentro(ctx, ctx.fonteIndicadores, "Pressione [E] ou [ESC] para fechar", -altDoc / 2f - 20f);
+        desenharCentro(ctx, ctx.fonteIndicadores, "Pressione qualquer tecla para fechar", -altDoc / 2f - 20f);
     }
 
     // Desenha tela do espelho
@@ -817,20 +846,12 @@ public class GerenciadorUI {
         boolean temFoto = path != null && !path.isEmpty();
 
         if (temFoto) {
-            if ("img/dr_elimar.png".equals(path) && animVhs != null) {
-                // Desenha a animação VHS de fundo cobrindo a tela inteira (opacidade sutil)
-                TextureRegion frameVhs = animVhs.getKeyFrame(tempoAnimDialogo);
-                ctx.batch.setColor(1f, 1f, 1f, 0.45f);
-                ctx.batch.draw(frameVhs, 0, 0, ctx.vLargura, ctx.vAltura);
-                ctx.batch.setColor(Color.WHITE);
-            } else {
-                // Predefinicao A: Fundo com a cor #0D0D0D solida na tela inteira
-                ctx.batch.setColor(Color.valueOf("#0D0D0D"));
-                ctx.batch.draw(texBranca, 0, 0, ctx.vLargura, ctx.vAltura);
-                ctx.batch.setColor(Color.WHITE);
-            }
+            // Predefinicao A: Fundo com a cor #0D0D0D solida na tela inteira
+            ctx.batch.setColor(Color.valueOf("#0D0D0D"));
+            ctx.batch.draw(texBranca, 0, 0, ctx.vLargura, ctx.vAltura);
+            ctx.batch.setColor(Color.WHITE);
 
-            // Resolve textura usando o cache dinâmico de caminhos
+            // Resolve textura usando o cache dinamico de caminhos
             Texture texRetrato = cacheTexturas.get(path);
             if (texRetrato == null) {
                 if (Gdx.files.internal(path).exists()) {
@@ -845,11 +866,10 @@ public class GerenciadorUI {
                 float maxLarg = 220f;
                 float maxAlt  = 220f;
 
-                boolean isElimar = "img/dr_elimar.png".equals(path);
-                float largOriginal = isElimar ? texRetrato.getWidth() / 2f : texRetrato.getWidth();
-                float altOriginal  = isElimar ? texRetrato.getHeight() / 2f : texRetrato.getHeight();
+                float largOriginal = texRetrato.getWidth();
+                float altOriginal  = texRetrato.getHeight();
 
-                // Proporção para nao distorcer a imagem
+                // Proporcao para nao distorcer a imagem
                 float proporcao = largOriginal / altOriginal;
                 float largRetrato = maxLarg;
                 float altRetrato  = maxAlt;
@@ -864,36 +884,7 @@ public class GerenciadorUI {
                 float posXRetrato = ctx.centroX - (largRetrato / 2f);
                 float posYRetrato = ctx.centroY - 30f;
 
-                if (isElimar) {
-                    TextureRegion[][] regions = TextureRegion.split(texRetrato, texRetrato.getWidth() / 2, texRetrato.getHeight() / 2);
-
-                    String textoOriginal = dialogo.getTexto();
-                    String textoVisivel = dialogo.getTextoVisivel();
-                    boolean estaDigitando = textoVisivel.length() < textoOriginal.length();
-
-                    // Sincronia perfeita com o som animalese:
-                    int idxLetra = textoVisivel.length() - 1;
-                    boolean estaFalandoSom = false;
-                    if (estaDigitando && idxLetra >= 0 && idxLetra < textoOriginal.length()) {
-                        char charAtual = Character.toUpperCase(textoOriginal.charAt(idxLetra));
-                        if (charAtual >= 'A' && charAtual <= 'Z') {
-                            estaFalandoSom = true;
-                        }
-                    }
-                    int col = estaFalandoSom ? (textoVisivel.length() % 2) : 0;
-
-                    // Define se está escrevendo com base no texto
-                    int row = 0;
-                    String txtLower = textoOriginal.toLowerCase();
-                    if (txtLower.contains("prancheta") || txtLower.contains("anotado") || txtLower.contains("interessante") || txtLower.contains("certo")) {
-                        row = 1;
-                    }
-
-                    TextureRegion frameAtual = regions[row][col];
-                    ctx.batch.draw(frameAtual, posXRetrato, posYRetrato, largRetrato, altRetrato);
-                } else {
-                    ctx.batch.draw(texRetrato, posXRetrato, posYRetrato, largRetrato, altRetrato);
-                }
+                ctx.batch.draw(texRetrato, posXRetrato, posYRetrato, largRetrato, altRetrato);
             }
         } else {
             // Predefinicao B: Fundo com apenas um gradiente de #0D0D0D ate transparente englobando apenas a area do dialogo
@@ -909,7 +900,7 @@ public class GerenciadorUI {
         String falante = dialogo.getFalante();
         String texto   = dialogo.getTextoVisivel();
 
-        // Oculta o nome de Maria (a protagonista) para dar efeito de reflexão/pensamento interno
+        // Oculta o nome de Maria (a protagonista) para dar efeito de reflexao/pensamento interno
         if (!falante.isEmpty() && !"maria".equalsIgnoreCase(falante)) {
             String textoNome = falante + ": ";
             ctx.fonteNomes.setColor(Color.ORANGE);
@@ -1201,7 +1192,7 @@ public class GerenciadorUI {
         }
     }
 
-    // Configuração de retrato
+    // Configuracao de retrato
     public static class ConfigRetrato {
         // Cor do fundo
         public final Color   corFundo;

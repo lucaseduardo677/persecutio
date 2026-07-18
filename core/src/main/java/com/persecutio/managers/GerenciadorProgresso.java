@@ -30,7 +30,7 @@ public class GerenciadorProgresso {
     private int faseMissao = 0;
     // Flag se o documento opcional do jardim foi lido
     private boolean lidoJardim = false;
-    // Flag de acionamento do evento de pílula para fade
+    // Flag de acionamento do evento de pilula para fade
     private boolean eventoPilula = false;
     // Flag de acionamento do evento de documento umbra para fade
     private boolean eventoDocumento = false;
@@ -61,6 +61,9 @@ public class GerenciadorProgresso {
     private boolean abriuEspelho = false;
     // Flag se acionou gaveta
     private boolean abriuGaveta  = false;
+
+    // NOVO: Flag para teleportar o jogador ao mundo real apos fechar documento umbra
+    private boolean teleportarAposDocUmbra = false;
 
     // Retangulo temporario
     private final Rectangle rectTemp = new Rectangle();
@@ -103,7 +106,7 @@ public class GerenciadorProgresso {
         docChave    = chave;
     }
 
-    // Consome e limpa a flag de exibição de documento
+    // Consome e limpa a flag de exibicao de documento
     public boolean consumirPendente() {
         boolean r = docPendente;
         docPendente = false;
@@ -149,10 +152,9 @@ public class GerenciadorProgresso {
         dialogoAlvo = "porta_clique";
     }
 
-    // Finaliza a leitura do prontuario de Umbra na Missao 1 e aguarda prompt de acordar
+    // Finaliza a leitura do prontuario de Umbra na Missao 1 e aguarda o despertar automatico
     public void lerUmbra() {
         faseMissao = 6;
-        aviso = "Para acordar aperte [E]";
     }
 
     // Conclui a Missao 1 e retorna ao mundo real no spawn inicial
@@ -208,7 +210,7 @@ public class GerenciadorProgresso {
         switch (chave) {
             case "pilula":
                 if (!temFlag("falou_enfermeira")) {
-                    aviso = "A enfermeira da recepcao ainda nao autorizou a pílula.";
+                    aviso = "A enfermeira da recepcao ainda nao autorizou a pilula.";
                     return;
                 }
                 if (missao == 1 && faseMissao == 2) {
@@ -276,17 +278,28 @@ public class GerenciadorProgresso {
                 documentos++;
                 String chaveDoc = (docId != null && !docId.isEmpty()) ? docId : chave;
                 lerDocumento(chaveDoc);
+                // NOVO: se leu o prontuario no umbra, agenda teleporte ao fechar
+                if ("documento1_umbra".equals(chaveDoc)) {
+                    teleportarAposDocUmbra = true;
+                }
             }
         }
     }
 
+    // NOVO: consome e retorna a flag de teleporte apos documento umbra
+    public boolean consumirTeleporteAposDocUmbra() {
+        boolean r = teleportarAposDocUmbra;
+        teleportarAposDocUmbra = false;
+        return r;
+    }
+
     // Notifica que o puzzle de pedras foi resolvido (antes, isso era detectado por colisao)
     public void onPuzzleSolved() {
-        // Mantém compatibilidade: delega para a implementação existente
+        // Mantem compatibilidade: delega para a implementacao existente
         resolverPuzzle();
     }
 
-    // Resposta de interação com porta para a UI agir de acordo
+    // Resposta de interacao com porta para a UI agir de acordo
     public static class PortaResponse {
         public enum Action { DIALOG, FADE_MOVE_AND_CONCLUDE, CONTINUE }
         public final Action action;
@@ -395,7 +408,7 @@ public class GerenciadorProgresso {
         return r;
     }
 
-    // Verifica se uma flag de acao especifica está ativa
+    // Verifica se uma flag de acao especifica esta ativa
     public boolean temFlag(String flag) {
         return flags.contains(flag.toLowerCase().trim());
     }
@@ -444,6 +457,20 @@ public class GerenciadorProgresso {
     // Retorna se abriu o espelho
     public boolean isEspelho()     { return abriuEspelho; }
 
+    // Consome o evento de abrir o espelho, evitando que ele reabra em interacoes nao relacionadas
+    public boolean consumirEspelho() {
+        boolean r = abriuEspelho;
+        abriuEspelho = false;
+        return r;
+    }
+
     // Retorna se abriu a gaveta
     public boolean isGaveta()      { return abriuGaveta; }
+
+    // Consome o evento de abrir a gaveta, evitando que ela reabra em interacoes nao relacionadas
+    public boolean consumirGaveta() {
+        boolean r = abriuGaveta;
+        abriuGaveta = false;
+        return r;
+    }
 }

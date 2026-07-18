@@ -1234,8 +1234,8 @@
   </object>
  </objectgroup>
  <objectgroup id="27" name="NPC" visible="0"/>
- <objectgroup id="36" name="Interativos" visible="0">
-  <object id="648" name="documento1a" type="interativos" gid="5880" x="863" y="155" width="21" height="21" rotation="270">
+ <objectgroup id="36" name="Interativos">
+  <object id="648" name="documento1" type="interativos" gid="5880" x="863" y="155" width="21" height="21" rotation="270">
    <properties>
     <property name="umbra" type="bool" value="true"/>
    </properties>
