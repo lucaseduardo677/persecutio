@@ -58,6 +58,9 @@ public class GerenciadorLuzes {
     // Referencia ao gerenciador de comodos
     private GerenciadorComodos gerComodos;
 
+    // Valores padrão das classes configuradas no projeto Tiled
+    private Map<String, Map<String, Object>> defaultsClasses = new HashMap<>();
+
     public GerenciadorLuzes() {
         this.mundoBox2D = new World(new com.badlogic.gdx.math.Vector2(0, 0), true);
         this.rayHandler = new RayHandler(mundoBox2D);
@@ -70,6 +73,11 @@ public class GerenciadorLuzes {
 
     public void setGerenciadorComodos(GerenciadorComodos gerComodos) {
         this.gerComodos = gerComodos;
+    }
+
+    // Recebe as propriedades padrão das classes do projeto Tiled
+    public void setDefaultsClasses(Map<String, Map<String, Object>> defaultsClasses) {
+        this.defaultsClasses = defaultsClasses != null ? defaultsClasses : new HashMap<>();
     }
 
     // Categoria de fixture de sombra de parede
@@ -214,8 +222,7 @@ public class GerenciadorLuzes {
             if ("Luzes".equalsIgnoreCase(layer.getName())) continue;
 
             for (MapObject obj : layer.getObjects()) {
-                MapProperties props = obj.getProperties();
-                if (!lerBool(props, "luz", false)) continue;
+                if (!lerBoolObjeto(obj, "luz", false)) continue;
 
                 float x, y, largura, altura;
                 if (obj instanceof RectangleMapObject) {
@@ -235,10 +242,10 @@ public class GerenciadorLuzes {
                     continue;
                 }
 
-                Color cor = parseCorLuzTiled(props);
-                float alpha = lerNumero(props, "alpha", cor.a);
+                Color cor = parseCorLuzTiled(obj);
+                float alpha = lerNumeroObjeto(obj, "alpha", cor.a);
                 cor.a = alpha;
-                float direcao = lerNumero(props, "direcao", 0f);
+                float direcao = lerNumeroObjeto(obj, "direcao", 0f);
 
                 Light luz = new ConeLight(rayHandler, 128, cor, 50f,
                     x + largura / 2f, y + altura / 2f, direcao, 150f);
@@ -372,9 +379,64 @@ public class GerenciadorLuzes {
         return s.equals("true") || s.equals("1") || s.equals("yes");
     }
 
-    // Lê a cor nativa definida nos objetos do Tiled
-    private Color parseCorLuzTiled(MapProperties props) {
-        Object colorObj = props.get("corLuz");
+    // Busca uma propriedade no objeto e no tile usado por ele
+    private Object obterPropriedadeObjeto(MapObject obj, String chave) {
+        Object valor = obj.getProperties().get(chave);
+        if (valor != null) return valor;
+
+        if (obj instanceof TiledMapTileMapObject) {
+            TiledMapTileMapObject tileObj = (TiledMapTileMapObject) obj;
+            TiledMapTile tile = tileObj.getTile();
+            if (tile != null && tile.getProperties() != null) {
+                valor = tile.getProperties().get(chave);
+                if (valor != null) return valor;
+            }
+        }
+
+        String classe = obterClasseObjeto(obj);
+        Map<String, Object> defaults = defaultsClasses.get(classe);
+        return defaults != null ? defaults.get(chave) : null;
+    }
+
+    // Identifica a classe definida no objeto ou no tile
+    private String obterClasseObjeto(MapObject obj) {
+        Object classe = obj.getProperties().get("type");
+        if (classe == null) classe = obj.getProperties().get("class");
+
+        if (classe == null && obj instanceof TiledMapTileMapObject) {
+            TiledMapTile tile = ((TiledMapTileMapObject) obj).getTile();
+            if (tile != null && tile.getProperties() != null) {
+                classe = tile.getProperties().get("type");
+                if (classe == null) classe = tile.getProperties().get("class");
+            }
+        }
+        return classe != null ? classe.toString().trim().toLowerCase() : "";
+    }
+
+    // Lê propriedades booleanas definidas no objeto ou no tile
+    private boolean lerBoolObjeto(MapObject obj, String chave, boolean padrao) {
+        Object valor = obterPropriedadeObjeto(obj, chave);
+        if (valor instanceof Boolean) return (Boolean) valor;
+        if (valor == null) return padrao;
+        String texto = valor.toString().trim().toLowerCase();
+        return texto.equals("true") || texto.equals("1") || texto.equals("yes");
+    }
+
+    // Lê propriedades numéricas definidas no objeto ou no tile
+    private float lerNumeroObjeto(MapObject obj, String chave, float padrao) {
+        Object valor = obterPropriedadeObjeto(obj, chave);
+        if (valor instanceof Number) return ((Number) valor).floatValue();
+        if (valor == null) return padrao;
+        try {
+            return Float.parseFloat(valor.toString().trim());
+        } catch (Exception e) {
+            return padrao;
+        }
+    }
+
+    // Lê a cor nativa definida no objeto ou no tile do Tiled
+    private Color parseCorLuzTiled(MapObject obj) {
+        Object colorObj = obterPropriedadeObjeto(obj, "corLuz");
         if (colorObj instanceof Color) {
             return new Color((Color) colorObj);
         }

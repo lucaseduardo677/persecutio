@@ -232,6 +232,7 @@ public class TelaJogo implements Screen {
 
         gerLuzes = new GerenciadorLuzes();
         gerLuzes.setGerenciadorComodos(gerComodos);
+        gerLuzes.setDefaultsClasses(sistemaColisao.getDefaults());
         gerLuzes.carregarLuzesDoTiled(mapaTiledReal, false);
         gerLuzes.carregarLuzesDoTiled(mapaTiledUmbra, true);
         gerLuzes.criarParedes(sistemaColisao.paredesBox(), sistemaColisao.portasBox());
