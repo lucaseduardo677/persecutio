@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="80" height="44" tilewidth="32" tileheight="32" infinite="0" nextlayerid="37" nextobjectid="765">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="80" height="44" tilewidth="32" tileheight="32" infinite="0" nextlayerid="37" nextobjectid="766">
  <tileset firstgid="1" name="InteriorTilesLITE" tilewidth="32" tileheight="32" tilecount="224" columns="16">
   <image source="tilemaps/InteriorTilesLITE.png" width="512" height="448"/>
  </tileset>
@@ -1285,11 +1285,12 @@
     <property name="luz" type="bool" value="true"/>
    </properties>
   </object>
-  <object id="764" name="panfleto5" type="objeto" gid="124" x="1600" y="919.667" width="32" height="32">
+  <object id="764" name="panfleto5" type="objeto" gid="124" x="1604.13" y="924.792" width="24.5" height="24.5">
    <properties>
     <property name="luz" type="bool" value="true"/>
    </properties>
   </object>
+  <object id="765" name="panfleto4" type="objeto" x="1603.88" y="899.375" width="24.875" height="34.375"/>
  </objectgroup>
  <objectgroup id="27" name="NPC" visible="0"/>
  <objectgroup id="36" name="Interativos" visible="0">

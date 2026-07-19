@@ -331,6 +331,11 @@ public class RepoDialogos {
             new Fala("Maria", "(Paciente 103... Por que isso parece ser sobre mim?)", "ler_prontuario_umbra")
         )));
 
+        // Reacao curta da Maria ao tentar ler um panfleto ja lido
+        dicNos.put("maria_panfleto_repetido", new NoDialogo(Arrays.asList(
+            new Fala("Maria", "Ja li este panfleto... nao preciso ler de novo.")
+        )));
+
         // Leitura do prontuario no mundo real
         dicNos.put("documento1_real", new NoDialogo(Arrays.asList(
             new Fala("Narrador", "Relatorio de Incidente: panico extremo nas sessoes com o Dr. Gonzalez."),

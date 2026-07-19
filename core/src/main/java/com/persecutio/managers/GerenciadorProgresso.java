@@ -111,7 +111,7 @@ public class GerenciadorProgresso {
     public void onPanfletoFound(String nome) {
         String ponto = normalizarPontoPanfleto(nome);
         if (pontosPanfletoLidos.contains(ponto)) {
-            aviso = "Voce ja leu este panfleto.";
+            dialogoAlvo = "maria_panfleto_repetido";
             return;
         }
 
@@ -122,7 +122,6 @@ public class GerenciadorProgresso {
         tiposPanfletoLidos.add(tipo);
         pontosPanfletos++;
         lerDocumento("panfleto_" + tipo);
-        aviso = "Panfleto sobre violencia " + tipo + " lido. (+1 ponto)";
     }
 
     public Set<String> obterPanfletosLidos() {
