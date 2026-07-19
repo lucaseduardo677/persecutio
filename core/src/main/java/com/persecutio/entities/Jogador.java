@@ -34,13 +34,12 @@ public class Jogador {
     // Animador de personagem
     private final AnimadorPersonagem animador;
 
-    // Flag se esta andando
+    // Indica se esta andando
     private boolean andando = false;
 
     // Frames do spritesheet
     private final TextureRegion[][] framesSprites;
 
-    // Construtor do jogador
     public Jogador(float x, float y, Texture spriteSheet) {
         this.mundoX = x;
         this.mundoY = y;
@@ -100,7 +99,13 @@ public class Jogador {
 
     // Vira o jogador para baixo
     public void virarParaBaixo() {
-        controladorInput.setDirecaoAnimacao(ControladorInput.DIRECAO_BAIXO);
+        setDirecao(DIRECAO_BAIXO);
+    }
+
+    // Restaura uma orientacao salva ao trocar entre Real e Umbra
+    public void setDirecao(int direcao) {
+        if (direcao < DIRECAO_BAIXO || direcao > DIRECAO_CIMA) return;
+        controladorInput.setDirecaoAnimacao(direcao);
     }
 
     // Teleporta jogador para nova posicao
@@ -110,21 +115,15 @@ public class Jogador {
         hitbox.setPosition(mundoX + hitboxConfig.offsetX(), mundoY + hitboxConfig.offsetY());
     }
 
-    // Retorna offset X da hitbox
     public float   obterOffsetX()   { return hitboxConfig.offsetX(); }
 
-    // Retorna offset Y da hitbox
     public float   obterOffsetY()   { return hitboxConfig.offsetY(); }
 
-    // Retorna se esta andando
     public boolean isAndando()      { return andando; }
 
-    // Retorna direcao atual
     public int     getDirecao()     { return controladorInput.getDirecaoAnimacao(); }
 
-    // Retorna frame atual da animacao
     public int     getFrame()       { return animador.getFrame(); }
 
-    // Retorna tamanho do sprite
     public int     getTamanho()     { return TAMANHO; }
 }

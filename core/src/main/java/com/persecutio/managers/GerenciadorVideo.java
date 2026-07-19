@@ -18,9 +18,9 @@ public class GerenciadorVideo {
     private Estado      estado          = Estado.IDLE;
     // Caminho do video pendente
     private String      caminhoPendente = null;
-    // Flag de termino sinalizado
+    // Controla termino sinalizado
     private boolean     terminadoSinalizado = false;
-    // Flag se comecou a tocar
+    // Indica se comecou a tocar
     private boolean     comecouTocar    = false;
 
     // Timer de carregamento
@@ -119,13 +119,10 @@ public class GerenciadorVideo {
         return r;
     }
 
-    // Retorna se esta ativo
     public boolean isAtivo()    { return estado == Estado.CARREGANDO || estado == Estado.TOCANDO; }
 
-    // Retorna se esta preparado
     public boolean isPreparado(){ return estado == Estado.PREPARANDO; }
 
-    // Retorna estado atual
     public Estado  getEstado()  { return estado; }
 
     // Libera recursos do video

@@ -28,7 +28,6 @@ public class GerenciadorComodos {
     // Lista reutilizavel para evitar alocacao por frame
     private final List<Comodo> cacheCull = new ArrayList<>();
 
-    // Construtor do gerenciador de comodos
     public GerenciadorComodos(TiledMap mapa, float escala) {
         CoordenadasTiled.setEscala(escala);
 
@@ -110,7 +109,6 @@ public class GerenciadorComodos {
         return nome.replaceAll("\\d+$", "").toLowerCase().trim();
     }
 
-    // Retorna o comodo que contem o ponto dado
     public Comodo achar(float px, float py) {
         for (Comodo c : comodos) {
             if (c.area.contains(px, py)) return c;
@@ -118,14 +116,12 @@ public class GerenciadorComodos {
         return null;
     }
 
-    // Retorna comodos do mesmo grupo base
     public List<Comodo> getComodosDoMesmoGrupo(Comodo atual) {
         if (atual == null || atual.nomeGrupo.isEmpty()) return new ArrayList<>();
         List<Comodo> grupo = comodosPorNome.get(atual.nomeGrupo);
         return grupo != null ? new ArrayList<>(grupo) : new ArrayList<>();
     }
 
-    // Retorna comodos que devem receber cull de tiles neste frame
     public List<Comodo> getCullAtivo(Comodo comodoJogador) {
         cacheCull.clear();
 
@@ -181,7 +177,6 @@ public class GerenciadorComodos {
         return                      new Vector2(a.x + a.width   - margem, cy);
     }
 
-    // Retorna lista completa de comodos
     public List<Comodo> getComodos() { return comodos; }
 
     // Dados de um comodo carregado do Tiled

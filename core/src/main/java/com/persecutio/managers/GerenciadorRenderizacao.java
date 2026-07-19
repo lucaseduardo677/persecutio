@@ -26,7 +26,6 @@ public class GerenciadorRenderizacao {
     // Textura preta para tint de Umbra
     private final Texture texPreto;
 
-    // Construtor do renderizador
     public GerenciadorRenderizacao(float escala) {
         Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pm.setColor(Color.BLACK);
@@ -35,7 +34,7 @@ public class GerenciadorRenderizacao {
         pm.dispose();
     }
 
-    // Desenha objetos de tile que possuam textura mapeada e estejam ativos, rotacionando em sua origem correspondente (0,0) do Tiled
+    // Desenha objetos ativos respeitando a origem de rotação do Tiled
     public void desenharObjetos(ContextoRender ctx, GerenciadorColisao sistemaColisao,
                                 GerenciadorComodos gerComodos, GerenciadorComodos.Comodo comodoAtual) {
         List<GerenciadorComodos.Comodo> cullAtivo = gerComodos.getCullAtivo(comodoAtual);
@@ -62,7 +61,7 @@ public class GerenciadorRenderizacao {
             }
 
             if (desenhar) {
-                // Modificado: a origem (0, 0) simula perfeitamente a rotação sobre o pivot inferior esquerdo que o Tiled usa
+                // Modificado a origem 0 0 simula perfeitamente a rotação sobre o pivot inferior esquerdo que o Tiled usa
                 if (obj.rotacao != 0f) {
                     ctx.batch.draw(obj.textura,
                         Math.round(obj.area.x + ctx.cameraX),
@@ -90,7 +89,7 @@ public class GerenciadorRenderizacao {
             boolean desenhar = false;
 
             if (cullAtivo.isEmpty()) {
-                // Se o jogador nao estiver em nenhum comodo, desenha todos por seguranca
+                // Se o jogador nao estiver em nenhum comodo desenha todos por seguranca
                 desenhar = true;
             } else {
                 // Encontra qual comodo este NPC ocupa com base no centro de sua hitbox

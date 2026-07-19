@@ -18,16 +18,21 @@ import com.persecutio.managers.GerenciadorDialogo;
 import com.persecutio.managers.GerenciadorPontuacao;
 import com.persecutio.managers.GerenciadorVoz;
 
-// Tela do questionario final com o Dr. Elimar (GDD paginas 4 e 7-9)
-// Substitui a tela de jogo assim que a Missao 3 inicia o questionario
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+// Exibe o questionário final conduzido pelo doutor Elimar
 public class TelaElimar implements Screen {
 
     // Referencia para o jogo principal
     private final PersecutioGame jogo;
+    private final Set<String> panfletosLidos;
+    private final int bonusPanfletos;
 
     // Fundo do escritorio do Elimar
     private Texture imagemFundo;
-    // Retrato falante do Elimar (sprite 2x2)
+    // Retrato falante do Elimar sprite 2x2
     private Texture spriteElimar;
     private TextureRegion[][] framesElimar;
 
@@ -39,14 +44,14 @@ public class TelaElimar implements Screen {
     // Textura branca para caixas e fades
     private Texture texBranca;
 
-    // Sistemas de dialogo, voz e pontuacao desta sessao
+    // Sistemas de dialogo voz e pontuacao desta sessao
     private GerenciadorDialogo   dialogo;
     private GerenciadorVoz       voz;
     private final GerenciadorPontuacao pontuacao = new GerenciadorPontuacao();
 
     // Selecao atual entre as escolhas exibidas
     private int opcaoSelecionada = 0;
-    // Flag se o no do final ja foi iniciado
+    // Indica se o no do final ja foi iniciado
     private boolean resultadoIniciado = false;
 
     // Duracao do fade de entrada
@@ -57,7 +62,14 @@ public class TelaElimar implements Screen {
     private final Vector2 coordenadasMouse = new Vector2();
 
     public TelaElimar(PersecutioGame jogo) {
+        this(jogo, Collections.emptySet(), 0);
+    }
+
+    public TelaElimar(PersecutioGame jogo, Set<String> panfletosLidos, int bonusPanfletos) {
         this.jogo = jogo;
+        this.panfletosLidos = panfletosLidos == null
+            ? new HashSet<>() : new HashSet<>(panfletosLidos);
+        this.bonusPanfletos = Math.max(0, bonusPanfletos);
     }
 
     @Override
@@ -85,11 +97,12 @@ public class TelaElimar implements Screen {
         }
 
         voz     = new GerenciadorVoz();
-        dialogo = new GerenciadorDialogo();
+        dialogo = new GerenciadorDialogo(panfletosLidos);
         dialogo.setVoz(voz);
         dialogo.iniciar("elimar_intro");
 
         pontuacao.reiniciar();
+        pontuacao.adicionarPontos(bonusPanfletos);
         opcaoSelecionada  = 0;
         resultadoIniciado = false;
         timerFade  = 0f;
@@ -144,7 +157,7 @@ public class TelaElimar implements Screen {
         }
     }
 
-    // Desenha o retrato falante do Elimar, com boca sincronizada a fala
+    // Desenha o retrato falante do Elimar com boca sincronizada a fala
     private void desenharRetrato(SpriteBatch batch, float larguraMundo, float alturaMundo) {
         if (dialogo.getRetrato() == null) return;
 
@@ -258,7 +271,7 @@ public class TelaElimar implements Screen {
             }
             dialogo.iniciar(noFinal);
         } else {
-            // O dialogo do final tambem terminou: volta ao menu principal
+            // O dialogo do final tambem terminou volta ao menu principal
             jogo.setScreen(new TelaMenu(jogo));
         }
     }

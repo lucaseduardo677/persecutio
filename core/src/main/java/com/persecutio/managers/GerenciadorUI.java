@@ -74,7 +74,7 @@ public class GerenciadorUI {
     private float timerAvisoCartela = 0f;
     private float alphaAvisoCartela = 0f;
 
-    // Flag se esta pausado
+    // Indica se esta pausado
     private boolean pausado = false;
     // Opcao selecionada no menu de pausa
     private int opcaoPausa = 0;
@@ -183,17 +183,14 @@ public class GerenciadorUI {
         }
     }
 
-    // Define o gerenciador de audio
     public void setAudio(GerenciadorAudio audioRef) {
         audio = audioRef;
     }
 
-    // Define o gerenciador de dialogo
     public void setDialogo(GerenciadorDialogo dialogoRef) {
         dialogo = dialogoRef;
     }
 
-    // Define o gerenciador de progresso para sincronizar a missao exibida
     public void setProgresso(GerenciadorProgresso progressoRef) {
         progresso = progressoRef;
         if (progresso != null) {
@@ -255,7 +252,6 @@ public class GerenciadorUI {
         }
     }
 
-    // Retorna se o jogador esta bloqueado de se mover ou interagir
     public boolean isBloqueado() {
         return estadoUi == UI_FADE || estadoUi == UI_SENHA || estadoUi == UI_DIALOGO
                 || estadoUi == UI_DOCUMENTO || timerInput > 0f
@@ -343,7 +339,7 @@ public class GerenciadorUI {
                         estadoUi = UI_JOGO;
                     }
 
-                    // Bloqueio de 0.5 segundos logo apos o fade terminar
+                    // Bloqueio de 0 5 segundos logo apos o fade terminar
                     timerInput = 0.5f;
                 }
                 break;
@@ -384,7 +380,6 @@ public class GerenciadorUI {
         iniciarFade(null, aoEscurecer, rapido ? T_FADE_RAPIDO : T_FADE);
     }
 
-    // Retorna se o fade esta ativo
     public boolean fadeAtivo() { return faseFade != FaseFade.INATIVO; }
 
     // Processa input do jogador
@@ -552,7 +547,6 @@ public class GerenciadorUI {
         if (novoEstado == UI_DIALOGO) escolhaDialogo = 0;
     }
 
-    // Retorna estado atual da UI
     public int obterEstado() { return estadoUi; }
 
     // Gerencia o fluxo da exibicao central da missao por fatias de tempo
@@ -642,7 +636,6 @@ public class GerenciadorUI {
     // Abre tela de senha
     public void abrirSenha() { estadoUi = UI_SENHA; if (puzzle != null) puzzle.abrir(); }
 
-    // Retorna se esta na tela de senha
     public boolean isSenha() { return estadoUi == UI_SENHA; }
 
     // Atualiza o puzzle de senha
@@ -650,7 +643,6 @@ public class GerenciadorUI {
         if (puzzle != null) { puzzle.atualizar(delta); if (!puzzle.isAberto()) estadoUi = UI_JOGO; }
     }
 
-    // Retorna senha digitada
     public String pegarSenha() { return puzzle != null ? puzzle.pegarSenha() : null; }
 
     // Processa sucesso na senha
@@ -1079,25 +1071,18 @@ public class GerenciadorUI {
         return area != null && hi.overlaps(area);
     }
 
-    // Retorna se esta na tela de porta
     public boolean isPorta() { return estadoUi == UI_PORTA; }
 
-    // Retorna se esta na tela de espelho
     public boolean isEspelho() { return estadoUi == UI_ESPELHO; }
 
-    // Retorna se esta em dialogo
     public boolean isDialogo() { return estadoUi == UI_DIALOGO; }
 
-    // Retorna se esta pausado
     public boolean isPausado() { return pausado; }
 
-    // Retorna se esta em fade
     public boolean isFade() { return estadoUi == UI_FADE; }
 
-    // Retorna se esta em video
     public boolean isVideo() { return faseFade == FaseFade.VIDEO; }
 
-    // Retorna gerenciador de video
     public GerenciadorVideo obterVideo() { return video; }
 
     // Libera recursos da UI
@@ -1179,7 +1164,6 @@ public class GerenciadorUI {
             Gdx.input.setInputProcessor(stage);
         }
 
-        // Retorna se esta aberto
         public boolean isAberto() { return aberto; }
 
         public void redimensionar(int w, int h) {
@@ -1224,7 +1208,6 @@ public class GerenciadorUI {
             if (Gdx.input.getInputProcessor() == stage) Gdx.input.setInputProcessor(null);
         }
 
-        // Retorna senha digitada
         public String pegarSenha() {
             String r = senhaSubmetida;
             senhaSubmetida = null;

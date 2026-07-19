@@ -69,12 +69,12 @@ public class GerenciadorColisao {
         // Area publica e mutavel para podermos empurrar os blocos
         public Rectangle area;
         public final String    nome;
-        // Mundo de origem do objeto, definido estritamente pelo mapa em que foi lido
+        // Mundo de origem do objeto definido estritamente pelo mapa em que foi lido
         public final boolean   mundoUmbra;
         public final boolean   trancado;
         public final boolean   destrancavel;
         public final String    condicao;
-        // Chave da imagem/asset do documento, lida do Tiled (propriedade "docId")
+        // Chave da imagem asset do documento lida do Tiled propriedade docId
         public final String    docId;
         public TextureRegion textura = null;
         public float rotacao = 0f;
@@ -89,7 +89,7 @@ public class GerenciadorColisao {
             String classe = props.get("type")  != null ? props.get("type").toString()  :
                             props.get("class") != null ? props.get("class").toString() : "";
 
-            // O mundo do objeto e sempre o mapa de onde ele foi lido, sem flag configuravel
+            // O mundo do objeto e sempre o mapa de onde ele foi lido sem flag configuravel
             this.mundoUmbra = isUmbraMap;
 
             Object t = props.get("trancado");
@@ -156,9 +156,7 @@ public class GerenciadorColisao {
         npcs         = new HashMap<>();
         objetosDesenhaveis = new ArrayList<>();
 
-        // Cada mapa carrega suas proprias camadas de forma independente: tudo que
-        // existe no mapa Real pertence ao mundo Real e tudo que existe no mapa
-        // Umbra pertence ao mundo Umbra, sem depender de flags no Tiled.
+        // Separa as colisões conforme o mapa de origem
         if (mapaReal != null) {
             lerParedes(mapaReal, "Colisoes", paredes, false);
             lerInterativos(mapaReal, "Interativos", false);
@@ -182,7 +180,6 @@ public class GerenciadorColisao {
         this.progresso = progresso;
     }
 
-    // Retorna se o mundo Umbra está ativo de forma automatica
     public boolean isUmbra() {
         return progresso != null && progresso.isUmbra();
     }
@@ -196,7 +193,7 @@ public class GerenciadorColisao {
                                progresso.getDocumentos(), progresso.obterFase());
     }
 
-    // Suporta condicoes compostas unidas por "&&", ex: "missao==1&&fasemissao>=5"
+    // Suporta condicoes compostas unidas por ex missao 1 fasemissao 5
     private boolean avaliarCondicao(String condicao, int missao, int documentos, int faseMissao) {
         if (condicao == null || condicao.trim().isEmpty()) return true;
         String c = condicao.trim().replace(" ", "").toLowerCase();
@@ -381,8 +378,7 @@ public class GerenciadorColisao {
             }
 
             if (!chave.isEmpty()) {
-                // Ajusta colisões de nomes duplicados no Tiled: se já existe um objeto com a mesma
-                // chave, preserva o objeto principal e armazena o extra com sufixo.
+                // Preserva objetos com nomes duplicados usando um sufixo único
                 if (interativos.containsKey(chave)) {
                     ObjetoColisao existente = interativos.get(chave);
                     Integer idProp = objeto.getProperties().get("id", Integer.class);
@@ -426,15 +422,16 @@ public class GerenciadorColisao {
         }
     }
 
-    // Alinha unicamente os obstaculos pesados (puzzle de pedras) ao Grid
+    // Alinha unicamente os obstaculos pesados puzzle de pedras ao Grid
     private void alinharTile(Rectangle r) {
-        float tamanhoTile = 32f * 1.375f; // 44f
+        float tamanhoTile = 32f * 1.375f;
         r.x = Math.round(r.x / tamanhoTile) * tamanhoTile;
         r.y = Math.round(r.y / tamanhoTile) * tamanhoTile;
     }
 
     public ObjetoColisao acharPedra(Jogador jogador) {
-        if (isUmbra()) return null; // So no mundo real as pedras sao empurradas
+        // Permite empurrar pedras apenas no mundo Real
+        if (isUmbra()) return null;
 
         Rectangle rectInteracao = new Rectangle(jogador.hitbox);
         float folga = 16f;
@@ -454,7 +451,7 @@ public class GerenciadorColisao {
 
     public boolean empurrarPedra(Jogador jogador, ObjetoColisao pedra) {
         int dir = jogador.getDirecao();
-        float tamanhoTile = 32f * 1.375f; // 44f
+        float tamanhoTile = 32f * 1.375f;
         float novoX = pedra.area.x;
         float novoY = pedra.area.y;
 
@@ -465,7 +462,7 @@ public class GerenciadorColisao {
 
         if (checarPosicao(novoX, novoY, pedra.area.width, pedra.area.height, pedra)) {
             pedra.area.setPosition(novoX, novoY);
-            // Se o puzzle estiver resolvido apos mover a pedra, notifica o progresso
+            // Se o puzzle estiver resolvido apos mover a pedra notifica o progresso
             try {
                 if (puzzleResolvido() && progresso != null) {
                     progresso.onPuzzleSolved();
@@ -625,14 +622,12 @@ public class GerenciadorColisao {
         return cacheInterativosCompletos;
     }
 
-    // Localiza um objeto do tipo documento (nomes iniciados por "documento",
-    // "planfeto" ou "objeto") sobreposto ao retangulo informado. Centralizado
-    // aqui para que a interacao (GerenciadorProgresso) e o prompt de UI
-    // (GerenciadorUI) usem sempre a mesma logica de deteccao.
+    // Localiza documentos e panfletos dentro da área informada
     public ObjetoColisao acharDoc(Rectangle hitbox) {
         for (ObjetoColisao d : todosInterativos().values()) {
             String nomeBase = d.nome.toLowerCase();
-            if (nomeBase.startsWith("documento") || nomeBase.startsWith("planfeto") || nomeBase.startsWith("objeto")) {
+            if (nomeBase.startsWith("documento") || nomeBase.startsWith("panfleto")
+                    || nomeBase.startsWith("planfeto") || nomeBase.startsWith("objeto")) {
                 if (hitbox.overlaps(d.area)) return d;
             }
         }

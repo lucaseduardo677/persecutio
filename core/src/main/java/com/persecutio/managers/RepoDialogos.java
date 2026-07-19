@@ -1,10 +1,14 @@
 package com.persecutio.managers;
 
 import com.badlogic.gdx.graphics.Color;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 // Repositorio de dialogos do jogo
 public class RepoDialogos {
@@ -71,13 +75,26 @@ public class RepoDialogos {
 
     // Dicionario de nos de dialogo indexados por chave
     private final Map<String, NoDialogo> dicNos = new HashMap<>();
+    private final Set<String> panfletosLidos;
 
     // Inicializa o repositorio com todos os dialogos
     public RepoDialogos() {
+        this(Collections.emptySet());
+    }
+
+    public RepoDialogos(Set<String> panfletosLidos) {
+        this.panfletosLidos = panfletosLidos == null
+            ? new HashSet<>() : new HashSet<>(panfletosLidos);
         criarDialogos();
     }
 
-    // Retorna um no de dialogo pela chave
+    // Acrescenta no maximo uma resposta especial a pergunta associada ao panfleto
+    private List<Escolha> escolhasComPanfleto(String tipo, List<Escolha> normais, Escolha especial) {
+        List<Escolha> resultado = new ArrayList<>(normais);
+        if (panfletosLidos.contains(tipo)) resultado.add(especial);
+        return resultado;
+    }
+
     public NoDialogo getNo(String chave) {
         return dicNos.get(chave);
     }
@@ -172,86 +189,87 @@ public class RepoDialogos {
             new Fala("Maria", "Um vento estranho... e um barulho de pedras vindo do jardim.")
         )));
 
-        // Introducao do questionario final com Dr. Elimar
+        // Introducao do questionario final com Dr Elimar
         dicNos.put("elimar_intro", new NoDialogo(
             Arrays.asList(
-                new Fala("Dr. Elimar", "Ola, Maria Clara. Sou o Dr. Elimar Gonzalez.", null, imgElimar, corBase, 1.0f),
-                new Fala("Dr. Elimar", "Vou avaliar sua estadia. Responda com sinceridade.", null, imgElimar, corBase, 1.0f),
-                new Fala("Maria", "Ok...", null, null, corBase, 1.0f)
+                new Fala("???", "Olá, senhorita Maria Clara. Eu sou o doutor Elimar González, é um prazer conhecê-la.", null, imgElimar, corBase, 1.0f),
+                new Fala("Dr. Elimar", "Estou aqui para averiguar se sua estadia em nossas instalações foi proveitosa.", null, imgElimar, corBase, 1.0f),
+                new Fala("Dr. Elimar", "Peço que me responda com sinceridade às perguntas que hei de fazer à senhorita.", null, imgElimar, corBase, 1.0f),
+                new Fala("Maria Clara", "Ok…", null, null, corBase, 1.0f)
             ),
             Arrays.asList(
-                new Escolha("> Responder ao questionario", "elimar_p1")
+                new Escolha("> Responder ao questionário", "elimar_p1")
             )
         ));
 
         dicNos.put("elimar_p1", new NoDialogo(
             Arrays.asList(
-                new Fala("Dr. Elimar", "Durante sua estadia aqui, voce descreveu momentos em que dizia a si mesma que aquilo era apenas uma fase. O que faz alguem perceber que uma relacao deixou de ser segura?", null, imgElimar, corBase, 1.0f)
+                new Fala("Dr. Elimar", "Durante sua estadia aqui, você descreveu momentos em que dizia a si mesma que aquilo era apenas uma fase. O que faz alguém perceber que uma relação deixou de ser segura?", null, imgElimar, corBase, 1.0f)
             ),
-            Arrays.asList(
+            escolhasComPanfleto("fisica", Arrays.asList(
                 new Escolha("Quando o medo passa a fazer parte da rotina.", 2, "elimar_p2"),
-                new Escolha("Quando comecam as agressoes fisicas.", 0, "elimar_p2"),
-                new Escolha("Quando as discussoes acontecem com frequencia.", 1, "elimar_p2"),
-                new Escolha("Quando outras pessoas dizem que a relacao faz mal.", 1, "elimar_p2")
-            )
+                new Escolha("Quando começam as agressões físicas.", 0, "elimar_p2"),
+                new Escolha("Quando as discussões acontecem com frequência.", 1, "elimar_p2"),
+                new Escolha("Quando outras pessoas dizem que a relação faz mal.", 1, "elimar_p2")
+            ), new Escolha("Quando há empurrões, tapas ou qualquer agressão: nenhuma violência física é justificável.", 3, "elimar_p2"))
         ));
 
         dicNos.put("elimar_p2", new NoDialogo(
             Arrays.asList(
-                new Fala("Dr. Elimar", "Algumas pessoas acreditam que controlar quem amam e uma forma de protecao. O que voce pensa sobre isso hoje?", null, imgElimar, corBase, 1.0f)
+                new Fala("Dr. Elimar", "Algumas pessoas acreditam que controlar quem amam é uma forma de proteção. O que você pensa sobre isso hoje?", null, imgElimar, corBase, 1.0f)
             ),
-            Arrays.asList(
-                new Escolha("Quem ama precisa confiar, nao controlar.", 2, "elimar_p3"),
-                new Escolha("Depende da intencao da pessoa.", -1, "elimar_p3"),
-                new Escolha("E normal sentir ciumes quando se ama.", 0, "elimar_p3"),
-                new Escolha("Toda relacao tem um pouco disso.", -2, "elimar_p3")
-            )
+            escolhasComPanfleto("psicologica", Arrays.asList(
+                new Escolha("Quem ama precisa confiar, não controlar.", 2, "elimar_p3"),
+                new Escolha("Depende da intenção da pessoa.", -1, "elimar_p3"),
+                new Escolha("É normal sentir ciúmes quando se ama.", 0, "elimar_p3"),
+                new Escolha("Toda relação tem um pouco disso.", -2, "elimar_p3")
+            ), new Escolha("Isolar, ameaçar e controlar amizades são violência psicológica, não proteção.", 3, "elimar_p3"))
         ));
 
         dicNos.put("elimar_p3", new NoDialogo(
             Arrays.asList(
-                new Fala("Dr. Elimar", "Voce passou muito tempo tentando entender por que tudo aconteceu. Quando uma pessoa sofre violencia dentro de casa, quem deve responder por essa escolha?", null, imgElimar, corBase, 1.0f)
+                new Fala("Dr. Elimar", "Você passou muito tempo tentando entender por que tudo aconteceu. Quando uma pessoa sofre violência dentro de casa, quem deve responder por essa escolha?", null, imgElimar, corBase, 1.0f)
             ),
-            Arrays.asList(
-                new Escolha("Quem praticou a violencia.", 2, "elimar_p4"),
+            escolhasComPanfleto("sexual", Arrays.asList(
+                new Escolha("Quem praticou a violência.", 2, "elimar_p4"),
                 new Escolha("Os dois acabam tendo responsabilidade.", -2, "elimar_p4"),
                 new Escolha("Depende do que aconteceu antes.", -1, "elimar_p4"),
                 new Escolha("Nem sempre existe um culpado.", -2, "elimar_p4")
-            )
+            ), new Escolha("Sempre quem desrespeitou o consentimento; a culpa nunca é da vítima.", 3, "elimar_p4"))
         ));
 
         dicNos.put("elimar_p4", new NoDialogo(
             Arrays.asList(
-                new Fala("Dr. Elimar", "Muitas pessoas perguntam por que alguem continua em uma relacao que causa sofrimento. Depois da sua jornada... o que voce responderia?", null, imgElimar, corBase, 1.0f)
+                new Fala("Dr. Elimar", "Muitas pessoas perguntam por que alguém continua em uma relação que causa sofrimento. Depois da sua jornada... o que você responderia?", null, imgElimar, corBase, 1.0f)
             ),
-            Arrays.asList(
-                new Escolha("Porque medo, dependencia e manipulacao podem fazer a pessoa acreditar que nao ha saida.", 2, "elimar_p5"),
+            escolhasComPanfleto("patrimonial", Arrays.asList(
+                new Escolha("Porque medo, dependência e manipulação podem fazer a pessoa acreditar que não há saída.", 2, "elimar_p5"),
                 new Escolha("Porque ela ainda ama quem a machuca.", 1, "elimar_p5"),
                 new Escolha("Porque ela escolhe permanecer.", -2, "elimar_p5"),
-                new Escolha("Porque nao percebe o que esta acontecendo.", 0, "elimar_p5")
-            )
+                new Escolha("Porque não percebe o que está acontecendo.", 0, "elimar_p5")
+            ), new Escolha("Porque controlar dinheiro, bens e documentos cria dependência e dificulta a saída.", 3, "elimar_p5"))
         ));
 
         dicNos.put("elimar_p5", new NoDialogo(
             Arrays.asList(
-                new Fala("Dr. Elimar", "Imagine que alguem lhe conte estar vivendo algo parecido com o que voce viveu. Qual seria sua primeira orientacao?", null, imgElimar, corBase, 1.0f)
+                new Fala("Dr. Elimar", "Imagine que alguém lhe conte estar vivendo algo parecido com o que você viveu. Qual seria sua primeira orientação?", null, imgElimar, corBase, 1.0f)
             ),
             Arrays.asList(
-                new Escolha("Buscar apoio de pessoas de confianca e dos servicos de protecao.", 2, "elimar_p6"),
-                new Escolha("Esperar para ver se a situacao melhora.", -2, "elimar_p6"),
-                new Escolha("Conversar com o agressor ate ele mudar.", -1, "elimar_p6"),
-                new Escolha("Tentar resolver tudo sozinha.", -2, "elimar_p6")
+                new Escolha("Buscar apoio de pessoas de confiança e dos serviços de proteção.", 2, "elimar_p6"),
+                new Escolha("Esperar para ver se a situação melhora.", -2, "elimar_p6"),
+                new Escolha("Conversar com o agressor até ele mudar.", -1, "elimar_p6"),
+                new Escolha("Tentar resolver tudo sozinho.", -2, "elimar_p6")
             )
         ));
 
         dicNos.put("elimar_p6", new NoDialogo(
             Arrays.asList(
-                new Fala("Dr. Elimar", "Voce concorda com a frase \"Bons sentimentos curam todos os ferimentos, nao e?\"", null, imgElimar, corBase, 1.0f)
+                new Fala("Dr. Elimar", "Você concorda com a frase \"Bons sentimentos curam todos os ferimentos, não é?\"", null, imgElimar, corBase, 1.0f)
             ),
             Arrays.asList(
-                new Escolha("Nao.", 2, "elimar_p7"),
+                new Escolha("Não.", 2, "elimar_p7"),
                 new Escolha("Sim.", -2, "elimar_p7"),
-                new Escolha("Nao sei dizer.", 1, "elimar_p7"),
+                new Escolha("Não sei dizer.", 1, "elimar_p7"),
                 new Escolha("Talvez.", -1, "elimar_p7")
             )
         ));
@@ -259,21 +277,21 @@ public class RepoDialogos {
         dicNos.put("elimar_p7", new NoDialogo(
             Arrays.asList(
                 new Fala("Narrador", "(O Dr. Elimar fecha a prancheta.)", null, null, corBase, 1.0f),
-                new Fala("Dr. Elimar", "Ha uma ultima coisa que preciso saber. Se uma mulher disser que tem medo da pessoa que diz ama-la... voce acredita nela?", null, imgElimar, corBase, 1.0f)
+                new Fala("Dr. Elimar", "Há uma última coisa que preciso saber. Se uma mulher disser que tem medo da pessoa que diz amá-la... você acredita nela?", null, imgElimar, corBase, 1.0f)
             ),
-            Arrays.asList(
+            escolhasComPanfleto("moral", Arrays.asList(
                 new Escolha("Sim. O medo nunca deveria fazer parte do amor.", 2, "elimar_encerramento"),
                 new Escolha("Depende do motivo desse medo.", -1, "elimar_encerramento"),
-                new Escolha("E preciso ouvir e acolher antes de julgar.", 2, "elimar_encerramento"),
-                new Escolha("Relacionamentos sao complicados, isso acontece.", -2, "elimar_encerramento")
-            )
+                new Escolha("É preciso ouvir e acolher antes de julgar.", 2, "elimar_encerramento"),
+                new Escolha("Relacionamentos são complicados, isso acontece.", -2, "elimar_encerramento")
+            ), new Escolha("Sim. Insultos, humilhações e falsas acusações também ferem e são violência moral e verbal.", 3, "elimar_encerramento"))
         ));
 
         // Encerramento do questionario antes de revelar o final
         dicNos.put("elimar_encerramento", new NoDialogo(Arrays.asList(
-            new Fala("Dr. Elimar", "Obrigado pela sinceridade.", null, imgElimar, corBase, 1.0f),
-            new Fala("Maria", "Espere... e so isso?", null, null, corBase, 1.0f),
-            new Fala("Dr. Elimar", "Por hoje, sim. Descanse.", null, imgElimar, corBase, 1.0f)
+            new Fala("Dr. Elimar", "Interessante… Bom, agradeço a sinceridade da senhorita.", null, imgElimar, corBase, 1.0f),
+            new Fala("Maria Clara", "Espere… é só isso?", null, null, corBase, 1.0f),
+            new Fala("Dr. Elimar", "Receio que sim, senhorita. Agora descanse; amanhã é outro dia.", null, imgElimar, corBase, 1.0f)
         )));
 
         // Final ruim com rejeicao total das memorias

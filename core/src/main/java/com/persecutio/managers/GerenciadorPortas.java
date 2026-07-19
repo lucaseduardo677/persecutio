@@ -32,7 +32,6 @@ public class GerenciadorPortas {
 
     private GerenciadorProgresso progresso;
 
-    // Construtor do gerenciador de portas
     public GerenciadorPortas(TiledMap mapaReal, TiledMap mapaUmbra, float escala,
                              Map<String, Map<String, Object>> defaults) {
         this.escala = escala;
@@ -121,7 +120,7 @@ public class GerenciadorPortas {
             String condicao = lerProp(props, "condicao");
             if (condicao == null) condicao = "";
 
-            // Senha da porta, lida direto da propriedade custom "senha" no Tiled
+            // Senha da porta lida direto da propriedade custom senha no Tiled
             String senha = lerProp(props, "senha");
             if (senha == null) senha = "";
 
@@ -176,7 +175,6 @@ public class GerenciadorPortas {
         return fallback;
     }
 
-    // Retorna lista de portas
     public List<Porta> getPortas() { return portas; }
 
     // Dados de uma porta do mapa
@@ -194,7 +192,6 @@ public class GerenciadorPortas {
         public final String  condicao;
         public final String  senha;
 
-        // Construtor da porta
         Porta(Rectangle area, String nome, String label, Vector2 spawn, Rectangle areaDestino,
               String video, boolean usarFade,
               boolean trancado, boolean destrancavel, String condicao, String senha) {

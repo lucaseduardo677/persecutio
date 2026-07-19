@@ -43,9 +43,9 @@ public class GerenciadorAudio {
     // Volume atual dos efeitos
     private float volumeEfeitos = VOLUME_EFEITOS_PADRAO;
 
-    // Flag de fade out em andamento
+    // Controla fade out em andamento
     private boolean fazendoFadeOut = false;
-    // Flag de fade in em andamento
+    // Controla fade in em andamento
     private boolean fazendoFadeIn  = false;
     // Volume durante o fade
     private float   volumeFade     = 0f;
@@ -56,9 +56,9 @@ public class GerenciadorAudio {
 
     // Som dos passos
     private Sound somPasso;
-    // ID do som de passos em loop
+    // Identificador do som de passos em loop
     private long  idPasso = -1;
-    // Flag se os passos estao tocando
+    // Indica se os passos estao tocando
     private boolean passosTocando = false;
 
     // Carrega sons do menu

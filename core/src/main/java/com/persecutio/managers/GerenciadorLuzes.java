@@ -8,6 +8,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapProperties;
@@ -43,12 +44,12 @@ public class GerenciadorLuzes {
     // Lista de luzes fixas do mapa
     private final List<Light> luzesFixas = new ArrayList<>();
 
-    // Mundo de origem de cada luz fixa, definido estritamente pelo mapa de onde foi lida
+    // Mundo de origem de cada luz fixa definido estritamente pelo mapa de onde foi lida
     private final Map<Light, Boolean> luzMundoUmbra = new HashMap<>();
     // Mapa de comodo de cada luz fixa
     private final Map<Light, GerenciadorComodos.Comodo> luzComodo = new HashMap<>();
 
-    // Inicia como true para que a primeira chamada setAmbienteUmbra(false) force a atualizacao
+    // Inicia como true para que a primeira chamada setAmbienteUmbra false force a atualizacao
     private boolean ambienteUmbraAtivo = true;
 
     // Contador de frames para otimizacao
@@ -57,7 +58,6 @@ public class GerenciadorLuzes {
     // Referencia ao gerenciador de comodos
     private GerenciadorComodos gerComodos;
 
-    // Construtor do sistema de luzes
     public GerenciadorLuzes() {
         this.mundoBox2D = new World(new com.badlogic.gdx.math.Vector2(0, 0), true);
         this.rayHandler = new RayHandler(mundoBox2D);
@@ -68,7 +68,6 @@ public class GerenciadorLuzes {
         RayHandler.setGammaCorrection(true);
     }
 
-    // Define o gerenciador de comodos
     public void setGerenciadorComodos(GerenciadorComodos gerComodos) {
         this.gerComodos = gerComodos;
     }
@@ -125,7 +124,7 @@ public class GerenciadorLuzes {
         }
     }
 
-    // Carrega luzes definidas no Tiled (versao padrao para compatibilidade)
+    // Carrega luzes definidas no Tiled versao padrao para compatibilidade
     public void carregarLuzesDoTiled(TiledMap mapa) {
         carregarLuzesDoTiled(mapa, false);
     }
@@ -133,7 +132,10 @@ public class GerenciadorLuzes {
     // Carrega luzes definidas no Tiled separando o comportamento padrao por mundo
     public void carregarLuzesDoTiled(TiledMap mapa, boolean umbra) {
         MapLayer camada = mapa.getLayers().get("Luzes");
-        if (camada == null) return;
+        if (camada == null) {
+            carregarLuzesDeObjetos(mapa, umbra);
+            return;
+        }
 
         float escala = CoordenadasTiled.getEscala();
 
@@ -199,13 +201,68 @@ public class GerenciadorLuzes {
                 }
             }
         }
+
+        // Objetos comuns tambem podem emitir uma luz configurada diretamente no Tiled
+        carregarLuzesDeObjetos(mapa, umbra);
+    }
+
+    // Cria luzes de objetos com cor e alcance definidos pelo mapa
+    private void carregarLuzesDeObjetos(TiledMap mapa, boolean umbra) {
+        float escala = CoordenadasTiled.getEscala();
+
+        for (MapLayer layer : mapa.getLayers()) {
+            if ("Luzes".equalsIgnoreCase(layer.getName())) continue;
+
+            for (MapObject obj : layer.getObjects()) {
+                MapProperties props = obj.getProperties();
+                if (!lerBool(props, "luz", false)) continue;
+
+                float x, y, largura, altura;
+                if (obj instanceof RectangleMapObject) {
+                    Rectangle r = ((RectangleMapObject) obj).getRectangle();
+                    x = r.x * escala;
+                    y = r.y * escala;
+                    largura = r.width * escala;
+                    altura = r.height * escala;
+                } else if (obj instanceof TiledMapTileMapObject) {
+                    TiledMapTileMapObject tileObj = (TiledMapTileMapObject) obj;
+                    TextureRegion region = tileObj.getTextureRegion();
+                    x = tileObj.getX() * escala;
+                    y = tileObj.getY() * escala;
+                    largura = region.getRegionWidth() * tileObj.getScaleX() * escala;
+                    altura = region.getRegionHeight() * tileObj.getScaleY() * escala;
+                } else {
+                    continue;
+                }
+
+                Color cor = parseCorLuzTiled(props);
+                float alpha = lerNumero(props, "alpha", cor.a);
+                cor.a = alpha;
+                float direcao = lerNumero(props, "direcao", 0f);
+
+                Light luz = new ConeLight(rayHandler, 128, cor, 50f,
+                    x + largura / 2f, y + altura / 2f, direcao, 150f);
+                luz.setSoft(true);
+                luz.setSoftnessLength(20f);
+                luz.setStaticLight(true);
+                luz.setXray(false);
+                short mascara = (short) (CAT_SOMBRA_PAREDE | CAT_SOMBRA_PORTA);
+                luz.setContactFilter(CAT_SOMBRA_PAREDE, (short) 0, mascara);
+
+                luzesFixas.add(luz);
+                luzMundoUmbra.put(luz, umbra);
+                if (gerComodos != null) {
+                    luzComodo.put(luz, gerComodos.achar(x + largura / 2f, y + altura / 2f));
+                }
+            }
+        }
     }
 
     // Inicializa o sistema de luzes
     public void inicializar(float jogadorX, float jogadorY) {
         short mascaraSombra = (short) (CAT_SOMBRA_PAREDE | CAT_SOMBRA_PORTA);
 
-        // Se nenhuma luz com 'segue' foi carregada do mapa, cria a luz padrao
+        // Se nenhuma luz com segue foi carregada do mapa cria a luz padrao
         if (luzJogador == null) {
             luzJogador = new PointLight(rayHandler, 128,
                 Color.valueOf("#fff2cce5"),
@@ -225,10 +282,8 @@ public class GerenciadorLuzes {
         }
     }
 
-    // Define o ambiente de iluminacao
     public void setAmbienteUmbra(boolean umbra) {
-        // A luz do jogador deve seguir estritamente o estado do mundo umbra,
-        // garantindo que ela seja desativada imediatamente no mundo real.
+        // Mantém a luz do jogador ativa apenas no mundo Umbra
         if (luzJogador != null) {
             luzJogador.setActive(umbra);
         }
@@ -240,7 +295,6 @@ public class GerenciadorLuzes {
             // Ambiente umbra escuro e com tom avermelhado de perigo
             rayHandler.setAmbientLight(0.05f, 0.02f, 0.02f, 0.15f);
 
-            // Define o tamanho reduzido da luz do jogador no Umbra
             if (luzJogador != null) {
                 luzJogador.setDistance(75f);
             }
@@ -316,6 +370,21 @@ public class GerenciadorLuzes {
         String s = lerTexto(p, chave, "").toLowerCase();
         if (s.isEmpty()) return padrao;
         return s.equals("true") || s.equals("1") || s.equals("yes");
+    }
+
+    // Lê a cor nativa definida nos objetos do Tiled
+    private Color parseCorLuzTiled(MapProperties props) {
+        Object colorObj = props.get("corLuz");
+        if (colorObj instanceof Color) {
+            return new Color((Color) colorObj);
+        }
+        if (colorObj != null) {
+            String valor = colorObj.toString().trim();
+            if (!valor.isEmpty()) {
+                return parseHexColor(valor);
+            }
+        }
+        return new Color(1f, 1f, 1f, 1f);
     }
 
     // Parse de cor de propriedade do Tiled

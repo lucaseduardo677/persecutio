@@ -5,44 +5,42 @@ import com.badlogic.gdx.audio.AudioDevice;
 import com.badlogic.gdx.files.FileHandle;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// Sintetiza e toca as falas dos dialogos no estilo animalese
-// Baseado no algoritmo de acedio/animalese.js (Josh Simmons)
+// Sintetiza as falas dos diálogos no estilo animalese
 public class GerenciadorVoz {
 
     // Caminho da biblioteca de letras dentro dos assets
     private static final String CAMINHO_BIBLIOTECA = "audio/animalese/animalese.wav";
-    // Tamanho do cabecalho de um wav PCM canonico (44 bytes)
+    // Tamanho do cabecalho de um wav PCM canonico 44 bytes
     private static final int   TAMANHO_CABECALHO   = 44;
 
     // Frequencia de amostragem da biblioteca e da reproducao
     private static final int   FREQ_AMOSTRA            = 44100;
-    // Duracao de cada letra dentro da biblioteca gravada, em segundos
+    // Duracao de cada letra dentro da biblioteca gravada em segundos
     private static final float DURACAO_LETRA_LIB        = 0.15f;
-    // Duracao de cada letra na fala gerada, em segundos
+    // Duracao de cada letra na fala gerada em segundos
     private static final float DURACAO_LETRA_SAIDA      = 0.050f;
     // Volume de reproducao das falas
     private static final float VOLUME_PADRAO            = 0.35f;
-    // Tom minimo aceito (voz mais grave e lenta)
+    // Tom minimo aceito voz mais grave e lenta
     private static final float TOM_MINIMO               = 0.2f;
-    // Tom maximo aceito (voz mais aguda e rapida)
+    // Tom maximo aceito voz mais aguda e rapida
     private static final float TOM_MAXIMO               = 2.0f;
 
-    // Amostras de cada letra dentro da biblioteca, calculado a partir da duracao
+    // Amostras de cada letra dentro da biblioteca calculado a partir da duracao
     private static final int AMOSTRAS_LETRA_LIB   = Math.round(DURACAO_LETRA_LIB   * FREQ_AMOSTRA);
-    // Amostras de cada letra na fala gerada, calculado a partir da duracao
+    // Amostras de cada letra na fala gerada calculado a partir da duracao
     private static final int AMOSTRAS_LETRA_SAIDA = Math.round(DURACAO_LETRA_SAIDA * FREQ_AMOSTRA);
 
-    // Amostras da biblioteca de letras (A-Z), sem o cabecalho do wav
+    // Amostras da biblioteca de letras A Z sem o cabecalho do wav
     private byte[] biblioteca;
 
-    // Define o tom de voz de cada personagem
     private final GerenciadorTom tons;
 
-    // Controla qual fala e a mais recente, para interromper falas antigas
+    // Controla qual fala e a mais recente para interromper falas antigas
     private final AtomicInteger geracaoAtual = new AtomicInteger(0);
     // Quantos caracteres da fala atual ja comecaram a ser falados
     private final AtomicInteger letraAtual   = new AtomicInteger(0);
-    // Referencia a thread de fala em andamento, para nao abrir dois AudioDevice ao mesmo tempo
+    // Referencia a thread de fala em andamento para nao abrir dois AudioDevice ao mesmo tempo
     private Thread threadFalaAtual = null;
 
     // Cria o gerenciador e carrega a biblioteca de letras
@@ -77,25 +75,24 @@ public class GerenciadorVoz {
         }
     }
 
-    // Fala o texto de uma linha de dialogo, usando o tom do falante informado
+    // Fala o texto de uma linha de dialogo usando o tom do falante informado
     public void falar(String falante, String texto) {
         int minhaGeracao = geracaoAtual.incrementAndGet();
         letraAtual.set(0);
 
         if (biblioteca == null || texto == null || texto.isEmpty() || !contemLetra(texto)) {
-            // Sem audio para tocar: libera o texto inteiro de uma vez, sem sincronia
+            // Sem audio para tocar libera o texto inteiro de uma vez sem sincronia
             letraAtual.set(Integer.MAX_VALUE);
             return;
         }
 
-        // Fallback: se o falante não for declarado (nulo ou vazio), define um falante padrao neutro "Narrador"
+        // Fallback se o falante não for declarado nulo ou vazio define um falante padrao neutro Narrador
         String falanteFinal = (falante == null || falante.trim().isEmpty()) ? "Narrador" : falante;
 
         float tom = tons.obterTom(falanteFinal);
         byte[] dados = gerarAmostras(texto, tom);
 
-        // Aguarda a thread da fala anterior encerrar por completo (e fechar seu AudioDevice)
-        // antes de abrir um novo, evitando dois AudioDevice concorrentes no mesmo contexto de audio
+        // Aguarda a fala anterior terminar antes de iniciar outro áudio
         if (threadFalaAtual != null && threadFalaAtual.isAlive()) {
             try {
                 threadFalaAtual.join(200);
@@ -137,7 +134,7 @@ public class GerenciadorVoz {
                     dados[baseSaida + i] = biblioteca[indiceAmostra];
                 }
             } else {
-                // Caractere nao pronunciavel (espaco ou pontuacao) vira silencio
+                // Caractere nao pronunciavel espaco ou pontuacao vira silencio
                 for (int i = 0; i < AMOSTRAS_LETRA_SAIDA; i++) {
                     dados[baseSaida + i] = (byte) 127;
                 }
@@ -146,7 +143,7 @@ public class GerenciadorVoz {
         return dados;
     }
 
-    // Toca as amostras geradas em uma thread separada, letra por letra
+    // Toca as amostras geradas em uma thread separada letra por letra
     private void tocarFala(byte[] dados, int minhaGeracao) {
         AudioDevice dispositivo = Gdx.audio.newAudioDevice(FREQ_AMOSTRA, true);
         float[] bufferLetra = new float[AMOSTRAS_LETRA_SAIDA];
@@ -165,17 +162,16 @@ public class GerenciadorVoz {
         dispositivo.dispose();
     }
 
-    // Converte uma amostra PCM 8 bits sem sinal (0 a 255) para float (-1 a 1) ja com o volume aplicado
+    // Converte uma amostra PCM 8 bits sem sinal 0 a 255 para float 1 a 1 ja com o volume aplicado
     private float aplicarVolume(byte amostraPcm) {
         return ((amostraPcm & 0xFF) - 128) / 128f * VOLUME_PADRAO;
     }
 
-    // Interrompe a fala em andamento, se houver
+    // Interrompe a fala em andamento se houver
     public void parar() {
         geracaoAtual.incrementAndGet();
     }
 
-    // Retorna quantos caracteres da fala atual ja devem aparecer na tela
     public int obterLetraAtual() {
         return letraAtual.get();
     }

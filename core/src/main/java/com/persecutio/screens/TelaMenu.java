@@ -52,16 +52,16 @@ public class TelaMenu implements Screen {
     private float tempoEntrada = 1.5f;
     // Timer do fade in do menu
     private float timerFadeIn = 0f;
-    // Flag se o fade in esta ativo
+    // Indica se o fade in esta ativo
     private boolean fadeInAtivo = true;
 
     // Tempo de duracao do fade out em segundos
     private float tempoFade = 0.8f;
     // Timer do fade out
     private float timerFadeOut = 0f;
-    // Flag se o fade out esta ativo
+    // Indica se o fade out esta ativo
     private boolean fadeOutAtivo = false;
-    // Flag se confirmou novo jogo
+    // Indica se confirmou novo jogo
     private boolean confirmouNovoJogo = false;
 
     // Textura branca para fades
@@ -85,7 +85,6 @@ public class TelaMenu implements Screen {
     // Coordenadas do mouse para hover nas opcoes
     private final Vector2 coordenadasMouse = new Vector2();
 
-    // Construtor da tela do menu
     public TelaMenu(PersecutioGame jogo) {
         this.jogo = jogo;
     }
@@ -281,11 +280,11 @@ public class TelaMenu implements Screen {
         // Detecta interacao para pular
         if (!fadePosVideoAtivo && (Gdx.input.isKeyJustPressed(Keys.ANY_KEY) || Gdx.input.justTouched())) {
             if (!promptAtivo) {
-                // Primeira interacao: exibe o prompt informativo
+                // Primeira interacao exibe o prompt informativo
                 promptAtivo = true;
                 timerPrompt = 3f;
             } else {
-                // Segunda interacao: valida confirmacao para pular
+                // Segunda interacao valida confirmacao para pular
                 if (Gdx.input.isKeyJustPressed(Keys.SPACE) || Gdx.input.isKeyJustPressed(Keys.ENTER) || Gdx.input.justTouched()) {
                     pularIntro();
                 } else {

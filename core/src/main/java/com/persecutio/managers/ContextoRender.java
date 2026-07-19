@@ -40,7 +40,6 @@ public class ContextoRender {
     // Viewport atual
     public Viewport viewport;
 
-    // Construtor do contexto de renderizacao
     public ContextoRender() {}
 
     // Atualiza camera e referencias da tela

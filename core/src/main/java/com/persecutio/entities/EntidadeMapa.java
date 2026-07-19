@@ -14,7 +14,7 @@ public class EntidadeMapa {
     // Textura do sprite
     public final TextureRegion textura;
 
-    // Mundo de origem da entidade, definido estritamente pelo mapa em que foi lida
+    // Mundo de origem da entidade definido estritamente pelo mapa em que foi lida
     public final boolean mundoUmbra;
 
     // Trancado
@@ -24,7 +24,6 @@ public class EntidadeMapa {
     // Condicao para destrancar
     public final String  condicao;
 
-    // Construtor da entidade do mapa
     public EntidadeMapa(String nome, Rectangle area, TextureRegion textura,
                         MapProperties props, boolean mundoUmbra) {
         this.nome       = nome;

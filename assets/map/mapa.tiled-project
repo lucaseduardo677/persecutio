@@ -173,6 +173,16 @@
             "drawFill": true,
             "id": 2,
             "members": [
+                {
+                    "name": "corLuz",
+                    "type": "color",
+                    "value": "#ffff0000"
+                },
+                {
+                    "name": "luz",
+                    "type": "bool",
+                    "value": false
+                }
             ],
             "name": "objeto",
             "type": "class",

@@ -71,11 +71,14 @@
             "expandedGroupLayers": [
                 29
             ],
-            "scale": 0.75,
+            "expandedObjectLayers": [
+                25
+            ],
+            "scale": 4,
             "selectedLayer": 15,
             "viewCenter": {
-                "x": 1528.6666666666665,
-                "y": 1232
+                "x": 1789.375,
+                "y": 1071.75
             }
         },
         "casaderepouso.tmx#Content": {
@@ -146,11 +149,11 @@
             "expandedObjectLayers": [
                 36
             ],
-            "scale": 2,
+            "scale": 3,
             "selectedLayer": 17,
             "viewCenter": {
-                "x": 200.25,
-                "y": 484
+                "x": 1745.8333333333333,
+                "y": 1071
             }
         },
         "casaderepousoumbra.tmx#Content": {
@@ -226,7 +229,7 @@
         "casaderepouso.tmx"
     ],
     "project": "mapa.tiled-project",
-    "property.type": "string",
+    "property.type": "color",
     "recentFiles": [
         "casaderepousoumbra.tmx",
         "casaderepouso.tmx",

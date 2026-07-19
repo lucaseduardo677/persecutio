@@ -19,7 +19,6 @@ public class Lwjgl3Launcher {
         configuration.setTitle("Persecutio");
         configuration.useVsync(true);
 
-        // Define a taxa de atualização máxima suportada pelo seu monitor (ex: 180Hz)
         configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate);
 
         // Configura para iniciar em tela cheia usando a resolução nativa do monitor do usuário

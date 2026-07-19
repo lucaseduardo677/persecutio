@@ -12,7 +12,6 @@ public class ObjetoInterativo {
     // Dimensao
     public float   largura, altura;
 
-    // Construtor do objeto interativo
     public ObjetoInterativo(String nome, float x, float y, float largura, float altura) {
         this.nome    = nome;
         this.mundoX  = x;
@@ -21,7 +20,6 @@ public class ObjetoInterativo {
         this.altura  = altura;
     }
 
-    // Retorna area de colisao do objeto
     public Rectangle getArea() {
         return new Rectangle(mundoX, mundoY, largura, altura);
     }

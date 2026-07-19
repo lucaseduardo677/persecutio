@@ -36,7 +36,6 @@ public class GerenciadorDebug {
     // Folga do alcance de interacao
     private static final float FOLGA_PORTA = 24f;
 
-    // Construtor das ferramentas de debug
     public GerenciadorDebug() {
         shapes = new ShapeRenderer();
     }
@@ -51,15 +50,14 @@ public class GerenciadorDebug {
 
         if (Gdx.input.isKeyJustPressed(Keys.U)) progresso.alternarUmbra();
 
-        // Removed debug shortcuts that directly set progression flags to avoid
-        // accidental game-state manipulation during development.
+        // Evita atalhos que alterem o progresso durante os testes
 
         if (Gdx.input.isKeyJustPressed(Keys.I)) {
             jogo.sistemaColisao.alternarColisoes();
         }
     }
 
-    // Desenha hitboxes na tela, incluindo as pedras e objetivos da Missao 2
+    // Desenha hitboxes na tela incluindo as pedras e objetivos da Missao 2
     public void desenharHitboxes(TelaJogo jogo, float cameraX, float cameraY) {
         shapes.begin(ShapeType.Line);
 
@@ -68,11 +66,11 @@ public class GerenciadorDebug {
             shapes.rect(r.x + cameraX, r.y + cameraY, r.width, r.height);
 
         shapes.setColor(COR_INTERATIVO);
-        // Merge and draw interativos, objetos and pedras by type, but only merge overlapping boxes
+        // Agrupa áreas sobrepostas antes de desenhar as colisões
         drawMergedByKey(jogo.sistemaColisao.getInterativos(), cameraX, cameraY);
 
         shapes.setColor(COR_OBJETO);
-        // objetos: convert to map by name to reuse merging logic
+        // Organiza objetos por nome para reutilizar o agrupamento
         java.util.Map<String, Rectangle> objetosMap = new java.util.HashMap<>();
         for (GerenciadorColisao.ObjetoColisao obj : jogo.sistemaColisao.obterObjetos()) {
             if (!jogo.sistemaColisao.checarAtivo(obj)) continue;
@@ -95,7 +93,7 @@ public class GerenciadorDebug {
         for (GerenciadorPortas.Porta p : jogo.gerPortas.getPortas())
             shapes.rect(p.area.x + cameraX, p.area.y + cameraY, p.area.width, p.area.height);
 
-        // Desenha as marcas de objetivos das pedras no debug (merge também)
+        // Desenha os objetivos das pedras no modo de depuração
         shapes.setColor(COR_OBJETIVO);
         java.util.Map<String, Rectangle> objetivos = new java.util.HashMap<>();
         int idx = 0;
@@ -115,7 +113,7 @@ public class GerenciadorDebug {
         shapes.end();
     }
 
-    // Helper: merge overlapping rects by key prefix and draw them
+    // Agrupa e desenha retângulos sobrepostos pelo prefixo
     private void drawMergedByKey(java.util.Map<String, Rectangle> source, float cameraX, float cameraY) {
         java.util.Map<String, java.util.List<Rectangle>> clustersByBase = new java.util.HashMap<>();
         for (java.util.Map.Entry<String, Rectangle> e : source.entrySet()) {

@@ -1,9 +1,9 @@
 package com.persecutio.managers;
 
-// Controla a pontuacao do questionario final do Dr. Elimar e decide o final do jogo
+// Controla a pontuacao do questionario final do Dr Elimar e decide o final do jogo
 public class GerenciadorPontuacao {
 
-    // Soma do maior valor possivel em cada uma das 7 perguntas (GDD item 5)
+    // Soma do maior valor possivel em cada uma das 7 perguntas GDD item 5
     private static final int PONTOS_MAXIMO = 14;
 
     // Abaixo deste percentual o jogador recebe o Final Ruim
@@ -11,7 +11,7 @@ public class GerenciadorPontuacao {
     // Acima deste percentual o jogador recebe o Final Bom
     private static final float LIMIAR_BOM  = 80f;
 
-    // Finais possiveis do jogo (GDD item 13)
+    // Finais possiveis do jogo GDD item 13
     public enum Final { RUIM, NORMAL, BOM }
 
     // Pontos acumulados nas respostas do questionario
@@ -22,12 +22,10 @@ public class GerenciadorPontuacao {
         pontos += valor;
     }
 
-    // Retorna o total bruto de pontos acumulados
     public int obterTotal() {
         return pontos;
     }
 
-    // Retorna o percentual de pontos em relacao ao maximo possivel
     public float obterPercentual() {
         return (pontos / (float) PONTOS_MAXIMO) * 100f;
     }
@@ -40,7 +38,7 @@ public class GerenciadorPontuacao {
         return Final.NORMAL;
     }
 
-    // Reinicia a pontuacao, usado ao comecar uma nova partida
+    // Reinicia a pontuacao usado ao comecar uma nova partida
     public void reiniciar() {
         pontos = 0;
     }

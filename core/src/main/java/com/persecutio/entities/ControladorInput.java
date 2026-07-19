@@ -17,7 +17,7 @@ public class ControladorInput {
     private final Vector2 direcaoMovimento = new Vector2();
     // Direcao da animacao
     private int     direcaoAnimacao = DIRECAO_BAIXO;
-    // Flag se esta se movendo
+    // Indica se esta se movendo
     private boolean movendo         = false;
 
     // Atualiza estado do input
@@ -47,15 +47,11 @@ public class ControladorInput {
         }
     }
 
-    // Retorna vetor de direcao do movimento
     public Vector2 getDirecaoMovimento() { return direcaoMovimento; }
 
-    // Retorna direcao da animacao
     public int     getDirecaoAnimacao()  { return direcaoAnimacao; }
 
-    // Define direcao da animacao
     public void    setDirecaoAnimacao(int dir) { direcaoAnimacao = dir; }
 
-    // Retorna se esta se movendo
     public boolean isMovendo()           { return movendo; }
 }

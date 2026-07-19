@@ -11,25 +11,20 @@ public final class CoordenadasTiled {
     // Altura total do mapa em pixels Tiled
     private static float alturaMapa = 1408f;
 
-    // Construtor privado para evitar instanciacao
     private CoordenadasTiled() {}
 
-    // Define a escala de conversao
     public static void setEscala(float novaEscala) {
         escala = novaEscala;
     }
 
-    // Retorna a escala atual
     public static float getEscala() {
         return escala;
     }
 
-    // Define a altura do mapa
     public static void setAlturaMapa(float novaAltura) {
         alturaMapa = novaAltura;
     }
 
-    // Retorna a altura do mapa
     public static float getAlturaMapa() {
         return alturaMapa;
     }

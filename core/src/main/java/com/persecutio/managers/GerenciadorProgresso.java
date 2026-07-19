@@ -6,7 +6,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.persecutio.entities.EntidadeMapa;
 import com.persecutio.entities.Jogador;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,7 +23,7 @@ public class GerenciadorProgresso {
     // Referencias opcionais a sistemas externos usadas apenas para efeitos
     private final GerenciadorColisao colisao;
 
-    // Flag se esta no mundo Umbra
+    // Indica se esta no mundo Umbra
     private boolean mundoUmbra = false;
     // Missao atual
     private int missao = 1;
@@ -28,11 +32,11 @@ public class GerenciadorProgresso {
 
     // Subfase da missao para controle de objetivos
     private int faseMissao = 0;
-    // Flag se o documento opcional do jardim foi lido
+    // Indica se o documento opcional do jardim foi lido
     private boolean lidoJardim = false;
-    // Flag de acionamento do evento de pilula para fade
+    // Controla acionamento do evento de pilula para fade
     private boolean eventoPilula = false;
-    // Flag de acionamento do evento de documento umbra para fade
+    // Controla acionamento do evento de documento umbra para fade
     private boolean eventoDocumento = false;
 
     // Posicao salva no jardim para fast travel na Missao 2
@@ -45,20 +49,26 @@ public class GerenciadorProgresso {
     // Nomes dos documentos ja lidos em ambos os mundos
     private final Set<String> documentosLidos = new HashSet<>();
 
+    // Mantém o sorteio dos panfletos durante toda a partida
+    private final Map<String, String> panfletoPorPonto = new HashMap<>();
+    private final Set<String> pontosPanfletoLidos = new HashSet<>();
+    private final Set<String> tiposPanfletoLidos = new HashSet<>();
+    private int pontosPanfletos = 0;
+
     // Mensagem de aviso atual
     private String aviso = "";
     // No de dialogo a iniciar
     private String dialogoAlvo = null;
 
-    // Flag de leitura agendada de imagem de documento
+    // Controla leitura agendada de imagem de documento
     private boolean docPendente = false;
     private String docChave = "";
 
-    // Flag se esta em cinematica
+    // Indica se esta em cinematica
     private boolean cinematica = false;
-    // Flag se acionou espelho
+    // Indica se acionou espelho
     private boolean abriuEspelho = false;
-    // Flag se acionou gaveta
+    // Indica se acionou gaveta
     private boolean abriuGaveta = false;
 
     // Flag para teleportar o jogador ao mundo real apos fechar documento umbra
@@ -69,17 +79,63 @@ public class GerenciadorProgresso {
     // Retangulo temporario reutilizavel
     private final Rectangle rectTemp = new Rectangle();
 
-    // Construtor do progresso
     public GerenciadorProgresso(GerenciadorColisao colisao) {
         this.colisao = colisao;
+        sortearPanfletos();
     }
+
+    // Sorteia uma vez por nova instancia partida qual conteudo ocupa cada ponto do mapa
+    private void sortearPanfletos() {
+        List<String> tipos = new ArrayList<>();
+        Collections.addAll(tipos, "fisica", "patrimonial", "moral", "psicologica", "sexual");
+        Collections.shuffle(tipos);
+        for (int i = 0; i < tipos.size(); i++) {
+            panfletoPorPonto.put("panfleto" + (i + 1), tipos.get(i));
+        }
+    }
+
+    // Normaliza tanto a grafia correta quanto o antigo planfeto usado nos assets mapa
+    private String normalizarPontoPanfleto(String nome) {
+        String chave = nome == null ? "" : nome.toLowerCase().trim().replace("planfeto", "panfleto");
+        String digitos = chave.replaceAll("[^0-9]", "");
+        return "panfleto" + (digitos.isEmpty() ? "1" : digitos);
+    }
+
+    public boolean ehPanfleto(String nome) {
+        if (nome == null) return false;
+        String chave = nome.toLowerCase().trim();
+        return chave.startsWith("panfleto") || chave.startsWith("planfeto");
+    }
+
+    // Registra a descoberta concede um ponto e agenda a arte sorteada para leitura
+    public void onPanfletoFound(String nome) {
+        String ponto = normalizarPontoPanfleto(nome);
+        if (pontosPanfletoLidos.contains(ponto)) {
+            aviso = "Voce ja leu este panfleto.";
+            return;
+        }
+
+        String tipo = panfletoPorPonto.get(ponto);
+        if (tipo == null) return;
+
+        pontosPanfletoLidos.add(ponto);
+        tiposPanfletoLidos.add(tipo);
+        pontosPanfletos++;
+        lerDocumento("panfleto_" + tipo);
+        aviso = "Panfleto sobre violencia " + tipo + " lido. (+1 ponto)";
+    }
+
+    public Set<String> obterPanfletosLidos() {
+        return new HashSet<>(tiposPanfletoLidos);
+    }
+
+    public int obterPontosPanfletos() { return pontosPanfletos; }
 
     // Alterna entre mundo Real e Umbra
     public void alternarUmbra() {
         mundoUmbra = !mundoUmbra;
     }
 
-    // Retorna a subfase atual da missao
     public int obterFase() { return faseMissao; }
 
     // Altera a subfase da missao de forma manual
@@ -116,13 +172,10 @@ public class GerenciadorProgresso {
 
     public String obterChave() { return docChave; }
 
-    // Retorna se o jogador ja possui a cartela de pilulas
     public boolean temCartela() { return temFlag("temcartela"); }
 
-    // Retorna se o ponto de fast travel do jardim ja foi salvo
     public boolean jardimSalvo() { return jardimSalvo; }
 
-    // Obtem a coordenada salva do jardim
     public Vector2 posicaoJardim() { return posicaoJardim; }
 
     // Salva a posicao atual do jogador se ele estiver no jardim no mundo real na Missao 2
@@ -422,10 +475,8 @@ public class GerenciadorProgresso {
         return temFlag("porta_destrancada");
     }
 
-    // Define mensagem de aviso
     public void darAviso(String msg) { this.aviso = msg; }
 
-    // Retorna e limpa o no de dialogo pendente
     public String pegarDialogo() {
         String r = dialogoAlvo;
         dialogoAlvo = null;
@@ -447,38 +498,28 @@ public class GerenciadorProgresso {
         flags.remove(flag.toLowerCase().trim());
     }
 
-    // Obtem uma copia de todas as flags ativas
     public Set<String> obterFlags() {
         return new HashSet<>(flags);
     }
 
     public void ativarCinematica() { this.cinematica = true; }
 
-    // Retorna se esta no mundo Umbra
     public boolean isUmbra() { return mundoUmbra; }
 
-    // Retorna missao atual
     public int getMissao() { return missao; }
 
-    // Retorna quantidade de documentos lidos
     public int getDocumentos() { return documentos; }
 
-    // Retorna se porta esta destrancada
     public boolean isDestrancada() { return temFlag("porta_destrancada"); }
 
-    // Retorna se ja falou com a enfermeira na recepcao
     public boolean falouEnfermeira() { return temFlag("falou_enfermeira"); }
 
-    // Retorna se um documento ja foi lido pelo nome do objeto no Tiled
     public boolean leuDoc(String nome) { return documentosLidos.contains(nome); }
 
-    // Retorna mensagem de aviso
     public String lerAviso() { return aviso; }
 
-    // Retorna se esta em cinematica
     public boolean isCinematica() { return cinematica; }
 
-    // Retorna se abriu o espelho
     public boolean isEspelho() { return abriuEspelho; }
 
     // Consome o evento de abrir o espelho evitando reabertura indevida
@@ -488,7 +529,6 @@ public class GerenciadorProgresso {
         return r;
     }
 
-    // Retorna se abriu a gaveta
     public boolean isGaveta() { return abriuGaveta; }
 
     // Consome o evento de abrir a gaveta evitando reabertura indevida

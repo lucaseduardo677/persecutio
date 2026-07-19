@@ -86,7 +86,7 @@ public class TelaJogo implements Screen {
 
     // Flag para mostrar hitboxes de debug
     private boolean mostrarHitboxes = false;
-    // Flag se o jogador esta andando
+    // Indica se o jogador esta andando
     private boolean andando = false;
 
     // Controla se o radio inicial de chamada ja foi ativado
@@ -105,7 +105,7 @@ public class TelaJogo implements Screen {
     private static final float DURACAO_FADE = 1.0f;
     // Timer do fade
     private float timerFade = 0f;
-    // Flag se o fade esta ativo
+    // Indica se o fade esta ativo
     private boolean fadeAtivo = true;
     // Textura preta para o fade
     private Texture texBranca;
@@ -117,7 +117,7 @@ public class TelaJogo implements Screen {
     // Posicao independente do jogador em cada mundo
     private final Vector2 posReal = new Vector2();
     private final Vector2 posUmbra = new Vector2();
-    // Flag se a posicao do mundo Umbra ja foi definida
+    // Indica se a posicao do mundo Umbra ja foi definida
     private boolean posUmbraDefinida = false;
     // Verdadeiro apenas ate a primeirissima visita ao Umbra
     private boolean primeiraVisitaUmbraGlobal = true;
@@ -127,6 +127,10 @@ public class TelaJogo implements Screen {
     private int ultimaMissaoConhecida = 1;
     // Flag para controlar se ja houve sincronizacao inicial no jardim
     private boolean sincronizacaoJardimFeita = false;
+    // Cada mundo preserva tambem a ultima orientacao do jogador alem da posicao
+    private int direcaoReal = Jogador.DIRECAO_BAIXO;
+    private int direcaoUmbra = Jogador.DIRECAO_BAIXO;
+    private boolean direcaoUmbraDefinida = false;
 
     // Chave do documento atualmente sob leitura de imagem
     private String docChave = null;
@@ -140,7 +144,6 @@ public class TelaJogo implements Screen {
     // Contexto compartilhado de renderizacao
     private final ContextoRender ctx = new ContextoRender();
 
-    // Construtor do jogo
     public TelaJogo(PersecutioGame jogo) {
         this.jogo = jogo;
     }
@@ -264,11 +267,32 @@ public class TelaJogo implements Screen {
         umbraAnterior = false;
         primeiraVisitaUmbraGlobal = true;
         ultimaMissaoConhecida = progresso.getMissao();
+        direcaoReal = jogador.getDirecao();
+        direcaoUmbra = jogador.getDirecao();
+        direcaoUmbraDefinida = false;
 
         timerFade = 0f;
         fadeAtivo = true;
         falanteTocado = false;
         docChave = null;
+    }
+
+    // Troca a arte do documento de acordo com o conteudo sorteado do panfleto
+    private void atualizarImagemDocumento(String chave) {
+        String caminho = "img/documento1.jpg";
+        if (chave != null) {
+            switch (chave) {
+                case "panfleto_fisica":      caminho = "img/planfetoFisica.jpg"; break;
+                case "panfleto_patrimonial": caminho = "img/planfetoPatrimonial.jpg"; break;
+                case "panfleto_moral":       caminho = "img/planfetoMoral.jpg"; break;
+                case "panfleto_psicologica": caminho = "img/planfetoPsicologica.jpg"; break;
+                case "panfleto_sexual":      caminho = "img/planfetoSexual.jpg"; break;
+                default: break;
+            }
+        }
+        if (imgDocumento != null) imgDocumento.dispose();
+        imgDocumento = carregarTextura(caminho);
+        imgDocumento.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
     }
 
     // Procura o spawnpoint em uma camada especifica do mapa
@@ -352,8 +376,14 @@ public class TelaJogo implements Screen {
         float hcY = jogador.hitbox.y + jogador.hitbox.height / 2f;
         comodoAtual = gerComodos.achar(hcX, hcY);
 
-        if (comodoAtual != null && "jardimexterno".equals(comodoAtual.nomeGrupo)) {
+        if (comodoAtual != null
+                && ("jardimexterno".equals(comodoAtual.nomeGrupo)
+                    || "jardiminterno".equals(comodoAtual.nomeGrupo))) {
             progresso.onSaveJardim(jogador.mundoX, jogador.mundoY);
+            if (!mundoUmbra && progresso.getMissao() == 2) {
+                // Depois da primeira entrada o remedio permanece liberado pelo resto da missao
+                progresso.darFlag("entrou_jardim_m2");
+            }
         }
 
         if (comodoAtual != null && comodoAtual.cameraEstatica)
@@ -535,8 +565,10 @@ public class TelaJogo implements Screen {
                 interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
                 teleportePosRevelacao = true;
             } else if (docChave != null && !docChave.isEmpty()) {
-                gerDialogo.iniciar(docChave);
-                interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+                if (!docChave.startsWith("panfleto_")) {
+                    gerDialogo.iniciar(docChave);
+                    interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+                }
                 docChave = null;
             }
         }
@@ -590,15 +622,23 @@ public class TelaJogo implements Screen {
 
         sistemaDebug.tratarAtalhos(this);
 
-        // Missao 2 em diante usa o remedio em qualquer lugar para alternar de mundo
+        // Missao 2 em diante usa o remedio para alternar de mundo
         if (progresso.getMissao() >= 2 && progresso.temCartela() && Gdx.input.isKeyJustPressed(Keys.F)) {
+            if (progresso.getMissao() == 2 && !progresso.temFlag("entrou_jardim_m2")) {
+                progresso.darAviso("Aqui nao, preciso ir pra um lugar mais arejado...");
+                return;
+            }
+
             boolean indoProUmbra = !mundoUmbra;
 
-            // Salva a posicao do mundo que esta sendo deixado
+            // Salva posicao e orientacao do mundo que esta sendo deixado
             if (indoProUmbra) {
                 posReal.set(jogador.mundoX, jogador.mundoY);
+                direcaoReal = jogador.getDirecao();
             } else {
                 posUmbra.set(jogador.mundoX, jogador.mundoY);
+                direcaoUmbra = jogador.getDirecao();
+                direcaoUmbraDefinida = true;
             }
 
             // Ao ir para o Umbra a partir do jardim sincroniza posicoes na primeira vez
@@ -609,12 +649,16 @@ public class TelaJogo implements Screen {
                 if (comodoJogador != null && ("jardiminterno".equals(comodoJogador.nomeGrupo) || "jardimexterno".equals(comodoJogador.nomeGrupo))) {
                     posUmbra.set(jogador.mundoX, jogador.mundoY);
                     posUmbraDefinida = true;
+                    if (!direcaoUmbraDefinida) {
+                        direcaoUmbra = jogador.getDirecao();
+                        direcaoUmbraDefinida = true;
+                    }
                     sincronizacaoJardimFeita = true;
                 }
             }
 
-            // Define a posicao de destino no outro mundo
             float destinoX, destinoY;
+            int destinoDirecao;
             if (indoProUmbra) {
                 if (!posUmbraDefinida) {
                     if (primeiraVisitaUmbraGlobal) {
@@ -623,16 +667,24 @@ public class TelaJogo implements Screen {
                     }
                     posUmbraDefinida = true;
                 }
+                if (!direcaoUmbraDefinida) {
+                    // Na primeira visita ainda nao ha estado anterior conserva a orientacao atual
+                    direcaoUmbra = jogador.getDirecao();
+                    direcaoUmbraDefinida = true;
+                }
                 destinoX = posUmbra.x;
                 destinoY = posUmbra.y;
+                destinoDirecao = direcaoUmbra;
             } else {
                 destinoX = posReal.x;
                 destinoY = posReal.y;
+                destinoDirecao = direcaoReal;
             }
 
             interfaceJogo.fadeTrocaMundo(() -> {
                 progresso.alternarUmbra();
                 jogador.teleportar(destinoX, destinoY);
+                jogador.setDirecao(destinoDirecao);
             }, true);
             return;
         }
@@ -783,10 +835,11 @@ public class TelaJogo implements Screen {
             progresso.onNpcInteract("enfermeira");
         }
 
-        // Dr. Elimar na Missao 3 troca para a tela do questionario final
+        // Dr Elimar na Missao 3 troca para a tela do questionario final
         EntidadeMapa elimar = sistemaColisao.getNpc("elimar");
         if (elimar != null && hitboxInteracao.overlaps(elimar.area) && progresso.getMissao() == 3) {
-            jogo.setScreen(new TelaElimar(jogo));
+            jogo.setScreen(new TelaElimar(
+                jogo, progresso.obterPanfletosLidos(), progresso.obterPontosPanfletos()));
             return;
         }
 
@@ -798,8 +851,15 @@ public class TelaJogo implements Screen {
             if (!hitboxInteracao.overlaps(obj.area)) continue;
 
             String nomeObj = obj.nome != null ? obj.nome.toLowerCase() : "";
-            // Documentos tem prioridade por prefixo
-            if (nomeObj.startsWith("documento") || nomeObj.startsWith("planfeto") || nomeObj.startsWith("objeto")) {
+            // Panfletos usam um sorteio proprio e concedem conhecimento pontuacao
+            if (progresso.ehPanfleto(nomeObj)) {
+                progresso.onPanfletoFound(obj.nome);
+                interagiu = true;
+                break;
+            }
+
+            // Documentos comuns mantem o fluxo narrativo anterior
+            if (nomeObj.startsWith("documento") || nomeObj.startsWith("objeto")) {
                 progresso.onDocumentFound(obj.nome, obj.docId, mundoUmbra);
                 interagiu = true;
                 break;
@@ -843,6 +903,7 @@ public class TelaJogo implements Screen {
                 sistemaAudio.tocarDocumento();
                 interfaceJogo.mudarEstado(GerenciadorUI.UI_DOCUMENTO);
                 docChave = progresso.obterChave();
+                atualizarImagemDocumento(docChave);
                 return;
             }
 
@@ -886,6 +947,7 @@ public class TelaJogo implements Screen {
             sistemaAudio.tocarDocumento();
             interfaceJogo.mudarEstado(GerenciadorUI.UI_DOCUMENTO);
             docChave = progresso.obterChave();
+            atualizarImagemDocumento(docChave);
             return;
         }
 

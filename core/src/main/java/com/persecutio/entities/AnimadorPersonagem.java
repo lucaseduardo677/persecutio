@@ -27,6 +27,5 @@ public class AnimadorPersonagem {
         }
     }
 
-    // Retorna frame atual
     public int getFrame() { return frame; }
 }

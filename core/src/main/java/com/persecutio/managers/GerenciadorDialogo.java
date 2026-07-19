@@ -3,6 +3,7 @@ package com.persecutio.managers;
 import com.badlogic.gdx.graphics.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 // Gerencia os dialogos do jogo
 public class GerenciadorDialogo {
@@ -27,7 +28,7 @@ public class GerenciadorDialogo {
 
     // Indice atual
     private int idxAtual = 0;
-    // Flag de dialogo
+    // Controla dialogo
     private boolean ativo = false;
 
     // Flag para adiar voz e texto ate o fade terminar
@@ -38,12 +39,15 @@ public class GerenciadorDialogo {
     // Efeitos pendentes
     private final List<String> efeitos = new ArrayList<>();
 
-    // Instancia o gerenciador
     public GerenciadorDialogo() {
-        repositorio = new RepoDialogos();
+        this(null);
     }
 
-    // Define o gerenciador de voz usado para falar as falas
+    public GerenciadorDialogo(Set<String> panfletosLidos) {
+        repositorio = panfletosLidos == null
+            ? new RepoDialogos() : new RepoDialogos(panfletosLidos);
+    }
+
     public void setVoz(GerenciadorVoz vozRef) {
         voz = vozRef;
     }
@@ -96,7 +100,6 @@ public class GerenciadorDialogo {
         }
     }
 
-    // Retorna os pontos associados a uma escolha do no atual
     public int obterPontos(int indice) {
         if (noAtual == null || noAtual.escolhas == null) return 0;
         if (indice < 0 || indice >= noAtual.escolhas.size()) return 0;
@@ -139,7 +142,6 @@ public class GerenciadorDialogo {
         }
     }
 
-    // Retorna se esta aguardando o fade terminar para iniciar voz e texto
     public boolean isAguardandoFade() { return aguardandoFade; }
 
     // Verifica estado ativo
@@ -148,13 +150,10 @@ public class GerenciadorDialogo {
     // Verifica se possui escolha
     public boolean temEscolhas() { return !escolhas.isEmpty(); }
 
-    // Obtem o falante
     public String getFalante() { return falante; }
 
-    // Obtem o texto
     public String getTexto() { return texto; }
 
-    // Obtem o texto revelado ate agora em sincronia com a fala animalese
     public String getTextoVisivel() {
         if (aguardandoFade) return "";
         if (voz == null) return texto;
@@ -162,15 +161,11 @@ public class GerenciadorDialogo {
         return texto.substring(0, letras);
     }
 
-    // Obtem as escolhas
     public List<String> getEscolhas() { return escolhas; }
 
-    // Obtem o retrato
     public String getRetrato() { return retrato; }
 
-    // Obtem a cor de fundo
     public Color getCorFundo() { return corFundo; }
 
-    // Obtem a opacidade
     public float getOpacidade() { return opacidade; }
 }
