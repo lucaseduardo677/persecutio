@@ -63,6 +63,22 @@ public class GerenciadorProgressoTest {
     }
 
     @Test
+    public void testObjectInteractSchedulesDocument3ForElimar2() {
+        GerenciadorProgresso prog = new GerenciadorProgresso(null);
+        prog.onObjectInteract("elimar2");
+        assertTrue(prog.consumirPendente());
+        assertEquals("documento3", prog.obterChave());
+    }
+
+    @Test
+    public void testDocument3ShouldTriggerElimarSpriteAfterClose() {
+        GerenciadorProgresso prog = new GerenciadorProgresso(null);
+        assertFalse(prog.deveIniciarDialogoAposFecharDocumento("documento3"));
+        assertTrue(prog.deveExibirSpriteElimarAposFecharDocumento("documento3"));
+        assertTrue(prog.deveIniciarDialogoAposFecharDocumento("documento1"));
+    }
+
+    @Test
     public void testObjetoSomenteUmbraFicaInativoNoReal() {
         MapProperties props = new MapProperties();
         props.put("real", false);

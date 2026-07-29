@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
@@ -100,6 +101,8 @@ public class TelaJogo implements Screen {
 
     // Texturas da UI e overlays
     private Texture imgPorta0, imgEspelho, imgDocumento;
+    private Texture spriteElimar;
+    private TextureRegion[][] framesElimar;
 
     // Duracao do fade inicial em segundos
     private static final float DURACAO_FADE = 1.0f;
@@ -140,6 +143,10 @@ public class TelaJogo implements Screen {
 
     // Flag para teleporte apos dialogo de revelacao do documento umbra terminar
     private boolean teleportePosRevelacao = false;
+    // Controle da transicao visual apos fechar o documento 3
+    private boolean exibindoSpriteElimar = false;
+    private float timerSpriteElimar = 0f;
+    private static final float DURACAO_EXIBICAO_ELIMAR = 1.4f;
 
     // Contexto compartilhado de renderizacao
     private final ContextoRender ctx = new ContextoRender();
@@ -184,6 +191,11 @@ public class TelaJogo implements Screen {
         imgPorta0 = carregarTextura("img/parte1.png");
         imgEspelho = carregarTextura("img/reflexo-espelho.png");
         imgDocumento = carregarTextura("img/documento1.jpg");
+        spriteElimar = carregarTextura("img/elimarSprite.png");
+        if (spriteElimar != null) {
+            spriteElimar.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+            framesElimar = TextureRegion.split(spriteElimar, spriteElimar.getWidth() / 2, spriteElimar.getHeight() / 2);
+        }
 
         Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pm.setColor(Color.BLACK);
@@ -276,6 +288,8 @@ public class TelaJogo implements Screen {
         fadeAtivo = true;
         falanteTocado = false;
         docChave = null;
+        exibindoSpriteElimar = false;
+        timerSpriteElimar = 0f;
     }
 
     // Troca a arte do documento de acordo com o conteudo sorteado do panfleto
@@ -283,6 +297,7 @@ public class TelaJogo implements Screen {
         String caminho = "img/documento1.jpg";
         if (chave != null) {
             switch (chave) {
+                case "documento3":          caminho = "img/documento3.jpg"; break;
                 case "panfleto_fisica":      caminho = "img/planfetoFisica.jpg"; break;
                 case "panfleto_patrimonial": caminho = "img/planfetoPatrimonial.jpg"; break;
                 case "panfleto_moral":       caminho = "img/planfetoMoral.jpg"; break;
@@ -461,6 +476,8 @@ public class TelaJogo implements Screen {
         batch.end();
 
         interfaceJogo.desenharVideo(ctx);
+        atualizarTransicaoElimar(delta);
+        desenharTransicaoElimar(ctx);
 
         if (mostrarHitboxes) {
             shapesDebug(delta);
@@ -566,9 +583,14 @@ public class TelaJogo implements Screen {
                 interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
                 teleportePosRevelacao = true;
             } else if (docChave != null && !docChave.isEmpty()) {
-                if (!docChave.startsWith("panfleto_")) {
+                if (progresso.deveIniciarDialogoAposFecharDocumento(docChave)) {
                     gerDialogo.iniciar(docChave);
                     interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+                } else if (progresso.deveExibirSpriteElimarAposFecharDocumento(docChave)) {
+                    interfaceJogo.fadeSimples(() -> {
+                        exibindoSpriteElimar = true;
+                        timerSpriteElimar = 0f;
+                    }, 0.35f);
                 }
                 docChave = null;
             }
@@ -959,6 +981,52 @@ public class TelaJogo implements Screen {
         }
     }
 
+    private void atualizarTransicaoElimar(float delta) {
+        if (!exibindoSpriteElimar) return;
+        timerSpriteElimar += delta;
+        if (timerSpriteElimar >= DURACAO_EXIBICAO_ELIMAR) {
+            exibindoSpriteElimar = false;
+            timerSpriteElimar = 0f;
+        }
+    }
+
+    private void desenharTransicaoElimar(ContextoRender ctx) {
+        if (!exibindoSpriteElimar) return;
+
+        float progressoTransicao = Math.min(1f, timerSpriteElimar / DURACAO_EXIBICAO_ELIMAR);
+        float alphaOverlay = 0.9f;
+        float alphaSprite = 1f;
+
+        if (progressoTransicao < 0.25f) {
+            alphaOverlay = progressoTransicao / 0.25f;
+            alphaSprite = progressoTransicao / 0.25f;
+        } else if (progressoTransicao > 0.8f) {
+            float restante = 1f - ((progressoTransicao - 0.8f) / 0.2f);
+            alphaOverlay = Math.max(0f, restante);
+            alphaSprite = Math.max(0f, restante);
+        }
+
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        ctx.batch.begin();
+        ctx.batch.setColor(0f, 0f, 0f, alphaOverlay);
+        ctx.batch.draw(texBranca, 0f, 0f, ctx.vLargura, ctx.vAltura);
+
+        if (framesElimar != null && framesElimar.length > 0 && framesElimar[0].length > 0) {
+            TextureRegion frame = framesElimar[0][0];
+            float largRetrato = ctx.vLargura * 0.28f;
+            float altRetrato = ctx.vAltura * 0.45f;
+            float posX = ctx.centroX - largRetrato / 2f;
+            float posY = ctx.centroY - altRetrato / 2.1f;
+            ctx.batch.setColor(1f, 1f, 1f, alphaSprite);
+            ctx.batch.draw(frame, posX, posY, largRetrato, altRetrato);
+        }
+
+        ctx.batch.setColor(Color.WHITE);
+        ctx.batch.end();
+    }
+
     // Libera todos os recursos da tela
     @Override
     public void dispose() {
@@ -966,6 +1034,7 @@ public class TelaJogo implements Screen {
         imgPorta0.dispose();
         imgEspelho.dispose();
         imgDocumento.dispose();
+        if (spriteElimar != null) spriteElimar.dispose();
         texBranca.dispose();
         sistemaAudio.dispose();
         if (gerVoz != null) gerVoz.dispose();

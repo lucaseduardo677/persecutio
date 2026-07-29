@@ -169,6 +169,20 @@ public class GerenciadorProgresso {
         return r;
     }
 
+    public boolean deveIniciarDialogoAposFecharDocumento(String chave) {
+        if (chave == null || chave.isEmpty()) return false;
+        String chaveNormalizada = chave.toLowerCase().trim();
+        return "documento1".equals(chaveNormalizada)
+            || "documento1_real".equals(chaveNormalizada)
+            || "documento1_umbra".equals(chaveNormalizada);
+    }
+
+    public boolean deveExibirSpriteElimarAposFecharDocumento(String chave) {
+        if (chave == null || chave.isEmpty()) return false;
+        String chaveNormalizada = chave.toLowerCase().trim();
+        return "documento3".equals(chaveNormalizada);
+    }
+
     public String obterChave() { return docChave; }
 
     public boolean temCartela() { return temFlag("temcartela"); }
@@ -304,7 +318,8 @@ public class GerenciadorProgresso {
 
             case "elimar2":
                 dialogoAlvo = "elimar2_trigger";
-                break;
+                lerDocumento("documento3");
+                return;
 
             default:
                 break;
