@@ -445,7 +445,7 @@ public class TelaJogo implements Screen {
             interfaceJogo.desenharEscuro(ctx);
             batch.end();
             interfaceJogo.desenharVideo(ctx);
-            interfaceJogo.atualizarSenha(delta);
+            interfaceJogo.atualizarSenha(delta, ctx);
             processarSenha();
             if (!interfaceJogo.isSenha()) portaSenhaPendente = null;
             desenharFade(ctx);

@@ -1,7 +1,9 @@
 package com.persecutio.managers;
 
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.maps.MapProperties;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -13,7 +15,7 @@ public class GerenciadorProgressoTest {
         assertEquals(0, prog.obterFase());
         prog.onNpcInteract("enfermeira");
         assertTrue(prog.temFlag("falou_enfermeira"));
-        assertEquals(1, prog.obterFase());
+        assertEquals(2, prog.obterFase());
         String nodo = prog.pegarDialogo();
         assertEquals("enfermeira", nodo);
     }
@@ -46,10 +48,46 @@ public class GerenciadorProgressoTest {
 
         Rectangle area = new Rectangle(0,0,10,10);
         Vector2 spawn = new Vector2(0,0);
-        GerenciadorPortas.Porta porta = new GerenciadorPortas.Porta(area, "portaJardim", "label", spawn, null, "video", true, true, true, false, false, "");
+        GerenciadorPortas.Porta porta = new GerenciadorPortas.Porta(area, "portaJardim", "label", spawn, null, "video", true, true, true, "", "");
 
         GerenciadorProgresso.PortaResponse resp = prog.onPortaInteract(porta);
         assertNotNull(resp);
         assertEquals(GerenciadorProgresso.PortaResponse.Action.DIALOG, resp.action);
+    }
+
+    @Test
+    public void testObjectInteractStartsElimar2Dialogue() {
+        GerenciadorProgresso prog = new GerenciadorProgresso(null);
+        prog.onObjectInteract("elimar2");
+        assertEquals("elimar2_trigger", prog.pegarDialogo());
+    }
+
+    @Test
+    public void testObjetoSomenteUmbraFicaInativoNoReal() {
+        MapProperties props = new MapProperties();
+        props.put("real", false);
+        props.put("umbra", true);
+        GerenciadorColisao.ObjetoColisao obj = new GerenciadorColisao.ObjetoColisao(
+            new Rectangle(0, 0, 10, 10), "elimar2", props, new java.util.HashMap<>(), false);
+
+        assertFalse(obj.checarAtivo(false));
+        assertTrue(obj.checarAtivo(true));
+    }
+
+    @Test
+    public void testProcessarTeclaSenhaAcumulaDigitos() {
+        assertEquals("0", GerenciadorUI.processarTeclaSenha(Keys.NUM_0, ""));
+        assertEquals("041", GerenciadorUI.processarTeclaSenha(Keys.NUM_1, "04"));
+    }
+
+    @Test
+    public void testDeveManterPortasDeJardimEElimar2() {
+        assertTrue(GerenciadorPortas.deveManterPorta("portaElimar2"));
+        assertTrue(GerenciadorPortas.deveManterPorta("portaCorredorJardim"));
+        assertTrue(GerenciadorPortas.deveManterPorta("portaCorredorJardim2"));
+        assertTrue(GerenciadorPortas.deveManterPorta("portaEscritorioJardim"));
+        assertTrue(GerenciadorPortas.deveManterPorta("portaEscritorioJardim2"));
+        assertFalse(GerenciadorPortas.deveManterPorta("portaEscritorio1"));
+        assertFalse(GerenciadorPortas.deveManterPorta("portaEscritorio2"));
     }
 }

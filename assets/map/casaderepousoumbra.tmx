@@ -1299,6 +1299,11 @@
     <property name="umbra" type="bool" value="true"/>
    </properties>
   </object>
+  <object id="767" name="elimar2" type="interativos" x="2350" y="270" width="27" height="27">
+   <properties>
+    <property name="condicao" value=""/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="32" name="Comodos" visible="0">
   <object id="342" name="QuartoMaria" type="comodo" x="0.666667" y="320" width="223.333" height="318.667">

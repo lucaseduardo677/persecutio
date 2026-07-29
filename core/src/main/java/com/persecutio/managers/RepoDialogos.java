@@ -163,6 +163,11 @@ public class RepoDialogos {
             new Fala("Narrador", "Um documento rasgado... relata pacientes ouvindo musicas antigas que nao existem.")
         )));
 
+        // Trigger interativa na sala Elimar2
+        dicNos.put("elimar2_trigger", new NoDialogo(Arrays.asList(
+            new Fala("Maria", "Esta sala parece estar preparada para alguém importante.")
+        )));
+
         // Maria ao entrar no Umbra na Missao 1
         dicNos.put("maria_entra_umbra_m1", new NoDialogo(Arrays.asList(
             new Fala("Maria", "O que... o que esta acontecendo? Preciso ir ate a recepcao.")

@@ -302,6 +302,10 @@ public class GerenciadorProgresso {
                 mundoUmbra = false;
                 break;
 
+            case "elimar2":
+                dialogoAlvo = "elimar2_trigger";
+                break;
+
             default:
                 break;
         }

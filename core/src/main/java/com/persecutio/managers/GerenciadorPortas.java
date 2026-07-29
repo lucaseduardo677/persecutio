@@ -24,6 +24,20 @@ public class GerenciadorPortas {
     private final List<Porta> portasReal = new ArrayList<>();
     private final List<Porta> portasUmbra = new ArrayList<>();
     private final List<Porta> portas = new ArrayList<>();
+
+    static boolean deveManterPorta(String nome) {
+        if (nome == null) return false;
+        String normalizado = nome.trim().toLowerCase();
+
+        if (normalizado.equals("portaelimar2")) return true;
+        if (normalizado.startsWith("portacorredorjardim") || normalizado.startsWith("portaescritoriojardim")) {
+            return true;
+        }
+        if (normalizado.startsWith("portaescritorio") || normalizado.startsWith("portaescritorios")) {
+            return false;
+        }
+        return true;
+    }
     // Escala de conversao
     private final float escala;
 
@@ -127,6 +141,8 @@ public class GerenciadorPortas {
             String nome = obj.getName();
             if (nome == null || nome.isEmpty()) nome = lerProp(props, "nome");
             if (nome == null || nome.isEmpty()) nome = label;
+
+            if (!deveManterPorta(nome)) continue;
 
             lista.add(new Porta(
                 CoordenadasTiled.paraMundo(r), nome, label, spawn, areaDestino,

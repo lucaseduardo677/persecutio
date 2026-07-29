@@ -76,6 +76,10 @@ public class GerenciadorColisao {
         public final String    condicao;
         // Chave da imagem asset do documento lida do Tiled propriedade docId
         public final String    docId;
+        public final boolean   realAtivo;
+        public final boolean   umbraAtiva;
+        public final boolean   realExplicito;
+        public final boolean   umbraExplicita;
         public TextureRegion textura = null;
         public float rotacao = 0f;
 
@@ -105,9 +109,19 @@ public class GerenciadorColisao {
 
             Object doc = props.get("docId");
             this.docId = (doc != null) ? doc.toString() : "";
+
+            Object realProp = props.get("real");
+            this.realExplicito = props.containsKey("real");
+            this.realAtivo = (realProp instanceof Boolean) ? (Boolean) realProp : true;
+            Object umbraProp = props.get("umbra");
+            this.umbraExplicita = props.containsKey("umbra");
+            this.umbraAtiva = (umbraProp instanceof Boolean) ? (Boolean) umbraProp : true;
         }
 
         public boolean checarAtivo(boolean umbra) {
+            if (realExplicito || umbraExplicita) {
+                return umbra ? umbraAtiva : realAtivo;
+            }
             return mundoUmbra == umbra;
         }
     }
@@ -325,6 +339,9 @@ public class GerenciadorColisao {
             if (!(objeto instanceof RectangleMapObject)) continue;
             Rectangle r     = ((RectangleMapObject) objeto).getRectangle();
             String    chave = lerChave(objeto);
+            if ("Portas".equals(camadaNome) && !GerenciadorPortas.deveManterPorta(chave)) {
+                continue;
+            }
             lista.add(new ObjetoColisao(CoordenadasTiled.paraMundo(r), chave,
                                         objeto.getProperties(), defaults, isUmbraMap));
         }
@@ -363,9 +380,14 @@ public class GerenciadorColisao {
                 objetosDesenhaveis.add(obj);
             }
 
-            // Apenas objetos estáticos puros são adicionados à colisão física sólida
+            // Apenas objetos estáticos puros são adicionados à colisão física sólida.
+            // Exceções como o trigger de Elimar2 precisam entrar no pool de interativos,
+            // mesmo sem se comportarem como parede ou objeto sólido.
             if ("objeto".equals(classeReal)) {
                 objetos.add(obj);
+            }
+            if ("elimar2".equals(chave) || "interativos".equals(classeReal)) {
+                interativos.put(chave.isEmpty() ? "elimar2" : chave, obj);
             }
 
             if (chave.startsWith("pedra")) {

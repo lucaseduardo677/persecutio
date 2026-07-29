@@ -639,11 +639,50 @@ public class GerenciadorUI {
     public boolean isSenha() { return estadoUi == UI_SENHA; }
 
     // Atualiza o puzzle de senha
-    public void atualizarSenha(float delta) {
-        if (puzzle != null) { puzzle.atualizar(delta); if (!puzzle.isAberto()) estadoUi = UI_JOGO; }
+    public void atualizarSenha(float delta, ContextoRender ctx) {
+        if (puzzle != null) { puzzle.atualizar(delta, ctx); if (!puzzle.isAberto()) estadoUi = UI_JOGO; }
     }
 
     public String pegarSenha() { return puzzle != null ? puzzle.pegarSenha() : null; }
+
+    public static String processarTeclaSenha(int keycode, String senhaAtual) {
+        if (senhaAtual == null) senhaAtual = "";
+        if (senhaAtual.length() >= 4) return senhaAtual;
+        switch (keycode) {
+            case Keys.NUM_0:
+            case Keys.NUMPAD_0:
+                return senhaAtual + "0";
+            case Keys.NUM_1:
+            case Keys.NUMPAD_1:
+                return senhaAtual + "1";
+            case Keys.NUM_2:
+            case Keys.NUMPAD_2:
+                return senhaAtual + "2";
+            case Keys.NUM_3:
+            case Keys.NUMPAD_3:
+                return senhaAtual + "3";
+            case Keys.NUM_4:
+            case Keys.NUMPAD_4:
+                return senhaAtual + "4";
+            case Keys.NUM_5:
+            case Keys.NUMPAD_5:
+                return senhaAtual + "5";
+            case Keys.NUM_6:
+            case Keys.NUMPAD_6:
+                return senhaAtual + "6";
+            case Keys.NUM_7:
+            case Keys.NUMPAD_7:
+                return senhaAtual + "7";
+            case Keys.NUM_8:
+            case Keys.NUMPAD_8:
+                return senhaAtual + "8";
+            case Keys.NUM_9:
+            case Keys.NUMPAD_9:
+                return senhaAtual + "9";
+            default:
+                return senhaAtual;
+        }
+    }
 
     // Processa sucesso na senha
     public void senhaSucesso() { if (puzzle != null) puzzle.fecharSucesso(); }
@@ -664,6 +703,8 @@ public class GerenciadorUI {
             jogador.hitbox.width + 16f, jogador.hitbox.height + 16f);
 
         String prompt = null;
+
+        boolean sobreElimar2 = sobreArea(rectTemp, sistemaColisao.getArea("elimar2"));
 
         if (!mundoUmbra) {
             // Verifica pedra para empurrar na Missao 2 Fase 2 no mundo real
@@ -702,6 +743,8 @@ public class GerenciadorUI {
                 prompt = "Aperte [E] para olhar no Espelho";
             else if (sobreArea(rectTemp, sistemaColisao.getArea("gaveta")))
                 prompt = "Aperte [E] para abrir a Porta";
+            else if (sobreElimar2)
+                prompt = "Aperte [E] para inspecionar";
             else {
                 GerenciadorColisao.ObjetoColisao doc = sistemaColisao.acharDoc(rectTemp);
                 if (doc != null && !progresso.leuDoc(doc.nome)) {
@@ -1110,6 +1153,7 @@ public class GerenciadorUI {
         private boolean aberto = false;
         private boolean fecharProximo = false;
         private String senhaSubmetida = null;
+        private String senhaDigitada = "";
 
         private Texture cursorTex, selecaoTex, backTex;
 
@@ -1157,6 +1201,7 @@ public class GerenciadorUI {
         public void abrir() {
             aberto = true;
             senhaSubmetida = null;
+            senhaDigitada = "";
             campoSenha.setText("");
             labelFeedback.setText("Cadeado de 4 digitos:");
             stage.setKeyboardFocus(campoSenha);
@@ -1171,7 +1216,7 @@ public class GerenciadorUI {
         }
 
         // Atualiza estado do puzzle
-        public void atualizar(float delta) {
+        public void atualizar(float delta, ContextoRender ctx) {
             if (!aberto) return;
             if (fecharProximo) {
                 aberto = false;
@@ -1179,9 +1224,41 @@ public class GerenciadorUI {
                 if (Gdx.input.getInputProcessor() == stage) Gdx.input.setInputProcessor(null);
                 return;
             }
-            if (Gdx.input.isKeyJustPressed(Keys.ENTER) || Gdx.input.isKeyJustPressed(Keys.NUMPAD_ENTER))
-                senhaSubmetida = campoSenha.getText();
-            if (Gdx.input.isKeyJustPressed(Keys.ESCAPE)) fecharCancelar();
+
+            if (Gdx.input.isKeyJustPressed(Keys.ENTER) || Gdx.input.isKeyJustPressed(Keys.NUMPAD_ENTER)) {
+                senhaSubmetida = senhaDigitada;
+            } else if (Gdx.input.isKeyJustPressed(Keys.BACKSPACE) && !senhaDigitada.isEmpty()) {
+                senhaDigitada = senhaDigitada.substring(0, senhaDigitada.length() - 1);
+            } else {
+                for (int key : new int[]{Keys.NUM_0, Keys.NUMPAD_0,
+                        Keys.NUM_1, Keys.NUMPAD_1,
+                        Keys.NUM_2, Keys.NUMPAD_2,
+                        Keys.NUM_3, Keys.NUMPAD_3,
+                        Keys.NUM_4, Keys.NUMPAD_4,
+                        Keys.NUM_5, Keys.NUMPAD_5,
+                        Keys.NUM_6, Keys.NUMPAD_6,
+                        Keys.NUM_7, Keys.NUMPAD_7,
+                        Keys.NUM_8, Keys.NUMPAD_8,
+                        Keys.NUM_9, Keys.NUMPAD_9}) {
+                    if (Gdx.input.isKeyJustPressed(key)) {
+                        senhaDigitada = processarTeclaSenha(key, senhaDigitada);
+                        break;
+                    }
+                }
+            }
+
+            if (!senhaDigitada.isEmpty()) {
+                campoSenha.setText(senhaDigitada);
+            }
+
+            if (ctx != null) {
+                ctx.batch.begin();
+                ctx.fonteIndicadores.setColor(Color.WHITE);
+                ctx.fonteIndicadores.draw(ctx.batch, "Cadeado de 4 digitos", ctx.vLargura / 2f - 120f, ctx.vAltura / 2f + 35f);
+                ctx.fonteIndicadores.draw(ctx.batch, senhaDigitada.isEmpty() ? "_ _ _ _" : senhaDigitada.replaceAll(".", "*"), ctx.vLargura / 2f - 80f, ctx.vAltura / 2f);
+                ctx.batch.end();
+            }
+
             stage.act(delta);
             stage.draw();
         }

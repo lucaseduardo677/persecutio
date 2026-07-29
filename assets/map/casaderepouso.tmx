@@ -1084,6 +1084,13 @@
     <property name="umbra" type="bool" value="true"/>
    </properties>
   </object>
+
+  <object id="766" name="elimar2" type="interativos" x="2350" y="270" width="27" height="27">
+   <properties>
+    <property name="real" type="bool" value="false"/>
+    <property name="umbra" type="bool" value="true"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="27" name="NPCs" visible="0">
   <object id="329" name="enfermeira" type="npc" x="832" y="145.637" width="64" height="7.27271">
