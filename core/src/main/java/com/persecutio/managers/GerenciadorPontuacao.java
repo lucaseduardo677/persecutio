@@ -4,7 +4,7 @@ package com.persecutio.managers;
 public class GerenciadorPontuacao {
 
     // Soma do maior valor possivel em cada uma das 7 perguntas GDD item 5
-    private static final int PONTOS_MAXIMO = 14;
+    private static final int PONTOS_MAXIMO = 19;
 
     // Abaixo deste percentual o jogador recebe o Final Ruim
     private static final float LIMIAR_RUIM = 20f;
@@ -27,7 +27,7 @@ public class GerenciadorPontuacao {
     }
 
     public float obterPercentual() {
-        return (pontos / (float) PONTOS_MAXIMO) * 100f;
+        return PONTOS_MAXIMO > 0 ? (pontos / (float) PONTOS_MAXIMO) * 100f : 0f;
     }
 
     // Calcula qual final o jogador atingiu com base no percentual atual
@@ -36,6 +36,17 @@ public class GerenciadorPontuacao {
         if (percentual < LIMIAR_RUIM) return Final.RUIM;
         if (percentual > LIMIAR_BOM)  return Final.BOM;
         return Final.NORMAL;
+    }
+
+    public String obterNomeImagemFinal() {
+        switch (obterFinal()) {
+            case BOM:
+                return "finalBom.webp";
+            case RUIM:
+                return "finalRuim.webp";
+            default:
+                return "finalMedio.webp";
+        }
     }
 
     // Reinicia a pontuacao usado ao comecar uma nova partida

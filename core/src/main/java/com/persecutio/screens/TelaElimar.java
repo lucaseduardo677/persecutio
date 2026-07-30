@@ -159,7 +159,8 @@ public class TelaElimar implements Screen {
 
     // Desenha o retrato falante do Elimar com boca sincronizada a fala
     private void desenharRetrato(SpriteBatch batch, float larguraMundo, float alturaMundo) {
-        if (dialogo.getRetrato() == null) return;
+        if (!dialogo.estaAtivo()) return;
+        if (framesElimar == null || framesElimar.length == 0 || framesElimar[0].length == 0) return;
 
         String textoOriginal = dialogo.getTexto();
         String textoVisivel  = dialogo.getTextoVisivel();
@@ -179,13 +180,14 @@ public class TelaElimar implements Screen {
     // Desenha a caixa de fala e as escolhas na parte inferior da tela
     private void desenharCaixaTexto(SpriteBatch batch, float larguraMundo, float alturaMundo) {
         float alturaCaixa = alturaMundo * 0.34f;
+        float deslocamentoBaixo = 50f;
 
         batch.setColor(0f, 0f, 0f, 0.75f);
-        batch.draw(texBranca, 0, 0, larguraMundo, alturaCaixa);
+        batch.draw(texBranca, 0, deslocamentoBaixo, larguraMundo, alturaCaixa);
         batch.setColor(Color.WHITE);
 
         float margem = 20f;
-        float y = alturaCaixa - margem;
+        float y = alturaCaixa + deslocamentoBaixo - margem;
 
         if (dialogo.getFalante() != null && !dialogo.getFalante().isEmpty()) {
             jogo.fonteNomes.setColor(Color.SALMON);
@@ -197,7 +199,7 @@ public class TelaElimar implements Screen {
         jogo.fonteDialogos.draw(batch, dialogo.getTextoVisivel(), margem, y, larguraMundo - margem * 2f, -1, true);
 
         if (dialogo.temEscolhas()) {
-            float yEscolha = alturaCaixa * 0.42f;
+            float yEscolha = alturaCaixa * 0.42f + deslocamentoBaixo;
             for (int i = 0; i < dialogo.getEscolhas().size(); i++) {
                 boolean selecionada = (i == opcaoSelecionada);
                 jogo.fonteIndicadores.setColor(selecionada ? Color.GOLD : Color.LIGHT_GRAY);
@@ -206,7 +208,7 @@ public class TelaElimar implements Screen {
             }
         } else {
             jogo.fonteIndicadores.setColor(Color.GRAY);
-            jogo.fonteIndicadores.draw(batch, "[ESPACO / ENTER] Continuar", margem, 14f);
+            jogo.fonteIndicadores.draw(batch, "[ESPACO / ENTER] Continuar", margem, 14f + deslocamentoBaixo);
         }
     }
 

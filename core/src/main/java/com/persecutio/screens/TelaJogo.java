@@ -146,7 +146,12 @@ public class TelaJogo implements Screen {
     // Controle da transicao visual apos fechar o documento 3
     private boolean exibindoSpriteElimar = false;
     private float timerSpriteElimar = 0f;
-    private static final float DURACAO_EXIBICAO_ELIMAR = 1.4f;
+    private boolean iniciouDialogoElimar = false;
+    private boolean aguardandoDialogoElimar = false;
+    private boolean spriteElimarVisivel = false;
+    private static final float DURACAO_EXIBICAO_ELIMAR = 1.2f;
+    private static final float PAUSA_DIALOGO_ELIMAR = 0.45f;
+    private static final float DURACAO_FADE_ELIMAR = 0.35f;
 
     // Contexto compartilhado de renderizacao
     private final ContextoRender ctx = new ContextoRender();
@@ -290,6 +295,7 @@ public class TelaJogo implements Screen {
         docChave = null;
         exibindoSpriteElimar = false;
         timerSpriteElimar = 0f;
+        iniciouDialogoElimar = false;
     }
 
     // Troca a arte do documento de acordo com o conteudo sorteado do panfleto
@@ -569,11 +575,18 @@ public class TelaJogo implements Screen {
 
         if (interfaceJogo.isSenha()) return;
 
+        if (exibindoSpriteElimar || aguardandoDialogoElimar) {
+            andando = false;
+            return;
+        }
+
         if (fadeAtivo) {
             andando = false;
             interfaceJogo.atualizarTutorial(andando, delta);
             return;
         }
+
+        atualizarVisibilidadeElimar();
 
         // Fechamento do documento
         if (interfaceJogo.consumirFechado()) {
@@ -590,6 +603,9 @@ public class TelaJogo implements Screen {
                     interfaceJogo.fadeSimples(() -> {
                         exibindoSpriteElimar = true;
                         timerSpriteElimar = 0f;
+                        iniciouDialogoElimar = false;
+                        aguardandoDialogoElimar = false;
+                        spriteElimarVisivel = true;
                     }, 0.35f);
                 }
                 docChave = null;
@@ -640,6 +656,11 @@ public class TelaJogo implements Screen {
                 || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
         if (ctrl && Gdx.input.isKeyJustPressed(Keys.H)) {
             mostrarHitboxes = !mostrarHitboxes;
+            return;
+        }
+        if (ctrl && Gdx.input.isKeyJustPressed(Keys.G)) {
+            progresso.completarPanfletosParaTeste();
+            progresso.darAviso("Contador de panfletos completado para teste.");
             return;
         }
 
@@ -981,30 +1002,54 @@ public class TelaJogo implements Screen {
         }
     }
 
+    private void atualizarVisibilidadeElimar() {
+        if (!spriteElimarVisivel) return;
+        if (iniciouDialogoElimar && !gerDialogo.estaAtivo()) {
+            finalizarTransicaoElimar();
+        }
+    }
+
     private void atualizarTransicaoElimar(float delta) {
-        if (!exibindoSpriteElimar) return;
-        timerSpriteElimar += delta;
-        if (timerSpriteElimar >= DURACAO_EXIBICAO_ELIMAR) {
-            exibindoSpriteElimar = false;
-            timerSpriteElimar = 0f;
+        if (exibindoSpriteElimar) {
+            timerSpriteElimar += delta;
+            if (timerSpriteElimar >= DURACAO_EXIBICAO_ELIMAR) {
+                exibindoSpriteElimar = false;
+                timerSpriteElimar = 0f;
+                if (!iniciouDialogoElimar) {
+                    aguardandoDialogoElimar = true;
+                    timerSpriteElimar = 0f;
+                }
+            }
+        }
+
+        if (aguardandoDialogoElimar) {
+            timerSpriteElimar += delta;
+            if (timerSpriteElimar >= PAUSA_DIALOGO_ELIMAR) {
+                aguardandoDialogoElimar = false;
+                timerSpriteElimar = 0f;
+                iniciouDialogoElimar = true;
+                gerDialogo.iniciar("elimar_intro");
+                interfaceJogo.mudarEstado(GerenciadorUI.UI_DIALOGO);
+            }
         }
     }
 
     private void desenharTransicaoElimar(ContextoRender ctx) {
-        if (!exibindoSpriteElimar) return;
+        if (!spriteElimarVisivel) return;
 
-        float progressoTransicao = Math.min(1f, timerSpriteElimar / DURACAO_EXIBICAO_ELIMAR);
-        float alphaOverlay = 0.9f;
-        float alphaSprite = 1f;
+        float progressoTransicao = exibindoSpriteElimar
+            ? Math.min(1f, timerSpriteElimar / DURACAO_EXIBICAO_ELIMAR)
+            : 1f;
 
-        if (progressoTransicao < 0.25f) {
-            alphaOverlay = progressoTransicao / 0.25f;
-            alphaSprite = progressoTransicao / 0.25f;
-        } else if (progressoTransicao > 0.8f) {
-            float restante = 1f - ((progressoTransicao - 0.8f) / 0.2f);
-            alphaOverlay = Math.max(0f, restante);
-            alphaSprite = Math.max(0f, restante);
+        float alphaFade = 1f;
+        if (exibindoSpriteElimar) {
+            alphaFade = Math.min(1f, progressoTransicao / 0.2f);
+        } else if (iniciouDialogoElimar) {
+            alphaFade = Math.max(0.2f, 1f - Math.min(1f, timerSpriteElimar / DURACAO_FADE_ELIMAR));
         }
+
+        float alphaOverlay = 0.72f * alphaFade;
+        float alphaSprite = 0.96f * alphaFade;
 
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -1025,6 +1070,13 @@ public class TelaJogo implements Screen {
 
         ctx.batch.setColor(Color.WHITE);
         ctx.batch.end();
+    }
+
+    private void finalizarTransicaoElimar() {
+        spriteElimarVisivel = false;
+        exibindoSpriteElimar = false;
+        aguardandoDialogoElimar = false;
+        timerSpriteElimar = 0f;
     }
 
     // Libera todos os recursos da tela

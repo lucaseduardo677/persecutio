@@ -743,9 +743,13 @@ public class GerenciadorUI {
                 prompt = "Aperte [E] para olhar no Espelho";
             else if (sobreArea(rectTemp, sistemaColisao.getArea("gaveta")))
                 prompt = "Aperte [E] para abrir a Porta";
-            else if (sobreElimar2)
-                prompt = "Aperte [E] para inspecionar";
-            else {
+            else if (sobreElimar2) {
+                if (progresso.podeEntrarElimar2()) {
+                    prompt = "Aperte [E] para inspecionar";
+                } else {
+                    prompt = "Somente podera entrar quando encontrar os 5 panfletos";
+                }
+            } else {
                 GerenciadorColisao.ObjetoColisao doc = sistemaColisao.acharDoc(rectTemp);
                 if (doc != null && !progresso.leuDoc(doc.nome)) {
                     prompt = "Aperte [E] para ler o Documento";

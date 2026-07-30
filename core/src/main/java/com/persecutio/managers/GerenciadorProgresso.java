@@ -54,6 +54,7 @@ public class GerenciadorProgresso {
     private final Set<String> pontosPanfletoLidos = new HashSet<>();
     private final Set<String> tiposPanfletoLidos = new HashSet<>();
     private int pontosPanfletos = 0;
+    private static final int PANFLETOS_PARA_ELIMAR2 = 5;
 
     // Mensagem de aviso atual
     private String aviso = "";
@@ -129,6 +130,17 @@ public class GerenciadorProgresso {
     }
 
     public int obterPontosPanfletos() { return pontosPanfletos; }
+
+    public boolean podeEntrarElimar2() {
+        return pontosPanfletos >= PANFLETOS_PARA_ELIMAR2;
+    }
+
+    public void completarPanfletosParaTeste() {
+        pontosPanfletos = PANFLETOS_PARA_ELIMAR2;
+        while (tiposPanfletoLidos.size() < PANFLETOS_PARA_ELIMAR2) {
+            tiposPanfletoLidos.add("teste" + tiposPanfletoLidos.size());
+        }
+    }
 
     // Alterna entre mundo Real e Umbra
     public void alternarUmbra() {
@@ -317,6 +329,10 @@ public class GerenciadorProgresso {
                 break;
 
             case "elimar2":
+                if (!podeEntrarElimar2()) {
+                    aviso = "Ainda faltam panfletos para entrar neste escritorio.";
+                    return;
+                }
                 dialogoAlvo = "elimar2_trigger";
                 lerDocumento("documento3");
                 return;
@@ -489,6 +505,11 @@ public class GerenciadorProgresso {
     public boolean podeDestrancar(GerenciadorPortas.Porta porta) {
         if (!porta.trancado) return true;
         if (!porta.destrancavel) return false;
+
+        String nome = porta.nome != null ? porta.nome.toLowerCase() : "";
+        if (mundoUmbra && nome.contains("elimar2")) {
+            return podeEntrarElimar2();
+        }
 
         return temFlag("porta_destrancada");
     }

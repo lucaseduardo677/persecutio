@@ -58,6 +58,7 @@ public class GerenciadorProgressoTest {
     @Test
     public void testObjectInteractStartsElimar2Dialogue() {
         GerenciadorProgresso prog = new GerenciadorProgresso(null);
+        prog.completarPanfletosParaTeste();
         prog.onObjectInteract("elimar2");
         assertEquals("elimar2_trigger", prog.pegarDialogo());
     }
@@ -65,9 +66,48 @@ public class GerenciadorProgressoTest {
     @Test
     public void testObjectInteractSchedulesDocument3ForElimar2() {
         GerenciadorProgresso prog = new GerenciadorProgresso(null);
+        prog.completarPanfletosParaTeste();
         prog.onObjectInteract("elimar2");
         assertTrue(prog.consumirPendente());
         assertEquals("documento3", prog.obterChave());
+    }
+
+    @Test
+    public void testElimar2BlockedUntilFivePamphletsCollected() {
+        GerenciadorProgresso prog = new GerenciadorProgresso(null);
+        prog.onObjectInteract("elimar2");
+        assertNull(prog.pegarDialogo());
+        assertFalse(prog.consumirPendente());
+        assertFalse(prog.podeEntrarElimar2());
+
+        prog.completarPanfletosParaTeste();
+        assertTrue(prog.podeEntrarElimar2());
+    }
+
+    @Test
+    public void testPortaElimar2RemainsBlockedInUmbraUntilFivePamphlets() {
+        GerenciadorProgresso prog = new GerenciadorProgresso(null);
+        prog.concluirPrimeira(0f, 0f);
+        prog.alternarUmbra();
+
+        GerenciadorPortas.Porta porta = new GerenciadorPortas.Porta(
+            new Rectangle(0, 0, 10, 10),
+            "portaElimar2",
+            "label",
+            new Vector2(0, 0),
+            null,
+            "video",
+            true,
+            true,
+            true,
+            "",
+            ""
+        );
+
+        assertFalse(prog.podeDestrancar(porta));
+
+        prog.completarPanfletosParaTeste();
+        assertTrue(prog.podeDestrancar(porta));
     }
 
     @Test
